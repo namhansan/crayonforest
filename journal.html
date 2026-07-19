@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>성장일지 | 크레용숲</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500;1,600&family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#FBF6EE; --ivory-deep:#F3EBDC; --forest:#2C4A3B; --clay:#BE6A42;
+    --gold:#D3A24C; --berry:#8B4B5C; --sage:#93AC8C; --ink:#2A2622; --paper:#FFFFFF; --line:#E4DBC9;
+    --radius-lg:32px; --radius-md:20px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Noto Sans KR',sans-serif; background:var(--ivory); color:var(--ink); line-height:1.7;}
+  .logotype{font-family:'Playfair Display',serif; font-style:italic; font-weight:500;}
+  a{color:inherit; text-decoration:none;}
+  .eyebrow{font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:600; color:var(--clay);}
+  .wrap{max-width:820px; margin:0 auto; padding:0 24px;}
+  header{padding:18px 0; border-bottom:1px solid var(--line);}
+  .header-inner{max-width:820px; margin:0 auto; padding:0 24px; display:flex; justify-content:space-between; align-items:center;}
+  .brand{font-size:19px; color:var(--forest);}
+  .cta-btn{background:var(--clay); color:#fff; padding:9px 16px; border-radius:999px; font-size:13px; font-weight:600;}
+
+  .hero{padding:50px 0 20px; text-align:center;}
+  .hero h1{font-family:'Noto Serif KR',serif; font-size:clamp(22px,3vw,28px); color:var(--forest); margin-top:10px;}
+  .hero p{color:#6b6459; font-size:14px; margin-top:10px;}
+
+  /* login */
+  .login-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md);
+    max-width:400px; margin:30px auto; padding:34px;
+  }
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:13px; font-weight:600; color:var(--forest); margin-bottom:6px;}
+  .field input{width:100%; border:1.5px solid var(--line); border-radius:10px; padding:12px 14px; font-size:14px; background:var(--ivory);}
+  .login-btn{width:100%; background:var(--forest); color:#fff; padding:13px; border-radius:12px; font-size:14.5px; font-weight:700; border:none; cursor:pointer;}
+  .login-err{color:#c0554f; font-size:13px; margin-top:10px; text-align:center; min-height:18px;}
+  .privacy-note{font-size:12px; color:#9a9285; text-align:center; margin-top:14px; line-height:1.6;}
+
+  /* journal */
+  #journalView{display:none;}
+  .journal-head{text-align:center; margin-bottom:30px;}
+  .journal-head h2{font-family:'Noto Serif KR',serif; font-size:24px; color:var(--forest);}
+  .journal-head p{color:#8a8378; font-size:13.5px; margin-top:6px;}
+  .logout-link{display:block; text-align:center; font-size:12.5px; color:#8a8378; text-decoration:underline; margin-top:8px;}
+
+  .month-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:26px; margin-bottom:22px; display:grid; grid-template-columns:200px 1fr; gap:24px;
+  }
+  @media(max-width:600px){ .month-card{grid-template-columns:1fr;} }
+  .month-photo{width:100%; aspect-ratio:4/3; border-radius:14px; object-fit:cover; background:var(--ivory-deep);}
+  .month-badge{display:inline-block; background:var(--forest); color:#fff; font-size:12px; font-weight:700; padding:4px 12px; border-radius:8px; margin-bottom:10px;}
+  .month-meta{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:12px;}
+  .swatch-row{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--forest);}
+  .swatch{width:16px; height:16px; border-radius:50%; border:1px solid var(--line);}
+  .materials{font-size:12.5px; color:#6b6459; background:var(--ivory-deep); padding:4px 10px; border-radius:8px;}
+  .note{font-size:14px; color:#3f3b34; line-height:1.8; white-space:pre-line;}
+  .note::before{content:"“"; color:var(--clay); font-size:20px; margin-right:2px;}
+
+  .empty-state{text-align:center; padding:50px 0; color:#8a8378; font-size:14px;}
+  footer{text-align:center; padding:40px 0; font-size:12.5px; color:#8a8378;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="brand logotype">Forêt des Crayons</a>
+    <a href="index.html" class="cta-btn">홈으로</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">Growth Journal</div>
+    <h1>우리 아이 성장일지</h1>
+    <p>그림을 통해 본 우리 아이 마음의 성장 이야기를 확인해보세요.</p>
+  </div>
+
+  <div id="loginView">
+    <div class="login-card">
+      <div class="field">
+        <label>자녀 이름</label>
+        <input type="text" id="jName" placeholder="예: 김민준">
+      </div>
+      <div class="field">
+        <label>보호자 전화번호 뒷 4자리</label>
+        <input type="password" id="jPhone4" maxlength="4" placeholder="예: 1234" inputmode="numeric" onkeydown="if(event.key==='Enter') checkJournal()">
+      </div>
+      <button class="login-btn" onclick="checkJournal()">성장일지 확인하기</button>
+      <div class="login-err" id="jErr"></div>
+      <div class="privacy-note">등록하신 이름과 전화번호 뒷자리로 우리 아이의 기록만 확인할 수 있어요.<br>다른 친구들의 기록은 보이지 않습니다.</div>
+    </div>
+  </div>
+
+  <div id="journalView">
+    <div class="journal-head">
+      <h2 id="jChildName"></h2>
+      <p id="jTerm"></p>
+    </div>
+    <div id="jEntries"></div>
+    <a href="#" class="logout-link" onclick="logoutJournal(event)">다른 아이 이름으로 다시 확인하기</a>
+  </div>
+</div>
+
+<footer>© 2026 Forêt des Crayons</footer>
+
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyahvBkqM7NVzHde2vdtpWTGdOhaUs8i-ewGe9WBpuyyetVIv1VEPJrhhCNy3fgrmad/exec";
+const MAIN_COLOR_HEX = {
+  "빨강":"#D96B5C","주황":"#E0A24C","노랑":"#E8CE68","초록":"#8FA888","청록":"#5C9A93",
+  "파랑":"#5C7FA6","남색":"#41577A","보라":"#8B6BA6","분홍":"#D98FA6","갈색":"#8A6B4E",
+  "회색":"#A6A29A","검정":"#3A362F","흰색":"#F3EBDC"
+};
+
+function checkJournal(){
+  const name = document.getElementById('jName').value.trim();
+  const phone4 = document.getElementById('jPhone4').value.trim();
+  const errEl = document.getElementById('jErr');
+  errEl.textContent = '';
+
+  if(!name || phone4.length !== 4){
+    errEl.textContent = '이름과 전화번호 뒷자리 4자리를 정확히 입력해주세요.';
+    return;
+  }
+
+  const btn = document.querySelector('.login-btn');
+  btn.disabled = true; btn.textContent = '확인 중...';
+
+  const params = new URLSearchParams({ action:'journal', name, phone4 });
+  fetch(GAS_URL + '?' + params.toString())
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false; btn.textContent = '성장일지 확인하기';
+      if(!data.found){
+        errEl.textContent = data.message || '일치하는 기록이 없어요.';
+        return;
+      }
+      renderJournal(data);
+    })
+    .catch(() => {
+      btn.disabled = false; btn.textContent = '성장일지 확인하기';
+      errEl.textContent = '불러오는 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.';
+    });
+}
+
+function renderJournal(data){
+  document.getElementById('loginView').style.display = 'none';
+  document.getElementById('journalView').style.display = 'block';
+  document.getElementById('jChildName').textContent = `${data.name} 어린이의 성장일지`;
+  document.getElementById('jTerm').textContent = data.term || '';
+
+  const wrap = document.getElementById('jEntries');
+  if(!data.entries || data.entries.length === 0){
+    wrap.innerHTML = '<div class="empty-state">아직 등록된 월별 기록이 없어요. 다음 달부터 차곡차곡 쌓일 예정이에요 🌿</div>';
+    return;
+  }
+  wrap.innerHTML = data.entries.map(e => `
+    <div class="month-card">
+      <img class="month-photo" src="${e.photo || ''}" alt="${e.month} 작품 사진" onerror="this.style.display='none'">
+      <div>
+        <span class="month-badge">${e.month}</span>
+        <div class="month-meta">
+          <div class="swatch-row"><span class="swatch" style="background:${MAIN_COLOR_HEX[e.mainColor] || '#ccc'}"></span>이 달의 메인컬러 · ${e.mainColor || '-'}</div>
+          ${e.materials ? `<div class="materials">${e.materials}</div>` : ''}
+        </div>
+        <div class="note">${e.note || '이 달의 관찰 기록이 아직 입력되지 않았어요.'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function logoutJournal(e){
+  e.preventDefault();
+  document.getElementById('journalView').style.display = 'none';
+  document.getElementById('loginView').style.display = 'block';
+  document.getElementById('jName').value = '';
+  document.getElementById('jPhone4').value = '';
+  document.getElementById('jErr').textContent = '';
+}
+</script>
+</body>
+</html>
