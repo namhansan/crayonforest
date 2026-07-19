@@ -72,6 +72,50 @@
     nav.menu{display:none;}
     .menu-toggle{display:block;}
   }
+  .mobile-menu{
+    display:none; flex-direction:column; gap:2px; padding:10px 20px 18px;
+    border-top:1px solid var(--line); background:var(--ivory);
+  }
+  .mobile-menu.open{display:flex;}
+  .mobile-menu a{padding:12px 4px; font-size:15px; font-weight:600; color:var(--forest); border-bottom:1px solid var(--line);}
+  .mobile-menu a.cta-btn{border-bottom:none; margin-top:8px;}
+
+  /* ---------- Back to top ---------- */
+  .back-to-top{
+    position:fixed; right:22px; bottom:22px; z-index:150;
+    width:46px; height:46px; border-radius:50%; background:var(--forest); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:18px;
+    box-shadow:0 10px 24px -10px rgba(44,74,59,.6);
+    opacity:0; pointer-events:none; transform:translateY(8px); transition:.25s;
+  }
+  .back-to-top.show{opacity:1; pointer-events:auto; transform:none;}
+
+  /* ---------- Events / schedule calendar (public) ---------- */
+  .events-wrap{display:grid; grid-template-columns:1fr 1fr; gap:36px; align-items:start;}
+  @media(max-width:820px){ .events-wrap{grid-template-columns:1fr;} }
+  .ev-cal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+  .ev-cal-head b{font-family:'Noto Serif KR',serif; color:var(--forest); font-size:16px;}
+  .ev-nav{display:flex; gap:6px;}
+  .ev-nav button{width:30px; height:30px; border-radius:8px; background:var(--ivory-deep); color:var(--forest); font-size:14px;}
+  .ev-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+  .ev-dow{font-size:11px; text-align:center; color:#aaa; font-weight:600; padding-bottom:4px;}
+  .ev-day{aspect-ratio:1; border-radius:10px; background:var(--paper); border:1px solid var(--line); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12.5px; color:#6b6459;}
+  .ev-day.today{outline:2px solid var(--gold);}
+  .ev-day.has-ev{background:var(--forest); color:#fff; font-weight:700; cursor:pointer;}
+  .ev-day.empty{background:transparent; border:none;}
+  .ev-list{display:flex; flex-direction:column; gap:12px;}
+  .ev-item{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start;}
+  .ev-date-badge{background:var(--ivory-deep); border-radius:10px; padding:8px 12px; text-align:center; min-width:52px;}
+  .ev-date-badge .d{font-family:'Noto Serif KR',serif; font-size:17px; color:var(--forest); font-weight:700;}
+  .ev-date-badge .m{font-size:10.5px; color:var(--clay); font-weight:700;}
+  .ev-item h4{font-size:14.5px; color:var(--forest); margin-bottom:3px;}
+  .ev-item p{font-size:12.5px; color:#6b6459;}
+
+  /* ---------- Admin login gate ---------- */
+  .admin-login-card{max-width:320px; margin:0 auto; text-align:center;}
+  .admin-login-card input{width:100%; border:1.5px solid var(--line); border-radius:10px; padding:12px 14px; font-size:14px; margin:14px 0; text-align:center;}
+  .admin-login-card .err{color:#c0554f; font-size:12.5px; min-height:18px;}
+
 
   /* ---------- Popup ---------- */
   .popup-overlay{
@@ -323,12 +367,21 @@
     <a href="#top" class="brand logotype">Forêt des Crayons<span>크레용숲 · 정서예술교육</span></a>
     <nav class="menu">
       <a href="#program">PROGRAM</a>
+      <a href="#events">SCHEDULE</a>
       <a href="#moments">MOMENTS</a>
       <a href="#about">ABOUT</a>
       <a href="#contact">CONTACT</a>
       <a href="#register" class="cta-btn">수강신청</a>
     </nav>
-    <button class="menu-toggle">☰</button>
+    <button class="menu-toggle" id="menuToggle" aria-label="메뉴 열기">☰</button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#program">PROGRAM</a>
+    <a href="#events">SCHEDULE</a>
+    <a href="#moments">MOMENTS</a>
+    <a href="#about">ABOUT</a>
+    <a href="#contact">CONTACT</a>
+    <a href="#register" class="cta-btn" style="text-align:center;">수강신청</a>
   </div>
 </header>
 
@@ -502,6 +555,28 @@
   </div>
 </section>
 
+<!-- ===== Events / Schedule (public) ===== -->
+<section id="events" class="wrap">
+  <div class="section-head" style="text-align:left; max-width:640px; margin-bottom:0;">
+    <div class="eyebrow">Schedule</div>
+    <h2 style="margin-top:10px;">이번 달 특강 &amp; 학원 소식</h2>
+    <p>여름방학 특강, 체험수업, 공지사항을 이 달력에서 확인하세요.</p>
+  </div>
+  <div class="events-wrap" style="margin-top:28px;">
+    <div>
+      <div class="ev-cal-head">
+        <b id="evMonthLabel"></b>
+        <div class="ev-nav">
+          <button onclick="changeEvMonth(-1)">‹</button>
+          <button onclick="changeEvMonth(1)">›</button>
+        </div>
+      </div>
+      <div class="ev-grid" id="evGrid"></div>
+    </div>
+    <div class="ev-list" id="evList"></div>
+  </div>
+</section>
+
 <!-- ===== Moments ===== -->
 <section id="moments" class="wrap">
   <div class="section-head">
@@ -589,14 +664,26 @@
 <div class="admin-overlay" id="adminOverlay">
   <div class="admin-modal">
     <div class="admin-head">
-      <h3>수강신청 현황 캘린더</h3>
+      <h3 id="adminModalTitle">관리자 로그인</h3>
       <button class="admin-close" onclick="closeAdmin()">×</button>
     </div>
-    <div class="admin-sub">노란 칸을 클릭하면 해당 날짜의 신청자 목록을 볼 수 있어요. (데모용 예시 데이터 포함)</div>
-    <div class="cal-grid" id="calGrid"></div>
-    <div class="reg-list">
-      <h4 id="regListTitle">날짜를 선택해주세요</h4>
-      <div id="regListBody"><div class="reg-empty">캘린더에서 표시된 날짜를 클릭해보세요.</div></div>
+
+    <div id="adminLoginView">
+      <div class="admin-login-card">
+        <p style="font-size:13px; color:#8a8378; margin-top:6px;">신청 현황 캘린더는 원장님/선생님만 볼 수 있어요.</p>
+        <input type="password" id="adminPw" placeholder="관리자 비밀번호" onkeydown="if(event.key==='Enter') checkAdminPw()">
+        <div class="err" id="adminErr"></div>
+        <button class="cta-btn" style="width:100%;" onclick="checkAdminPw()">로그인</button>
+      </div>
+    </div>
+
+    <div id="adminCalendarView" style="display:none;">
+      <div class="admin-sub">노란 칸을 클릭하면 해당 날짜의 신청자 목록을 볼 수 있어요.</div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="reg-list">
+        <h4 id="regListTitle">날짜를 선택해주세요</h4>
+        <div id="regListBody"><div class="reg-empty">캘린더에서 표시된 날짜를 클릭해보세요.</div></div>
+      </div>
     </div>
   </div>
 </div>
@@ -629,7 +716,28 @@
   </div>
 </footer>
 
+<button class="back-to-top" id="backToTop" aria-label="맨 위로">↑</button>
+
 <script>
+/* ---------- Mobile menu ---------- */
+const menuToggle = document.getElementById('menuToggle');
+const mobileMenu = document.getElementById('mobileMenu');
+menuToggle.addEventListener('click', ()=>{
+  mobileMenu.classList.toggle('open');
+  menuToggle.textContent = mobileMenu.classList.contains('open') ? '✕' : '☰';
+});
+mobileMenu.querySelectorAll('a').forEach(a=> a.addEventListener('click', ()=>{
+  mobileMenu.classList.remove('open');
+  menuToggle.textContent = '☰';
+}));
+
+/* ---------- Back to top ---------- */
+const backToTop = document.getElementById('backToTop');
+window.addEventListener('scroll', ()=>{
+  backToTop.classList.toggle('show', window.scrollY > 500);
+});
+backToTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+
 /* ---------- Popup ---------- */
 let dontShowToday = false;
 function closePopup(){
@@ -801,9 +909,33 @@ function showDay(day){
       <div>${r.msg}</div>
     </div>`).join('');
 }
+/* ---------- Admin login gate ----------
+   ⚠️ 참고: 이건 간단한 화면단 비밀번호 보호일 뿐, 완전히 안전한 로그인은 아니에요.
+   나중에 담당자가 늘어나면 Netlify Identity 같은 정식 로그인으로 업그레이드하는 걸 권장합니다. */
+const ADMIN_PASSWORD = "crayon2026"; // 원하시는 비밀번호로 바꿔서 사용하세요
+
 function openAdmin(e){
   e.preventDefault();
   document.getElementById('adminOverlay').classList.add('show');
+  document.getElementById('adminLoginView').style.display = 'block';
+  document.getElementById('adminCalendarView').style.display = 'none';
+  document.getElementById('adminModalTitle').textContent = '관리자 로그인';
+  document.getElementById('adminPw').value = '';
+  document.getElementById('adminErr').textContent = '';
+  setTimeout(()=> document.getElementById('adminPw').focus(), 100);
+}
+function checkAdminPw(){
+  const val = document.getElementById('adminPw').value;
+  if (val === ADMIN_PASSWORD){
+    document.getElementById('adminLoginView').style.display = 'none';
+    document.getElementById('adminCalendarView').style.display = 'block';
+    document.getElementById('adminModalTitle').textContent = '수강신청 현황 캘린더';
+    loadAdminCalendar();
+  } else {
+    document.getElementById('adminErr').textContent = '비밀번호가 올바르지 않아요.';
+  }
+}
+function loadAdminCalendar(){
   if (DEMO_MODE){
     buildCalendar();
   } else {
@@ -871,6 +1003,54 @@ document.getElementById('regForm').addEventListener('submit', function(e){
       alert('전송에 실패했어요. 잠시 후 다시 시도하거나 전화로 문의해주세요.');
     });
 });
+
+/* ---------- Public events / schedule calendar ----------
+   샘플 일정입니다. 나중에는 이 배열을 CMS에서 직접 편집할 수 있게 연결할 예정이에요. */
+let evYear = year, evMonth = month;
+const sampleEvents = [
+  { y:year, m:month, d:5,  title:'여름방학 특강 접수 시작', desc:'8월 단기 체험 클래스 신규가족 모집' },
+  { y:year, m:month, d:12, title:'예비초등 마음드로잉 워크숍', desc:'새 학년을 앞둔 아이들을 위한 특별 프로그램' },
+  { y:year, m:month, d:19, title:'가족 감정 아카이브 참여 수업', desc:'부모 참여형 워크 · CHILD ART 5월 테마 연계' },
+  { y:year, m:month, d:26, title:'철학미술관 오픈스튜디오', desc:'YOUTH ART 1년 작업물 미니 전시' },
+];
+function changeEvMonth(delta){
+  evMonth += delta;
+  if(evMonth < 0){ evMonth = 11; evYear--; }
+  if(evMonth > 11){ evMonth = 0; evYear++; }
+  renderEvCalendar();
+}
+function renderEvCalendar(){
+  document.getElementById('evMonthLabel').textContent = `${evYear}년 ${evMonth+1}월`;
+  const grid = document.getElementById('evGrid');
+  grid.innerHTML = '';
+  ['일','월','화','수','목','금','토'].forEach(d=>{
+    const el = document.createElement('div'); el.className='ev-dow'; el.textContent=d; grid.appendChild(el);
+  });
+  const fDow = new Date(evYear, evMonth, 1).getDay();
+  const dim = new Date(evYear, evMonth+1, 0).getDate();
+  const monthEvents = sampleEvents.filter(ev=> ev.y===evYear && ev.m===evMonth);
+  for(let i=0;i<fDow;i++){ const el=document.createElement('div'); el.className='ev-day empty'; grid.appendChild(el); }
+  for(let d=1; d<=dim; d++){
+    const hasEv = monthEvents.some(ev=> ev.d===d);
+    const isToday = d===todayDate && evMonth===month && evYear===year;
+    const el = document.createElement('div');
+    el.className = 'ev-day' + (isToday?' today':'') + (hasEv?' has-ev':'');
+    el.textContent = d;
+    if(hasEv){ el.title = monthEvents.filter(ev=>ev.d===d).map(ev=>ev.title).join(', '); }
+    grid.appendChild(el);
+  }
+  const listEl = document.getElementById('evList');
+  if(monthEvents.length === 0){
+    listEl.innerHTML = '<div class="reg-empty">이번 달 등록된 일정이 없어요.</div>';
+  } else {
+    listEl.innerHTML = monthEvents.sort((a,b)=>a.d-b.d).map(ev=>`
+      <div class="ev-item">
+        <div class="ev-date-badge"><div class="d">${ev.d}</div><div class="m">${evMonth+1}월</div></div>
+        <div><h4>${ev.title}</h4><p>${ev.desc}</p></div>
+      </div>`).join('');
+  }
+}
+renderEvCalendar();
 
 /* ---------- Visitor counter (real backend when GAS_URL set, demo count-up otherwise) ---------- */
 function countUp(el, target){

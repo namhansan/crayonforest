@@ -79,6 +79,16 @@
   .btn-white{background:#fff; color:var(--forest); padding:13px 26px; border-radius:999px; font-weight:700; font-size:14.5px;}
 
   footer{background:var(--ivory-deep); border-top:1px solid var(--line); padding:36px 0; text-align:center; font-size:12.5px; color:#8a8378;}
+
+  .back-to-top{
+    position:fixed; right:22px; bottom:22px; z-index:150;
+    width:46px; height:46px; border-radius:50%; background:var(--forest); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:18px;
+    box-shadow:0 10px 24px -10px rgba(44,74,59,.6);
+    opacity:0; pointer-events:none; transform:translateY(8px); transition:.25s;
+    border:none; cursor:pointer;
+  }
+  .back-to-top.show{opacity:1; pointer-events:auto; transform:none;}
 </style>
 </head>
 <body>
@@ -204,5 +214,11 @@
 </section>
 
 <footer>© 2026 Forêt des Crayons · <a href="index.html">홈으로 돌아가기</a></footer>
+<button class="back-to-top" id="backToTop" aria-label="맨 위로">↑</button>
+<script>
+const backToTop = document.getElementById('backToTop');
+window.addEventListener('scroll', ()=>{ backToTop.classList.toggle('show', window.scrollY > 500); });
+backToTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+</script>
 </body>
 </html>
