@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>성장요약 초안 도우미 | 크레용숲 (관리자 전용)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500;1,600&family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#FBF6EE; --ivory-deep:#F3EBDC; --forest:#2C4A3B; --clay:#BE6A42;
+    --gold:#D3A24C; --berry:#8B4B5C; --sage:#93AC8C; --ink:#2A2622; --paper:#FFFFFF; --line:#E4DBC9;
+    --radius-md:18px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Noto Sans KR',sans-serif; background:var(--ivory); color:var(--ink); line-height:1.7;}
+  a{color:inherit; text-decoration:none;}
+  .wrap{max-width:760px; margin:0 auto; padding:40px 24px 80px;}
+  .brand{font-family:'Playfair Display',serif; font-style:italic; color:var(--forest); font-size:19px;}
+  .warn{background:#FCEFD8; border:1px solid #E8CE95; border-radius:14px; padding:14px 18px; font-size:13px; color:#8a6a2f; margin:20px 0 30px;}
+  h1{font-family:'Noto Serif KR',serif; font-size:22px; color:var(--forest); margin:14px 0 6px;}
+  .sub{color:#8a8378; font-size:13.5px; margin-bottom:30px;}
+
+  .card{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:30px; margin-bottom:20px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:13px; font-weight:600; color:var(--forest); margin-bottom:6px;}
+  .field input{width:100%; border:1.5px solid var(--line); border-radius:10px; padding:11px 14px; font-size:14px; background:var(--ivory);}
+  .btn{background:var(--forest); color:#fff; padding:12px 22px; border-radius:10px; font-size:14px; font-weight:700; border:none; cursor:pointer;}
+  .err{color:#c0554f; font-size:13px; margin-top:10px;}
+
+  #result{display:none;}
+  .draft-box{background:#F3E3E8; border:1px solid #E3C6D0; border-radius:14px; padding:20px 22px; margin-bottom:16px;}
+  .draft-box .label{font-size:11.5px; font-weight:700; color:var(--berry); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;}
+  .draft-box p{font-size:13.5px; color:#3f3b34; white-space:pre-line;}
+  .copy-btn{font-size:11.5px; background:#fff; border:1px solid var(--line); padding:4px 10px; border-radius:8px; cursor:pointer; color:var(--forest);}
+  .cat-mini{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;}
+  .cat-mini div{background:#fff; border-radius:10px; padding:10px 12px; font-size:13px;}
+  .cat-mini b{color:var(--forest); font-size:12px; display:block; margin-bottom:3px;}
+  .kw-pill{display:inline-block; background:#fff; border:1px solid var(--line); border-radius:999px; padding:4px 12px; font-size:12px; margin:3px 4px 0 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="index.html" class="brand">Forêt des Crayons</a>
+  <div class="warn">🔒 관리자 전용 페이지입니다. 여기서 나오는 내용은 <b>확정된 분석이 아니라 초안 참고자료</b>예요 — 그대로 쓰지 마시고, 검토·수정하신 뒤 "성장요약" 시트에 옮겨 적어주세요.</div>
+
+  <h1>성장요약 초안 도우미</h1>
+  <div class="sub">이미 입력하신 월별 색상·관찰노트를 바탕으로, 참고할 만한 초안 문장과 키워드를 뽑아드려요.</div>
+
+  <div class="card">
+    <div class="field"><label>관리자 비밀번호</label><input type="password" id="pw" onkeydown="if(event.key==='Enter') go()"></div>
+    <div class="field"><label>아이 이름</label><input type="text" id="name" onkeydown="if(event.key==='Enter') go()"></div>
+    <div class="field"><label>전화번호 뒷 4자리</label><input type="text" id="phone4" maxlength="4" onkeydown="if(event.key==='Enter') go()"></div>
+    <button class="btn" onclick="go()">초안 만들기</button>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div id="result"></div>
+</div>
+
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyahvBkqM7NVzHde2vdtpWTGdOhaUs8i-ewGe9WBpuyyetVIv1VEPJrhhCNy3fgrmad/exec";
+const ADMIN_PASSWORD = "crayon2026"; // index.html과 동일하게 맞춰서 바꿔주세요
+
+const WARM = ["빨강","다홍","주황","노랑","분홍"];
+const COOL = ["파랑","남색","보라","보랏빛 파랑","청록","자주"];
+const NEUTRAL = ["초록","회색","검정","흰색","갈색"];
+
+const KEYWORDS = [
+  "자신감","스스로","집중","몰입","협업","친구","조절","안정","자존감","성취",
+  "표현","도전","반복","꼼꼼","차분","신나","완성","자기","관찰","상징"
+];
+
+function colorFamily(name){
+  if(!name) return null;
+  if(WARM.some(c=>name.includes(c))) return 'warm';
+  if(COOL.some(c=>name.includes(c))) return 'cool';
+  return 'neutral';
+}
+
+function go(){
+  const err = document.getElementById('err');
+  err.textContent = '';
+  if(document.getElementById('pw').value !== ADMIN_PASSWORD){
+    err.textContent = '비밀번호가 올바르지 않아요.';
+    return;
+  }
+  const name = document.getElementById('name').value.trim();
+  const phone4 = document.getElementById('phone4').value.trim();
+  if(!name || phone4.length !== 4){
+    err.textContent = '이름과 전화번호 뒷자리를 정확히 입력해주세요.';
+    return;
+  }
+  const params = new URLSearchParams({ action:'journal', name, phone4 });
+  fetch(GAS_URL + '?' + params.toString())
+    .then(r=>r.json())
+    .then(data=>{
+      if(!data.found){ err.textContent = data.message || '기록을 찾을 수 없어요.'; return; }
+      buildDraft(data);
+    })
+    .catch(()=> err.textContent = '불러오기에 실패했어요.');
+}
+
+function copyText(id){
+  const text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text);
+  event.target.textContent = '복사됨!';
+  setTimeout(()=> event.target.textContent = '복사', 1200);
+}
+
+function buildDraft(data){
+  const entries = (data.entries || []).filter(e => e.mainColor);
+  const half = Math.ceil(entries.length / 2);
+  const firstHalf = entries.slice(0, half);
+  const secondHalf = entries.slice(half);
+
+  function ratio(list){
+    const warm = list.filter(e=>colorFamily(e.mainColor)==='warm').length;
+    const cool = list.filter(e=>colorFamily(e.mainColor)==='cool').length;
+    return { warm, cool, total: list.length };
+  }
+  const r1 = ratio(firstHalf), r2 = ratio(secondHalf);
+
+  let colorTrend = '뚜렷한 경향이 보이지 않아요. 조금 더 회차가 쌓이면 흐름이 명확해질 거예요.';
+  let expressionDraft = { before:'-', after:'-' };
+  let psychologyDraft = { before:'-', after:'-' };
+
+  if(entries.length >= 3){
+    const warmDelta = (r2.warm/Math.max(r2.total,1)) - (r1.warm/Math.max(r1.total,1));
+    const coolDelta = (r2.cool/Math.max(r2.total,1)) - (r1.cool/Math.max(r1.total,1));
+    if(coolDelta > 0.15){
+      colorTrend = '초반엔 외향색(빨강·주황·노랑·분홍)이, 후반으로 갈수록 구심색(파랑·보라·청록)이 더 많이 나타나요. 감정을 밖으로 분출하던 흐름에서, 내면을 들여다보고 정리하는 흐름으로 옮겨가는 패턴으로 보여요.';
+      expressionDraft = { before:'힘 중심', after:'의미 중심' };
+      psychologyDraft = { before:'분출', after:'정체성 표현' };
+    } else if(warmDelta > 0.15){
+      colorTrend = '초반보다 후반에 외향색(빨강·주황·노랑·분홍) 사용이 늘었어요. 감정 표현이 더 적극적이고 능동적으로 확장되는 흐름으로 보여요.';
+      expressionDraft = { before:'조심스러운 표현', after:'적극적인 표현' };
+      psychologyDraft = { before:'관망', after:'적극적 표출' };
+    } else {
+      colorTrend = '외향색과 구심색을 고르게 오가며 사용하고 있어요. 감정의 폭이 안정적으로 유지되는 흐름으로 보여요.';
+    }
+  }
+
+  // 키워드 빈도
+  const noteText = entries.map(e => e.note || '').join(' ');
+  const kwCounts = KEYWORDS.map(k => ({ k, count: (noteText.match(new RegExp(k,'g'))||[]).length }))
+    .filter(x => x.count > 0).sort((a,b)=>b.count-a.count).slice(0,8);
+
+  const colorList = entries.map(e=>`${e.month}: ${e.mainColor}`).join(' → ');
+
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('result').innerHTML = `
+    <div class="card">
+      <h2 style="font-family:'Noto Serif KR',serif; font-size:16px; color:var(--forest); margin-bottom:14px;">${data.name} 어린이 · 초안 참고자료</h2>
+
+      <div class="draft-box">
+        <div class="label"><span>색채 흐름 (참고용)</span><button class="copy-btn" onclick="copyText('t1')">복사</button></div>
+        <p id="t1">${colorList}\n\n${colorTrend}</p>
+      </div>
+
+      <div class="draft-box">
+        <div class="label"><span>카테고리 초안 제안 (검토 후 성장요약 시트에 옮겨 적어주세요)</span></div>
+        <div class="cat-mini">
+          <div><b>표현</b>${expressionDraft.before} → ${expressionDraft.after}</div>
+          <div><b>심리</b>${psychologyDraft.before} → ${psychologyDraft.after}</div>
+          <div><b>색채</b>(직접 판단 필요)</div>
+          <div><b>사고</b>(직접 판단 필요)</div>
+        </div>
+      </div>
+
+      ${kwCounts.length ? `
+      <div class="draft-box">
+        <div class="label"><span>관찰노트에 자주 등장한 표현</span></div>
+        <p>${kwCounts.map(x=>`<span class="kw-pill">${x.k} · ${x.count}회</span>`).join('')}</p>
+      </div>` : ''}
+
+      <p style="font-size:12px; color:#9a9285; margin-top:10px;">※ 색상 계열 통계와 키워드 빈도만 기계적으로 집계한 것입니다. 아이의 심리 상태에 대한 최종 해석은 반드시 원장님의 관찰과 전문적 판단으로 작성해주세요.</p>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>

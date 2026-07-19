@@ -108,7 +108,10 @@
   .tag-auto{background:#E4F0E0; color:#5C7A56;}
   .tag-manual{background:#F3E3E8; color:var(--berry);}
 
-  .timeline-card, .freq-card{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:28px 26px; margin-bottom:16px;}
+  .timeline-card, .freq-card, .wheel-card{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:28px 26px; margin-bottom:16px;}
+  .wheel-card{text-align:center;}
+  .wheel-card svg{max-width:280px; margin:0 auto;}
+  .wheel-caption{font-size:12px; color:#9a9285; margin-top:10px;}
   .timeline{display:flex; align-items:flex-end; gap:6px; position:relative; padding-top:10px; flex-wrap:wrap;}
   .t-node{flex:1; min-width:60px; text-align:center;}
   .t-dot{width:24px; height:24px; border-radius:50%; margin:0 auto 8px; border:3px solid #fff; box-shadow:0 0 0 1px var(--line);}
@@ -210,8 +213,50 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbyahvBkqM7NVzHde2vdtpWT
 const MAIN_COLOR_HEX = {
   "빨강":"#D96B5C","주황":"#E0A24C","노랑":"#E8CE68","초록":"#8FA888","청록":"#5C9A93",
   "파랑":"#5C7FA6","남색":"#41577A","보라":"#8B6BA6","분홍":"#D98FA6","갈색":"#8A6B4E",
-  "회색":"#A6A29A","검정":"#3A362F","흰색":"#F3EBDC"
+  "회색":"#A6A29A","검정":"#3A362F","흰색":"#F3EBDC","보랏빛 파랑":"#6E6BA6"
 };
+const HUE_ANGLE = {
+  "빨강":0,"다홍":18,"주황":42,"노랑":80,"연두":110,"초록":140,"청록":175,
+  "파랑":210,"남색":235,"보랏빛 파랑":250,"보라":270,"자주":300,"분홍":330,"갈색":25
+};
+function getHueAngle(name){
+  if(!name) return null;
+  if(name in HUE_ANGLE) return HUE_ANGLE[name];
+  for(const k in HUE_ANGLE){ if(name.includes(k)) return HUE_ANGLE[k]; }
+  return null; // 회색/검정/흰색 등 무채색 → 중심 근처
+}
+function renderColorWheel(entries){
+  const colored = entries.filter(e => e.mainColor);
+  if(colored.length < 2) return '';
+  const size=280, cx=140, cy=140, minR=26, maxR=112;
+  const hueLabels = [["빨강",0],["주황",42],["노랑",80],["초록",140],["청록",175],["파랑",210],["보라",270],["분홍",330]];
+  let rings = [0.33,0.66,1].map(f=>`<circle cx="${cx}" cy="${cy}" r="${minR+(maxR-minR)*f}" fill="none" stroke="#E4DBC9" stroke-width="1"/>`).join('');
+  let labels = hueLabels.map(([name,ang])=>{
+    const a=ang*Math.PI/180, x=cx+(maxR+18)*Math.sin(a), y=cy-(maxR+18)*Math.cos(a);
+    return `<text x="${x}" y="${y}" font-size="10" fill="#9a9285" text-anchor="middle" dominant-baseline="middle">${name}</text>`;
+  }).join('');
+  let dots='', path='';
+  colored.forEach((e,i)=>{
+    const ang = getHueAngle(e.mainColor);
+    const r = ang===null ? minR*0.5 : minR + (colored.length<=1?0.5:i/(colored.length-1))*(maxR-minR);
+    const a = (ang===null?0:ang)*Math.PI/180;
+    const x = cx + r*Math.sin(a), y = cy - r*Math.cos(a);
+    dots += `<circle cx="${x}" cy="${y}" r="7" fill="${MAIN_COLOR_HEX[e.mainColor]||'#999'}" stroke="#fff" stroke-width="2"/>`;
+    path += (i===0?'M':'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+  });
+  return `
+    <div class="wheel-card">
+      <svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--clay)"/></marker></defs>
+        ${rings}
+        <text x="${cx}" y="${cy}" font-size="10" fill="#9a9285" text-anchor="middle" dominant-baseline="middle">무채색</text>
+        ${labels}
+        <path d="${path}" fill="none" stroke="var(--clay)" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrow)"/>
+        ${dots}
+      </svg>
+      <div class="wheel-caption">중심(무채색)에서 바깥쪽으로 갈수록 최근 회차예요 · 점을 이은 화살표가 색채 변화의 흐름을 보여줘요</div>
+    </div>`;
+}
 
 function checkJournal(){
   const name = document.getElementById('jName').value.trim();
@@ -343,9 +388,11 @@ function renderSummarySection(entries, summary){
 
   let autoSection = '';
   if(timelineHtml || freqHtml){
+    const wheelHtml = renderColorWheel(entries);
     autoSection = `
       <div class="summary-section">
         <div class="sec-label"><span class="tag tag-auto">자동 생성</span><h3>회차별 색채 변화</h3></div>
+        ${wheelHtml}
         ${timelineHtml}
         ${freqHtml}
       </div>`;
