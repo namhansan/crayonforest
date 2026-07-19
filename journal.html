@@ -213,11 +213,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbyahvBkqM7NVzHde2vdtpWT
 const MAIN_COLOR_HEX = {
   "빨강":"#D96B5C","주황":"#E0A24C","노랑":"#E8CE68","초록":"#8FA888","청록":"#5C9A93",
   "파랑":"#5C7FA6","남색":"#41577A","보라":"#8B6BA6","분홍":"#D98FA6","갈색":"#8A6B4E",
-  "회색":"#A6A29A","검정":"#3A362F","흰색":"#F3EBDC","보랏빛 파랑":"#6E6BA6"
+  "회색":"#A6A29A","검정":"#3A362F","흰색":"#F3EBDC","보랏빛 파랑":"#6E6BA6",
+  "민트":"#7FBFA6","핑크":"#D98FA6","자주":"#8B4B5C","무지개":"#C9A6D9"
 };
 const HUE_ANGLE = {
-  "빨강":0,"다홍":18,"주황":42,"노랑":80,"연두":110,"초록":140,"청록":175,
-  "파랑":210,"남색":235,"보랏빛 파랑":250,"보라":270,"자주":300,"분홍":330,"갈색":25
+  "빨강":0,"다홍":18,"주황":42,"노랑":80,"연두":110,"초록":140,"청록":175,"민트":190,
+  "파랑":210,"남색":235,"보랏빛 파랑":250,"보라":270,"자주":290,"분홍":330,"핑크":330,"갈색":25
 };
 function getHueAngle(name){
   if(!name) return null;
@@ -225,7 +226,64 @@ function getHueAngle(name){
   for(const k in HUE_ANGLE){ if(name.includes(k)) return HUE_ANGLE[k]; }
   return null; // 회색/검정/흰색 등 무채색 → 중심 근처
 }
-function renderColorWheel(entries){
+const MATERIAL_ZONE = {
+  angles: { "사고활동":300, "감정활동":60, "뉴트럴":180 },
+  bounds: { "사고활동":[240,360], "감정활동":[0,120], "뉴트럴":[120,240] },
+  colors: { "사고활동":"#93AC8C", "감정활동":"#BE6A42", "뉴트럴":"#D3A24C" }
+};
+function normalizeZone(v){
+  if(!v) return null;
+  if(v.includes('사고')) return '사고활동';
+  if(v.includes('감정')) return '감정활동';
+  if(v.includes('뉴트럴') || v.includes('중립')) return '뉴트럴';
+  return null;
+}
+function polar(cx,cy,r,angDeg){
+  const a = angDeg*Math.PI/180;
+  return { x: cx + r*Math.sin(a), y: cy - r*Math.cos(a) };
+}
+function wedgePath(cx,cy,r,startAngle,endAngle){
+  const p1 = polar(cx,cy,r,startAngle), p2 = polar(cx,cy,r,endAngle);
+  return `M${cx},${cy} L${p1.x.toFixed(1)},${p1.y.toFixed(1)} A${r},${r} 0 0 1 ${p2.x.toFixed(1)},${p2.y.toFixed(1)} Z`;
+}
+function renderMaterialWheel(entries){
+  const zoned = entries.map(e => ({ ...e, zone: normalizeZone(e.materialEffect) })).filter(e => e.zone);
+  if(zoned.length < 2) return '';
+  const cx=140, cy=140, minR=26, maxR=112;
+
+  const wedges = Object.entries(MATERIAL_ZONE.bounds).map(([name,[s,e]]) =>
+    `<path d="${wedgePath(cx,cy,maxR,s,e)}" fill="${MATERIAL_ZONE.colors[name]}" opacity="0.12"/>`
+  ).join('');
+
+  const labels = Object.entries(MATERIAL_ZONE.angles).map(([name,ang]) => {
+    const pt = polar(cx,cy,maxR+22,ang);
+    return `<text x="${pt.x}" y="${pt.y}" font-size="10.5" fill="${MATERIAL_ZONE.colors[name]}" font-weight="700" text-anchor="middle" dominant-baseline="middle">${name}</text>`;
+  }).join('');
+
+  let dots='', path='';
+  zoned.forEach((e,i)=>{
+    const [s,end] = MATERIAL_ZONE.bounds[e.zone];
+    const jitter = ((i % 3) - 1) * ((end-s)/5);
+    const ang = MATERIAL_ZONE.angles[e.zone] + jitter;
+    const r = minR + (zoned.length<=1?0.5:i/(zoned.length-1))*(maxR-minR);
+    const pt = polar(cx,cy,r,ang);
+    dots += `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="7" fill="${MATERIAL_ZONE.colors[e.zone]}" stroke="#fff" stroke-width="2"/>`;
+    path += (i===0?'M':'L') + pt.x.toFixed(1) + ',' + pt.y.toFixed(1) + ' ';
+  });
+
+  return `
+    <div class="wheel-card">
+      <svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="arrow2" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--clay)"/></marker></defs>
+        ${wedges}
+        <circle cx="${cx}" cy="${cy}" r="${maxR}" fill="none" stroke="#E4DBC9" stroke-width="1"/>
+        ${labels}
+        <path d="${path}" fill="none" stroke="var(--clay)" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrow2)"/>
+        ${dots}
+      </svg>
+      <div class="wheel-caption">중심에서 바깥쪽으로 갈수록 최근 회차예요 · 어느 영역(사고·감정·뉴트럴)에서 주로 활동했는지 흐름을 보여줘요</div>
+    </div>`;
+}
   const colored = entries.filter(e => e.mainColor);
   if(colored.length < 2) return '';
   const size=280, cx=140, cy=140, minR=26, maxR=112;
@@ -343,6 +401,16 @@ function renderJournal(data){
             <span class="info-label">사용 재료</span>
             <div class="material-pills">${e.materials.split(/[,、]/).map(m=>`<span class="pill">${m.trim()}</span>`).join('')}</div>
           </div>` : ''}
+          ${(e.emotionKeywords && e.emotionKeywords.length) ? `
+          <div class="info-block">
+            <span class="info-label">감정 키워드</span>
+            <div class="material-pills">${e.emotionKeywords.map(k=>`<span class="pill">${k}</span>`).join('')}</div>
+          </div>` : ''}
+          ${e.engagement ? `
+          <div class="info-block">
+            <span class="info-label">몰입도</span>
+            <div class="material-pills"><span class="pill">${e.engagement}</span></div>
+          </div>` : ''}
         </div>
       </div>
     </div>
@@ -389,12 +457,14 @@ function renderSummarySection(entries, summary){
   let autoSection = '';
   if(timelineHtml || freqHtml){
     const wheelHtml = renderColorWheel(entries);
+    const materialWheelHtml = renderMaterialWheel(entries);
     autoSection = `
       <div class="summary-section">
         <div class="sec-label"><span class="tag tag-auto">자동 생성</span><h3>회차별 색채 변화</h3></div>
         ${wheelHtml}
         ${timelineHtml}
         ${freqHtml}
+        ${materialWheelHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>재료 효과 바퀴 (사고·감정·뉴트럴)</h3></div>${materialWheelHtml}` : ''}
       </div>`;
   }
 
