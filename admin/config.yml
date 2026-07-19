@@ -52,3 +52,36 @@ collections:
               - { label: "제목", name: "title", widget: "string" }
               - { label: "날짜", name: "date", widget: "date", format: "YYYY-MM-DD" }
               - { label: "설명", name: "desc", widget: "text" }
+
+      - file: "content/gallery.json"
+        label: "프로그램별 활동사진"
+        name: "gallery"
+        fields:
+          - label: "CHILD ART 사진"
+            name: "child"
+            widget: "list"
+            required: false
+            fields:
+              - { label: "사진", name: "image", widget: "image" }
+              - { label: "설명", name: "caption", widget: "string", required: false }
+          - label: "YOUTH ART 사진"
+            name: "youth"
+            widget: "list"
+            required: false
+            fields:
+              - { label: "사진", name: "image", widget: "image" }
+              - { label: "설명", name: "caption", widget: "string", required: false }
+          - label: "ADULT ART 사진"
+            name: "adult"
+            widget: "list"
+            required: false
+            fields:
+              - { label: "사진", name: "image", widget: "image" }
+              - { label: "설명", name: "caption", widget: "string", required: false }
+          - label: "FOR MOM 사진"
+            name: "mom"
+            widget: "list"
+            required: false
+            fields:
+              - { label: "사진", name: "image", widget: "image" }
+              - { label: "설명", name: "caption", widget: "string", required: false }
