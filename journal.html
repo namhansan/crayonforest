@@ -286,6 +286,7 @@ function renderMaterialWheel(entries){
 }
 
 function renderColorWheel(entries){
+  const colored = entries.filter(e => e.mainColor);
   if(colored.length < 2) return '';
   const size=280, cx=140, cy=140, minR=26, maxR=112;
   const hueLabels = [["빨강",0],["주황",42],["노랑",80],["초록",140],["청록",175],["파랑",210],["보라",270],["분홍",330]];
