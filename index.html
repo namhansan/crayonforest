@@ -679,6 +679,14 @@
 
     <div id="adminCalendarView" style="display:none;">
       <div class="admin-sub">노란 칸을 클릭하면 해당 날짜의 신청자 목록을 볼 수 있어요.</div>
+      <div class="ev-cal-head">
+        <b id="adminMonthLabel"></b>
+        <div class="ev-nav">
+          <button onclick="changeAdminMonth(-1)">‹</button>
+          <button onclick="goAdminToday()" style="width:auto; padding:0 10px; font-size:12px;">오늘</button>
+          <button onclick="changeAdminMonth(1)">›</button>
+        </div>
+      </div>
       <div class="cal-grid" id="calGrid"></div>
       <div class="reg-list">
         <h4 id="regListTitle">날짜를 선택해주세요</h4>
@@ -866,44 +874,69 @@ document.getElementById('aboutTabs').addEventListener('click', e=>{
       아래 큰따옴표 안에 붙여넣으세요.
    2) 비워두면(데모 모드) 신청/방문자수는 화면 안에서만 임시로 동작합니다.
 ========================================================= */
-const GAS_URL = "https://script.google.com/macros/s/AKfycbz2AldeJJTdq3uI4nWrgb1wYPZQeAgwVjIJFa8h_E6jCcyfBYamRuIqagf6wC2fyoUK/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyahvBkqM7NVzHde2vdtpWTGdOhaUs8i-ewGe9WBpuyyetVIv1VEPJrhhCNy3fgrmad/exec";
 const DEMO_MODE = !GAS_URL;
 
 /* ---------- Registration + admin calendar ---------- */
-let registrations = DEMO_MODE ? [
-  {name:'김O우', phone:'010-1234-5678', program:'CHILD ART', msg:'7세 아이, 토요일 오전반 문의드려요.', day:3},
-  {name:'박O연', phone:'010-2222-3333', program:'YOUTH ART', msg:'중2 딸 상담 희망합니다.', day:3},
-  {name:'이O미', phone:'010-4444-5555', program:'FOR MOM', msg:'평일 저녁반 있나요?', day:9},
-  {name:'정O호', phone:'010-6666-7777', program:'ADULT ART', msg:'초보자도 참여 가능한가요?', day:15},
-] : [];
-
 const now = new Date();
 const year = now.getFullYear(), month = now.getMonth();
-const firstDow = new Date(year, month, 1).getDay();
-const daysInMonth = new Date(year, month+1, 0).getDate();
 const todayDate = now.getDate();
 
+// allRegistrations: 전체 신청 데이터 (월 상관없이 전부), {y,m,d,name,phone,program,msg}
+let allRegistrations = DEMO_MODE ? [
+  {y:year, m:month, d:3,  name:'김O우', phone:'010-1234-5678', program:'CHILD ART', msg:'7세 아이, 토요일 오전반 문의드려요.'},
+  {y:year, m:month, d:3,  name:'박O연', phone:'010-2222-3333', program:'YOUTH ART', msg:'중2 딸 상담 희망합니다.'},
+  {y:year, m:month, d:9,  name:'이O미', phone:'010-4444-5555', program:'FOR MOM', msg:'평일 저녁반 있나요?'},
+  {y:year, m:month, d:15, name:'정O호', phone:'010-6666-7777', program:'ADULT ART', msg:'초보자도 참여 가능한가요?'},
+] : [];
+
+let adminYear = year, adminMonth = month, adminSelectedDay = null;
+
+function changeAdminMonth(delta){
+  adminMonth += delta;
+  if(adminMonth < 0){ adminMonth = 11; adminYear--; }
+  if(adminMonth > 11){ adminMonth = 0; adminYear++; }
+  adminSelectedDay = null;
+  buildCalendar();
+}
+function goAdminToday(){
+  adminYear = year; adminMonth = month; adminSelectedDay = null;
+  buildCalendar();
+}
 function buildCalendar(){
+  document.getElementById('adminMonthLabel').textContent = `${adminYear}년 ${adminMonth+1}월`;
   const grid = document.getElementById('calGrid');
   grid.innerHTML = '';
   ['일','월','화','수','목','금','토'].forEach(d=>{
     const el = document.createElement('div'); el.className='cal-dow'; el.textContent=d; grid.appendChild(el);
   });
-  for(let i=0;i<firstDow;i++){
+  const fDow = new Date(adminYear, adminMonth, 1).getDay();
+  const dim = new Date(adminYear, adminMonth+1, 0).getDate();
+  const monthRegs = allRegistrations.filter(r => r.y===adminYear && r.m===adminMonth);
+  for(let i=0;i<fDow;i++){
     const el = document.createElement('div'); el.className='cal-day empty'; grid.appendChild(el);
   }
-  for(let day=1; day<=daysInMonth; day++){
-    const hasReg = registrations.some(r=>r.day===day);
+  for(let day=1; day<=dim; day++){
+    const hasReg = monthRegs.some(r=>r.d===day);
+    const isToday = day===todayDate && adminMonth===month && adminYear===year;
     const el = document.createElement('div');
-    el.className = 'cal-day' + (day===todayDate?' today':'') + (hasReg?' has-reg':'');
+    el.className = 'cal-day' + (isToday?' today':'') + (hasReg?' has-reg':'');
     el.innerHTML = day + (hasReg ? '<div class="reg-dot"></div>' : '');
     if(hasReg) el.onclick = ()=> showDay(day);
     grid.appendChild(el);
   }
+  if (adminSelectedDay && monthRegs.some(r=>r.d===adminSelectedDay)){
+    showDay(adminSelectedDay);
+  } else {
+    document.getElementById('regListTitle').textContent = '날짜를 선택해주세요';
+    document.getElementById('regListBody').innerHTML = '<div class="reg-empty">캘린더에서 표시된 날짜를 클릭해보세요.</div>';
+  }
 }
 function showDay(day){
-  document.getElementById('regListTitle').textContent = `${month+1}월 ${day}일 신청자 (${registrations.filter(r=>r.day===day).length}건)`;
-  document.getElementById('regListBody').innerHTML = registrations.filter(r=>r.day===day).map(r=>`
+  adminSelectedDay = day;
+  const dayRegs = allRegistrations.filter(r=> r.y===adminYear && r.m===adminMonth && r.d===day);
+  document.getElementById('regListTitle').textContent = `${adminMonth+1}월 ${day}일 신청자 (${dayRegs.length}건)`;
+  document.getElementById('regListBody').innerHTML = dayRegs.map(r=>`
     <div class="reg-item">
       <div class="top"><span>${r.name} · ${r.phone}</span><span class="tag">${r.program}</span></div>
       <div>${r.msg}</div>
@@ -936,6 +969,7 @@ function checkAdminPw(){
   }
 }
 function loadAdminCalendar(){
+  adminYear = year; adminMonth = month; adminSelectedDay = null;
   if (DEMO_MODE){
     buildCalendar();
   } else {
@@ -943,24 +977,19 @@ function loadAdminCalendar(){
     fetch(GAS_URL + '?action=registrations')
       .then(r => r.json())
       .then(list => {
-        const now2 = new Date();
-        const ym = Utilities_formatYM(now2);
-        registrations = list
-          .filter(r => (r.date || '').startsWith(ym))
-          .map(r => ({
-            name: r.name, phone: r.phone, program: r.program, msg: r.message,
-            day: Number((r.date || '').split('-')[2])
-          }));
+        allRegistrations = list.map(r => {
+          const parts = (r.date || '').split('-').map(Number);
+          return {
+            y: parts[0], m: (parts[1]||1)-1, d: parts[2]||1,
+            name: r.name, phone: r.phone, program: r.program, msg: r.message
+          };
+        });
         buildCalendar();
       })
       .catch(() => {
         document.getElementById('calGrid').innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#c66; font-size:13px; padding:20px 0;">불러오기 실패. GAS_URL 설정을 확인해주세요.</p>';
       });
   }
-}
-function Utilities_formatYM(d){
-  const y = d.getFullYear(); const m = String(d.getMonth()+1).padStart(2,'0');
-  return `${y}-${m}`;
 }
 function closeAdmin(){ document.getElementById('adminOverlay').classList.remove('show'); }
 document.getElementById('adminOverlay').addEventListener('click', e=>{
@@ -984,19 +1013,20 @@ document.getElementById('regForm').addEventListener('submit', function(e){
   }
 
   if (DEMO_MODE){
-    registrations.push({name, phone, program, msg, day: todayDate});
+    allRegistrations.push({y:year, m:month, d:todayDate, name, phone, program, msg});
     showSuccess();
     return;
   }
 
   submitBtn.disabled = true;
   submitBtn.textContent = '전송 중...';
-  fetch(GAS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // GAS CORS 프리플라이트 회피용
-    body: JSON.stringify({ name, phone, program, message: msg })
-  })
-    .then(() => showSuccess())
+  const params = new URLSearchParams({ action:'register', name, phone, program, message: msg });
+  fetch(GAS_URL + '?' + params.toString())
+    .then(r => r.json())
+    .then(res => {
+      if (res && res.result === 'success') showSuccess();
+      else throw new Error('save failed');
+    })
     .catch(() => {
       submitBtn.disabled = false;
       submitBtn.textContent = '수강신청 보내기';
