@@ -284,7 +284,8 @@ function renderMaterialWheel(entries){
       <div class="wheel-caption">중심에서 바깥쪽으로 갈수록 최근 회차예요 · 어느 영역(사고·감정·뉴트럴)에서 주로 활동했는지 흐름을 보여줘요</div>
     </div>`;
 }
-  const colored = entries.filter(e => e.mainColor);
+
+function renderColorWheel(entries){
   if(colored.length < 2) return '';
   const size=280, cx=140, cy=140, minR=26, maxR=112;
   const hueLabels = [["빨강",0],["주황",42],["노랑",80],["초록",140],["청록",175],["파랑",210],["보라",270],["분홍",330]];
