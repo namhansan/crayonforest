@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADULT ART | 크레용숲 예술리추얼</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500;1,600&family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#FBF6EE; --ivory-deep:#F3EBDC; --forest:#2C4A3B; --clay:#BE6A42;
+    --gold:#D3A24C; --berry:#8B4B5C; --sage:#93AC8C; --ink:#2A2622; --paper:#FFFFFF; --line:#E4DBC9;
+    --accent: var(--clay);
+    --shadow: 0 20px 50px -25px rgba(44,74,59,0.35); --radius-lg:32px; --radius-md:20px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Noto Sans KR',sans-serif; background:var(--ivory); color:var(--ink); line-height:1.7; -webkit-font-smoothing:antialiased;}
+  .logotype{font-family:'Playfair Display',serif; font-style:italic; font-weight:500;}
+  a{color:inherit; text-decoration:none;} img,svg{display:block; max-width:100%;}
+  .eyebrow{font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:600; color:var(--accent);}
+  .wrap{max-width:1020px; margin:0 auto; padding:0 28px;}
+  section{padding:64px 0;}
+  @media(max-width:720px){section{padding:44px 0;} .wrap{padding:0 20px;}}
+  header{position:sticky; top:0; z-index:200; background:rgba(251,246,238,.92); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
+  .nav-inner{max-width:1020px; margin:0 auto; padding:16px 28px; display:flex; align-items:center; justify-content:space-between;}
+  .brand{font-size:20px; color:var(--forest);}
+  nav.menu{display:flex; gap:26px; align-items:center;}
+  nav.menu a{font-size:14px; font-weight:500; color:var(--forest); opacity:.75;}
+  .cta-btn{background:var(--clay); color:#fff; padding:10px 20px; border-radius:999px; font-size:13.5px; font-weight:600;}
+  @media(max-width:700px){nav.menu a:not(.cta-btn){display:none;}}
+
+  .banner{position:relative; height:340px; border-radius:0 0 var(--radius-lg) var(--radius-lg); overflow:hidden;
+    background:linear-gradient(160deg,#E3B79A,#C1683F);}
+  .banner svg{position:absolute; inset:0; width:100%; height:100%;}
+  .banner::after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(44,74,59,0) 40%, rgba(30,26,20,.5) 100%);}
+  .banner-copy{position:relative; z-index:3; height:100%; display:flex; flex-direction:column; justify-content:flex-end; padding:44px; color:#fff; max-width:1020px; margin:0 auto;}
+  .crumb{font-size:12.5px; opacity:.85; margin-bottom:10px;}
+  .crumb a{text-decoration:underline;}
+  .banner-copy h1{font-family:'Noto Serif KR',serif; font-size:clamp(24px,3.4vw,34px);}
+  .banner-copy .sub{font-family:'Playfair Display',serif; font-style:italic; opacity:.9; margin-top:6px;}
+
+  .quote-block{text-align:center; max-width:640px; margin:0 auto;}
+  .quote-block p{font-family:'Noto Serif KR',serif; font-size:17px; color:var(--forest); margin-bottom:10px;}
+  .quote-block .lead{font-size:14.5px; color:#6b6459; margin-top:18px;}
+
+  .fit-box{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:30px 34px; margin-top:20px;}
+  .fit-box b{color:var(--accent); font-size:13px; display:block; margin-bottom:12px;}
+  .fit-box ul{list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:10px 24px;}
+  @media(max-width:600px){.fit-box ul{grid-template-columns:1fr;}}
+  .fit-box li{font-size:14px; padding-left:16px; position:relative; color:#3f3b34;}
+  .fit-box li::before{content:"·"; position:absolute; left:0; color:var(--accent); font-weight:900;}
+
+  .activity-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:22px;}
+  @media(max-width:600px){.activity-grid{grid-template-columns:1fr;}}
+  .activity-card{background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:20px 22px; font-size:14px; color:#3f3b34; display:flex; align-items:center; gap:10px;}
+  .activity-card::before{content:"✎"; color:var(--accent); font-size:16px;}
+
+  .quote-card{background:var(--ivory-deep); border-radius:var(--radius-md); padding:28px 32px; margin-top:28px; text-align:center;}
+  .quote-card p{font-family:'Noto Serif KR',serif; font-size:15.5px; color:var(--forest); line-height:1.8;}
+  .quote-card span{font-size:12.5px; color:#8a8378; display:block; margin-top:10px;}
+
+  .cta-section{background:var(--forest); border-radius:var(--radius-lg); color:#fff; text-align:center;}
+  .cta-section h2{font-family:'Noto Serif KR',serif; font-size:24px; margin-bottom:12px;}
+  .cta-section p{color:#C9D2C6; margin-bottom:22px; font-size:14.5px;}
+  .btn-white{background:#fff; color:var(--forest); padding:13px 26px; border-radius:999px; font-weight:700; font-size:14.5px;}
+
+  footer{background:var(--ivory-deep); border-top:1px solid var(--line); padding:36px 0; text-align:center; font-size:12.5px; color:#8a8378;}
+</style>
+</head>
+<body>
+<header>
+  <div class="nav-inner">
+    <a href="index.html" class="brand logotype">Forêt des Crayons</a>
+    <nav class="menu">
+      <a href="index.html#program">프로그램</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#contact">Contact</a>
+      <a href="index.html#register" class="cta-btn">수강신청</a>
+    </nav>
+  </div>
+</header>
+
+<div class="banner">
+  <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMax slice">
+    <g opacity=".9">
+      <path d="M700 380 L722 315 L744 380 Z" fill="#C1683F"/><rect x="712" y="335" width="18" height="45" rx="4" fill="#F3D9A8"/>
+    </g>
+    <ellipse cx="400" cy="392" rx="360" ry="14" fill="#3E5F4C" opacity=".25"/>
+    <ellipse cx="420" cy="330" rx="110" ry="26" fill="#FBF6EE" stroke="#fff" stroke-width="3"/>
+    <rect x="500" y="230" width="70" height="90" rx="8" fill="#FBF6EE" stroke="#C1683F" stroke-width="3" transform="rotate(6 535 275)"/>
+    <ellipse cx="330" cy="368" rx="55" ry="16" fill="#3E5F4C" opacity=".16"/>
+    <path d="M295 368 Q295 322 330 322 Q365 322 365 368 Z" fill="#8B4B5C"/>
+    <circle cx="330" cy="292" r="28" fill="#F0C39A"/>
+    <g><ellipse cx="370" cy="322" rx="16" ry="10" fill="#FBF6EE" stroke="#C1683F" stroke-width="2"/></g>
+  </svg>
+  <div class="banner-copy">
+    <div class="crumb"><a href="index.html">홈</a> · <a href="index.html#program">프로그램</a> · ADULT ART</div>
+    <h1>크레용숲 예술리추얼 · 마음을 그리다</h1>
+    <div class="sub">ADULT ART · 성인 전체</div>
+  </div>
+</div>
+
+<section class="wrap">
+  <div class="quote-block">
+    <p>감정은 생각보다 훨씬 예술적입니다.</p>
+    <p class="lead">어른은 감정을 설명하기보다 적당히 덮어두는 기술이 먼저 늘죠. 그러다 어느 날, 삶이 톡 건드리기만 해도 결이 우둘투둘 튀어 오릅니다. 그때 필요한 건 '참아라'가 아니라 내 마음의 결을 스케치해보는 용기입니다.</p>
+  </div>
+
+  <div class="fit-box">
+    <b>이런 분에게 맞아요</b>
+    <ul>
+      <li>오랜만에 '나를 위한 시간'을 갖고 싶은 분</li>
+      <li>색과 드로잉을 통해 감정 언어를 배우고 싶은 분</li>
+      <li>해온 역할을 잠시 내려놓고, 자기감각을 회복하고 싶은 여성</li>
+      <li>"예술은 어려울까?" 걱정되지만 마음으로 그리는 경험을 원하는 분</li>
+    </ul>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0;">
+  <div class="eyebrow">How it works · 일정 공지 후 상시 진행</div>
+  <h2 style="font-family:'Noto Serif KR',serif; font-size:24px; color:var(--forest); margin-top:8px;">마음을 그리는 예술 (Emotion Art)</h2>
+  <div class="activity-grid">
+    <div class="activity-card">감정 리추얼 (색 선택·선 움직임·감각 명상)</div>
+    <div class="activity-card">색채앨범 / 컬러링 테라피</div>
+    <div class="activity-card">패턴 드로잉 / 자기서사 드로잉</div>
+    <div class="activity-card">마음을 정돈하는 '컬러 루틴 다이어리'</div>
+  </div>
+  <div class="quote-card">
+    <p>"무탄한 일이 우리의 존재 이유가 아님은 분명하다.<br>우리가 창조하기 위해 존재한다. 우리는 사랑하기 위해 존재한다."</p>
+    <span>— 책 『이토록 멋진 휴식』, 리카이푸 (1961~)</span>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="cta-section" style="padding:44px 30px;">
+    <h2>나를 위한 예술 리추얼, 오늘 시작해보세요</h2>
+    <p>회원가입 없이 이름과 연락처만으로 상담 신청이 가능합니다.</p>
+    <a href="index.html#register" class="btn-white">수강신청 하러 가기</a>
+  </div>
+</section>
+
+<footer>© 2026 Forêt des Crayons · <a href="index.html">홈으로 돌아가기</a></footer>
+</body>
+</html>

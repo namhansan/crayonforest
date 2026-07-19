@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>크레용숲 | Forêt des Crayons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500;1,600&family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#FBF6EE;
+    --ivory-deep:#F3EBDC;
+    --forest:#2C4A3B;
+    --forest-soft:#3E5F4C;
+    --clay:#BE6A42;
+    --gold:#D3A24C;
+    --berry:#8B4B5C;
+    --sage:#93AC8C;
+    --ink:#2A2622;
+    --paper:#FFFFFF;
+    --line:#E4DBC9;
+    --shadow: 0 20px 50px -25px rgba(44,74,59,0.35);
+    --radius-lg: 32px;
+    --radius-md: 20px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Noto Sans KR', sans-serif;
+    background:var(--ivory);
+    color:var(--ink);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  .serif{font-family:'Noto Serif KR', serif;}
+  .logotype{font-family:'Playfair Display', serif; font-style:italic; font-weight:500;}
+  img,svg{display:block; max-width:100%;}
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit; cursor:pointer; border:none;}
+  .eyebrow{
+    font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:600;
+    color:var(--clay);
+  }
+  .wrap{max-width:1140px; margin:0 auto; padding:0 28px;}
+  section{padding:88px 0;}
+  @media(max-width:720px){ section{padding:56px 0;} .wrap{padding:0 20px;} }
+
+  /* ---------- Header ---------- */
+  header{
+    position:sticky; top:0; z-index:200;
+    background:rgba(251,246,238,0.92); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    max-width:1140px; margin:0 auto; padding:16px 28px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .brand{font-size:22px; color:var(--forest); letter-spacing:.02em;}
+  .brand span{font-family:'Noto Sans KR',sans-serif; font-style:normal; font-size:11px; display:block; letter-spacing:.14em; color:var(--clay); margin-top:2px;}
+  nav.menu{display:flex; gap:34px; align-items:center;}
+  nav.menu a{font-size:14.5px; font-weight:500; color:var(--forest); opacity:.75; transition:opacity .2s;}
+  nav.menu a:hover{opacity:1;}
+  .cta-btn{
+    background:var(--clay); color:#fff; padding:11px 22px; border-radius:999px;
+    font-size:14px; font-weight:600; letter-spacing:.02em; white-space:nowrap;
+    box-shadow:0 8px 18px -8px rgba(190,106,66,.55);
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .cta-btn:hover{ transform:translateY(-2px); box-shadow:0 12px 22px -8px rgba(190,106,66,.6); }
+  .menu-toggle{display:none; background:none; font-size:22px; color:var(--forest);}
+  @media(max-width:860px){
+    nav.menu{display:none;}
+    .menu-toggle{display:block;}
+  }
+
+  /* ---------- Popup ---------- */
+  .popup-overlay{
+    position:fixed; inset:0; background:rgba(42,38,34,.5); z-index:500;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .popup-card{
+    background:var(--paper); border-radius:24px; max-width:400px; width:100%;
+    overflow:hidden; box-shadow:0 30px 70px -20px rgba(0,0,0,.4);
+    animation:popIn .35s ease;
+  }
+  @keyframes popIn{from{opacity:0; transform:translateY(16px) scale(.97);} to{opacity:1; transform:none;}}
+  .popup-banner{
+    height:150px; background:linear-gradient(135deg,var(--gold),var(--clay));
+    display:flex; align-items:center; justify-content:center; color:#fff;
+    font-family:'Noto Serif KR',serif; font-size:17px; text-align:center; padding:16px;
+  }
+  .popup-body{padding:24px;}
+  .popup-body h3{font-family:'Noto Serif KR',serif; font-size:19px; color:var(--forest); margin-bottom:8px;}
+  .popup-body p{font-size:14px; color:#5b564e; margin-bottom:18px;}
+  .popup-actions{display:flex; justify-content:space-between; align-items:center;}
+  .popup-check{font-size:12.5px; color:#8a8378; display:flex; gap:6px; align-items:center;}
+  .popup-close{font-size:13px; font-weight:600; color:var(--forest); text-decoration:underline;}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative; overflow:hidden;}
+  .hero-carousel{
+    position:relative; height:560px; border-radius:0 0 var(--radius-lg) var(--radius-lg); overflow:hidden;
+  }
+  @media(max-width:720px){ .hero-carousel{height:460px;} }
+  .slide{
+    position:absolute; inset:0; opacity:0; transition:opacity .9s ease;
+    display:flex; align-items:flex-end; padding:56px;
+  }
+  .slide.active{opacity:1;}
+  .slide::after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(44,74,59,0) 30%, rgba(30,26,20,.55) 100%);}
+  .slide .slide-label{position:relative; z-index:2; color:#fff;}
+  .slide .slide-tag{font-size:11px; letter-spacing:.18em; text-transform:uppercase; opacity:.85; margin-bottom:8px;}
+  .slide .slide-title{font-family:'Noto Serif KR',serif; font-size:26px; font-weight:700;}
+  .s1{background:linear-gradient(160deg,#F3D9A8,#E0AE6C);}
+  .s2{background:linear-gradient(160deg,#D9AFC0,#B0728B);}
+  .s3{background:linear-gradient(160deg,#E3B79A,#C1683F);}
+  .s4{background:linear-gradient(160deg,#C9D6BE,#8FA888);}
+  .slide svg{position:absolute; inset:0; width:100%; height:100%;}
+  .slide-detail{
+    position:relative; z-index:3; align-self:flex-end; margin-left:auto; font-size:12.5px;
+    background:rgba(255,255,255,.9); color:var(--forest); padding:8px 16px; border-radius:999px; font-weight:700;
+  }
+  .banner-note{
+    position:absolute; top:20px; left:20px; z-index:5; background:rgba(255,255,255,.85);
+    color:var(--forest); font-size:11px; padding:6px 12px; border-radius:999px; font-weight:600;
+  }
+  .dots{position:absolute; bottom:22px; right:56px; z-index:5; display:flex; gap:8px;}
+  .dot{width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.5); transition:.2s;}
+  .dot.active{background:#fff; width:22px; border-radius:5px;}
+
+  .hero-copy{
+    max-width:1140px; margin:-90px auto 0; position:relative; z-index:10; padding:0 28px;
+  }
+  .hero-card{
+    background:var(--paper); border-radius:var(--radius-md); padding:40px 44px;
+    box-shadow:var(--shadow); display:flex; align-items:center; justify-content:space-between; gap:30px;
+    flex-wrap:wrap;
+  }
+  .hero-card .eyebrow{margin-bottom:10px;}
+  .hero-card h1{font-family:'Noto Serif KR',serif; font-size:clamp(22px,3vw,30px); color:var(--forest); line-height:1.5; max-width:560px;}
+  .hero-card h1 em{font-style:normal; color:var(--clay);}
+  .hero-btns{display:flex; gap:12px; flex-wrap:wrap;}
+  .btn-outline{
+    border:1.5px solid var(--forest); color:var(--forest); padding:12px 22px; border-radius:999px;
+    font-size:14px; font-weight:600;
+  }
+
+  /* ---------- Philosophy ---------- */
+  .philosophy{text-align:center;}
+  .philosophy h2{font-family:'Noto Serif KR',serif; font-size:clamp(20px,2.6vw,27px); color:var(--forest); max-width:680px; margin:14px auto 30px; line-height:1.7;}
+  .flow{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; max-width:900px; margin:0 auto;}
+  .flow-step{
+    background:var(--paper); border:1px solid var(--line); border-radius:16px;
+    padding:14px 20px; min-width:110px; text-align:center;
+  }
+  .flow-step .en{font-size:10.5px; letter-spacing:.12em; color:var(--clay); font-weight:700;}
+  .flow-step .kr{font-family:'Noto Serif KR',serif; font-size:16px; color:var(--forest); margin-top:4px;}
+  .flow-arrow{align-self:center; color:var(--line); font-size:18px;}
+  @media(max-width:720px){ .flow-arrow{display:none;} }
+
+  /* ---------- Programs ---------- */
+  .program-section{background:var(--ivory-deep); border-radius:var(--radius-lg); }
+  .section-head{text-align:center; margin-bottom:36px;}
+  .section-head h2{font-family:'Noto Serif KR',serif; font-size:clamp(22px,3vw,30px); color:var(--forest); margin-top:10px;}
+  .section-head p{color:#6b6459; margin-top:10px; font-size:15px;}
+
+  .tabs{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:36px;}
+  .tab-btn{
+    background:var(--paper); border:1.5px solid var(--line); color:var(--forest);
+    padding:11px 22px; border-radius:999px; font-size:14px; font-weight:600; transition:.2s;
+  }
+  .tab-btn.active{ color:#fff; border-color:transparent; }
+  .tab-btn[data-c="gold"].active{ background:var(--gold); }
+  .tab-btn[data-c="berry"].active{ background:var(--berry); }
+  .tab-btn[data-c="clay"].active{ background:var(--clay); }
+  .tab-btn[data-c="sage"].active{ background:var(--sage); }
+
+  .program-panel{
+    background:var(--paper); border-radius:var(--radius-md); padding:44px;
+    display:grid; grid-template-columns:1.1fr 1fr; gap:40px; box-shadow:var(--shadow);
+    border-top:5px solid var(--gold); transition:border-color .3s;
+  }
+  @media(max-width:820px){ .program-panel{grid-template-columns:1fr; padding:28px;} }
+  .p-title .eyebrow{margin-bottom:8px;}
+  .p-title h3{font-family:'Noto Serif KR',serif; font-size:24px; color:var(--forest);}
+  .p-title .p-en{font-family:'Playfair Display',serif; font-style:italic; color:var(--clay); font-size:15px; margin-top:2px;}
+  .p-meta{display:flex; gap:18px; margin-top:16px; flex-wrap:wrap;}
+  .p-meta div{font-size:12.5px; color:#847d70;}
+  .p-meta b{display:block; color:var(--forest); font-size:14px; margin-top:2px;}
+  .p-desc{margin-top:18px; font-size:14.5px; color:#54504a;}
+  .p-fit{background:var(--ivory-deep); border-radius:14px; padding:20px 22px;}
+  .p-fit b{font-size:13px; color:var(--clay); display:block; margin-bottom:10px;}
+  .p-fit ul{list-style:none; display:flex; flex-direction:column; gap:8px;}
+  .p-fit li{font-size:13.5px; color:#4b463f; padding-left:16px; position:relative;}
+  .p-fit li::before{content:"·"; position:absolute; left:0; color:var(--gold); font-weight:900;}
+  .p-cta{margin-top:18px;}
+
+  /* ---------- Moments ---------- */
+  .moments-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+  @media(max-width:900px){ .moments-grid{grid-template-columns:repeat(2,1fr);} }
+  @media(max-width:520px){ .moments-grid{grid-template-columns:1fr;} }
+  .moment-card{
+    background:var(--paper); border-radius:18px; padding:26px 22px; border:1px solid var(--line);
+  }
+  .moment-card h4{font-family:'Noto Serif KR',serif; color:var(--forest); font-size:16px; margin-bottom:10px;}
+  .moment-card p{font-size:13px; color:#6b6459; font-style:italic;}
+
+  /* ---------- About/Founder ---------- */
+  .about-wrap{display:grid; grid-template-columns:0.85fr 1.15fr; gap:44px; align-items:start;}
+  @media(max-width:820px){ .about-wrap{grid-template-columns:1fr;} }
+  .founder-photo{
+    aspect-ratio:4/5; border-radius:var(--radius-md); background:linear-gradient(160deg,var(--sage),var(--forest));
+    display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.85); font-size:13px; text-align:center; padding:20px;
+  }
+  .about-tabs{display:flex; gap:8px; margin-bottom:20px;}
+  .about-tab{font-size:13px; font-weight:600; color:var(--forest); opacity:.5; padding:8px 4px; border-bottom:2px solid transparent;}
+  .about-tab.active{opacity:1; border-color:var(--clay);}
+  .about-panel h3{font-family:'Noto Serif KR',serif; color:var(--forest); font-size:21px; margin-bottom:14px;}
+  .about-panel p{font-size:14.5px; color:#54504a; margin-bottom:12px;}
+  .sample-flag{display:inline-block; margin-top:10px; font-size:11.5px; background:#FCEFD8; color:var(--clay); padding:4px 10px; border-radius:8px; font-weight:600;}
+
+  /* ---------- Registration ---------- */
+  .reg-section{background:var(--forest); border-radius:var(--radius-lg); color:#EFEAE0;}
+  .reg-inner{display:grid; grid-template-columns:0.9fr 1.1fr; gap:48px;}
+  @media(max-width:860px){ .reg-inner{grid-template-columns:1fr;} }
+  .reg-side .eyebrow{color:var(--gold);}
+  .reg-side h2{font-family:'Noto Serif KR',serif; font-size:26px; margin:12px 0 16px; color:#fff;}
+  .reg-side p{font-size:14.5px; color:#C9D2C6; margin-bottom:10px;}
+  .reg-info{margin-top:26px; display:flex; flex-direction:column; gap:10px; font-size:13.5px; color:#C9D2C6;}
+  .reg-info b{color:#fff;}
+  .admin-link{
+    margin-top:26px; display:inline-block; font-size:12.5px; color:#C9D2C6; text-decoration:underline; opacity:.8;
+  }
+  .form-card{background:var(--paper); border-radius:var(--radius-md); padding:34px; color:var(--ink);}
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:13px; font-weight:600; color:var(--forest); margin-bottom:6px;}
+  .field input, .field select, .field textarea{
+    width:100%; border:1.5px solid var(--line); border-radius:10px; padding:12px 14px;
+    font-family:inherit; font-size:14px; background:var(--ivory); color:var(--ink);
+  }
+  .field textarea{min-height:90px; resize:vertical;}
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media(max-width:520px){ .field-row{grid-template-columns:1fr;} }
+  .consent{display:flex; align-items:flex-start; gap:8px; font-size:12px; color:#8a8378; margin-bottom:18px;}
+  .submit-btn{
+    width:100%; background:var(--clay); color:#fff; padding:14px; border-radius:12px; font-size:15px; font-weight:700;
+    box-shadow:0 10px 22px -10px rgba(190,106,66,.6);
+  }
+  .toast{
+    margin-top:14px; background:#EAF3E9; color:var(--forest); border-radius:10px; padding:12px 16px;
+    font-size:13.5px; display:none;
+  }
+  .toast.show{display:block;}
+
+  /* ---------- Admin calendar modal ---------- */
+  .admin-overlay{
+    position:fixed; inset:0; background:rgba(42,38,34,.55); z-index:500; display:none;
+    align-items:center; justify-content:center; padding:20px;
+  }
+  .admin-overlay.show{display:flex;}
+  .admin-modal{
+    background:var(--paper); border-radius:24px; max-width:640px; width:100%; max-height:86vh; overflow-y:auto;
+    padding:30px;
+  }
+  .admin-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;}
+  .admin-head h3{font-family:'Noto Serif KR',serif; color:var(--forest); font-size:20px;}
+  .admin-close{font-size:22px; color:#aaa; line-height:1;}
+  .admin-sub{font-size:13px; color:#8a8378; margin-bottom:20px;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:22px;}
+  .cal-dow{font-size:11px; text-align:center; color:#aaa; font-weight:600; padding-bottom:4px;}
+  .cal-day{
+    aspect-ratio:1; border-radius:10px; background:var(--ivory-deep); display:flex; flex-direction:column;
+    align-items:center; justify-content:center; font-size:12.5px; color:#6b6459; cursor:default; position:relative;
+  }
+  .cal-day.today{outline:2px solid var(--gold);}
+  .cal-day.has-reg{background:#FCEFD8; color:var(--clay); font-weight:700; cursor:pointer;}
+  .cal-day .reg-dot{width:5px; height:5px; border-radius:50%; background:var(--clay); margin-top:2px;}
+  .cal-day.empty{background:transparent;}
+  .reg-list h4{font-size:13.5px; color:var(--forest); margin-bottom:10px;}
+  .reg-item{border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:10px; font-size:13px;}
+  .reg-item .top{display:flex; justify-content:space-between; font-weight:700; color:var(--forest); margin-bottom:4px;}
+  .reg-item .tag{font-size:11px; background:var(--ivory-deep); color:var(--clay); padding:2px 8px; border-radius:6px;}
+  .reg-empty{font-size:13px; color:#aaa; text-align:center; padding:20px 0;}
+
+  /* ---------- Footer ---------- */
+  footer{background:var(--ivory-deep); border-top:1px solid var(--line);}
+  .foot-grid{display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:40px;}
+  @media(max-width:720px){ .foot-grid{grid-template-columns:1fr; gap:26px;} }
+  .foot-grid h5{font-size:12px; letter-spacing:.1em; color:var(--clay); margin-bottom:12px; text-transform:uppercase;}
+  .foot-grid p, .foot-grid a{font-size:13.5px; color:#5b564e; display:block; margin-bottom:8px;}
+  .foot-bottom{
+    margin-top:40px; padding-top:20px; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+  }
+  .foot-bottom span{font-size:12px; color:#8a8378;}
+  .visitor-badge{
+    background:var(--paper); border:1px solid var(--line); border-radius:999px; padding:8px 16px;
+    font-size:12px; color:var(--forest); display:flex; gap:14px;
+  }
+  .visitor-badge b{color:var(--clay);}
+</style>
+</head>
+<body>
+
+<!-- ===== Popup ===== -->
+<div class="popup-overlay" id="popupOverlay">
+  <div class="popup-card">
+    <div class="popup-banner">🌿 2026 여름방학 특강<br>신규가족 체험수업 모집중</div>
+    <div class="popup-body">
+      <h3>여름방학 감정예술 캠프</h3>
+      <p>8월 한 달, 새 학기를 준비하는 아이들을 위한 단기 체험 클래스를 진행합니다. 지금 신청하고 첫 수업을 무료로 체험해보세요.</p>
+      <div class="popup-actions">
+        <label class="popup-check"><input type="checkbox" id="dontShowToday"> 오늘 하루 보지 않기</label>
+        <button class="popup-close" onclick="closePopup()">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Header ===== -->
+<header>
+  <div class="nav-inner">
+    <a href="#top" class="brand logotype">Forêt des Crayons<span>크레용숲 · 정서예술교육</span></a>
+    <nav class="menu">
+      <a href="#program">PROGRAM</a>
+      <a href="#moments">MOMENTS</a>
+      <a href="#about">ABOUT</a>
+      <a href="#contact">CONTACT</a>
+      <a href="#register" class="cta-btn">수강신청</a>
+    </nav>
+    <button class="menu-toggle">☰</button>
+  </div>
+</header>
+
+<!-- ===== Hero ===== -->
+<div class="hero" id="top">
+  <div class="hero-carousel" id="carousel">
+    <span class="banner-note">배너 일러스트는 샘플 · CMS에서 실제 사진으로 교체 가능</span>
+
+    <div class="slide s1 active">
+      <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMax slice">
+        <g opacity=".9">
+          <path d="M40 380 L60 320 L80 380 Z" fill="#8FA888"/><rect x="52" y="340" width="16" height="40" rx="4" fill="#E0AE6C"/>
+          <path d="M120 380 L146 300 L172 380 Z" fill="#C1683F"/><rect x="136" y="330" width="20" height="50" rx="4" fill="#F3D9A8"/>
+          <path d="M690 380 L714 310 L738 380 Z" fill="#93AC8C"/><rect x="702" y="335" width="18" height="45" rx="4" fill="#B0728B"/>
+          <path d="M745 380 L764 330 L783 380 Z" fill="#E0AE6C"/><rect x="756" y="345" width="16" height="35" rx="4" fill="#8B4B5C"/>
+        </g>
+        <ellipse cx="400" cy="392" rx="360" ry="14" fill="#3E5F4C" opacity=".25"/>
+        <rect x="420" y="200" width="140" height="150" rx="10" fill="#FBF6EE" stroke="#fff" stroke-width="3"/>
+        <path d="M440 300 Q470 250 495 290 T545 270" stroke="#C1683F" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M450 320 Q480 300 520 320" stroke="#D3A24C" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <line x1="380" y1="360" x2="600" y2="360" stroke="#7A5A3A" stroke-width="6" stroke-linecap="round"/>
+        <line x1="430" y1="200" x2="380" y2="360" stroke="#7A5A3A" stroke-width="6" stroke-linecap="round"/>
+        <line x1="550" y1="200" x2="600" y2="360" stroke="#7A5A3A" stroke-width="6" stroke-linecap="round"/>
+        <g>
+          <ellipse cx="300" cy="365" rx="46" ry="16" fill="#3E5F4C" opacity=".18"/>
+          <path d="M262 365 Q260 300 300 300 Q340 300 338 365 Z" fill="#F4CE7E"/>
+          <circle cx="300" cy="270" r="32" fill="#F0C39A"/>
+          <path d="M270 260 Q300 225 330 260 Q328 240 300 236 Q272 240 270 260 Z" fill="#6B4A34"/>
+          <circle cx="290" cy="272" r="3" fill="#3A2E22"/><circle cx="310" cy="272" r="3" fill="#3A2E22"/>
+          <path d="M292 282 Q300 288 308 282" stroke="#3A2E22" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M330 305 L360 260" stroke="#F0C39A" stroke-width="12" stroke-linecap="round"/>
+          <rect x="352" y="248" width="10" height="26" rx="3" fill="#C1683F" transform="rotate(28 357 261)"/>
+        </g>
+      </svg>
+      <div class="slide-label"><div class="slide-tag">Child Art</div><div class="slide-title">어린이 마음숲, 감정과 색이 만나는 시간</div></div>
+      <a href="program-child.html" class="slide-detail">자세히 보기 →</a>
+    </div>
+
+    <div class="slide s2">
+      <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMax slice">
+        <circle cx="700" cy="80" r="26" fill="#F3D9A8" opacity=".8"/>
+        <g opacity=".9">
+          <path d="M40 380 L60 320 L80 380 Z" fill="#8B4B5C"/><rect x="52" y="340" width="16" height="40" rx="4" fill="#E0AE6C"/>
+          <path d="M120 380 L146 300 L172 380 Z" fill="#93AC8C"/><rect x="136" y="330" width="20" height="50" rx="4" fill="#B0728B"/>
+        </g>
+        <ellipse cx="400" cy="392" rx="360" ry="14" fill="#3E5F4C" opacity=".25"/>
+        <path d="M470 190 Q520 150 580 185 Q590 210 560 220 Q530 225 500 215 Q475 210 470 190 Z" fill="#FBF6EE" opacity=".92"/>
+        <path d="M505 175 q6 -14 18 -8 q-2 10 -18 8Z" fill="#FBF6EE" opacity=".92"/>
+        <path d="M500 195 Q520 185 540 198" stroke="#8B4B5C" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <ellipse cx="400" cy="368" rx="60" ry="18" fill="#3E5F4C" opacity=".16"/>
+        <path d="M350 368 Q350 320 400 320 Q450 320 450 368 Z" fill="#B0728B"/>
+        <circle cx="400" cy="285" r="30" fill="#F0C39A"/>
+        <path d="M372 278 Q400 245 428 278 Q426 258 400 254 Q374 258 372 278 Z" fill="#3A2E22"/>
+        <circle cx="391" cy="288" r="2.6" fill="#3A2E22"/><circle cx="409" cy="288" r="2.6" fill="#3A2E22"/>
+        <rect x="366" y="345" width="68" height="46" rx="6" fill="#FBF6EE" stroke="#8B4B5C" stroke-width="2"/>
+        <path d="M378 360 h44 M378 372 h30" stroke="#C9B98A" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div class="slide-label"><div class="slide-tag">Youth Art</div><div class="slide-title">색과 언어로 나의 세계관을 그리다</div></div>
+      <a href="program-youth.html" class="slide-detail">자세히 보기 →</a>
+    </div>
+
+    <div class="slide s3">
+      <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMax slice">
+        <g opacity=".9">
+          <path d="M700 380 L722 315 L744 380 Z" fill="#C1683F"/><rect x="712" y="335" width="18" height="45" rx="4" fill="#F3D9A8"/>
+          <path d="M60 380 L82 320 L104 380 Z" fill="#93AC8C"/><rect x="72" y="340" width="18" height="40" rx="4" fill="#8B4B5C"/>
+        </g>
+        <ellipse cx="400" cy="392" rx="360" ry="14" fill="#3E5F4C" opacity=".25"/>
+        <ellipse cx="420" cy="330" rx="110" ry="26" fill="#FBF6EE" stroke="#fff" stroke-width="3"/>
+        <rect x="500" y="230" width="70" height="90" rx="8" fill="#FBF6EE" stroke="#C1683F" stroke-width="3" transform="rotate(6 535 275)"/>
+        <path d="M515 300 Q535 270 560 295" stroke="#D3A24C" stroke-width="5" fill="none" stroke-linecap="round" transform="rotate(6 535 275)"/>
+        <ellipse cx="330" cy="368" rx="55" ry="16" fill="#3E5F4C" opacity=".16"/>
+        <path d="M295 368 Q295 322 330 322 Q365 322 365 368 Z" fill="#8B4B5C"/>
+        <circle cx="330" cy="292" r="28" fill="#F0C39A"/>
+        <path d="M304 285 Q330 258 356 285 Q352 268 330 264 Q308 268 304 285 Z" fill="#5A4636"/>
+        <circle cx="322" cy="294" r="2.4" fill="#3A2E22"/><circle cx="338" cy="294" r="2.4" fill="#3A2E22"/>
+        <g>
+          <ellipse cx="370" cy="322" rx="16" ry="10" fill="#FBF6EE" stroke="#C1683F" stroke-width="2"/>
+          <path d="M382 320 q10 -2 10 6 q-4 6 -10 2" fill="none" stroke="#C1683F" stroke-width="2"/>
+          <path d="M366 306 q-3 -8 2 -12 M373 306 q2 -9 -2 -13" stroke="#C9B98A" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(230,340)">
+          <ellipse cx="0" cy="34" rx="20" ry="6" fill="#3E5F4C" opacity=".15"/>
+          <path d="M-16 34 Q-16 10 0 10 Q16 10 16 34 Z" fill="#93AC8C"/>
+          <path d="M-4 10 Q-8 -8 4 -14 Q0 -2 -4 10 Z" fill="#8FA888"/>
+        </g>
+      </svg>
+      <div class="slide-label"><div class="slide-tag">Adult Art</div><div class="slide-title">차 한 잔과 함께, 나를 위한 예술 리추얼</div></div>
+      <a href="program-adult.html" class="slide-detail">자세히 보기 →</a>
+    </div>
+
+    <div class="slide s4">
+      <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMax slice">
+        <g opacity=".9">
+          <path d="M700 380 L722 315 L744 380 Z" fill="#E0AE6C"/><rect x="712" y="335" width="18" height="45" rx="4" fill="#93AC8C"/>
+          <path d="M60 380 L82 320 L104 380 Z" fill="#B0728B"/><rect x="72" y="340" width="18" height="40" rx="4" fill="#E0AE6C"/>
+        </g>
+        <ellipse cx="400" cy="392" rx="360" ry="14" fill="#3E5F4C" opacity=".25"/>
+        <path d="M400 375 Q396 320 400 300" stroke="#5C7A56" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M400 320 Q385 305 375 312 M400 315 Q415 300 428 308" stroke="#8FA888" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M400 300 L385 275 L415 275 Z" fill="#C1683F"/>
+        <circle cx="400" cy="284" r="9" fill="#F3D9A8"/>
+        <path d="M405 355 Q403 385 403 390" stroke="#8B4B5C" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M330 392 Q340 300 400 300" stroke="#8B4B5C" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <g transform="translate(330,300)">
+          <ellipse cx="0" cy="90" rx="26" ry="8" fill="#3E5F4C" opacity=".15"/>
+          <path d="M-20 90 Q-20 42 0 42 Q20 42 20 90 Z" fill="#B0728B"/>
+          <circle cx="0" cy="24" r="20" fill="#F0C39A"/>
+          <path d="M-16 18 Q0 -4 16 18 Q13 3 0 0 Q-13 3 -16 18 Z" fill="#5A4636"/>
+        </g>
+        <g transform="translate(478,300) scale(0.78)">
+          <ellipse cx="0" cy="90" rx="26" ry="8" fill="#3E5F4C" opacity=".15"/>
+          <path d="M-20 90 Q-20 42 0 42 Q20 42 20 90 Z" fill="#D3A24C"/>
+          <circle cx="0" cy="24" r="20" fill="#F0C39A"/>
+          <path d="M-16 20 Q0 -2 16 20 Q13 4 0 2 Q-13 4 -16 20 Z" fill="#3A2E22"/>
+        </g>
+        <path d="M420 250 q10 -14 -2 -22 q-8 10 2 22Z" fill="#E36B7A"/>
+      </svg>
+      <div class="slide-label"><div class="slide-tag">For Mom</div><div class="slide-title">엄마와 아이가 함께, 크레용 정원을 가꾸다</div></div>
+      <a href="program-mom.html" class="slide-detail">자세히 보기 →</a>
+    </div>
+
+    <div class="dots" id="dots"></div>
+  </div>
+  <div class="hero-copy">
+    <div class="hero-card">
+      <div>
+        <div class="eyebrow">감정은 예술이 되고, 예술은 세계관이 됩니다</div>
+        <h1>아이는 <em>감각</em>으로, 어른은 <em>기억</em>으로<br>자기다운 세계를 그려가는 곳</h1>
+      </div>
+      <div class="hero-btns">
+        <a href="#program" class="btn-outline">프로그램 보기</a>
+        <a href="#register" class="cta-btn">수강신청 하기</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Philosophy ===== -->
+<section class="philosophy wrap">
+  <div class="eyebrow">Philosophy</div>
+  <h2>크레용숲은 감정·감각·창조적 표현을 통해<br>모든 사람이 자기다운 세계관을 만들어가는 곳입니다.</h2>
+  <div class="flow">
+    <div class="flow-step"><div class="en">SENSE</div><div class="kr">감각</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="en">EXPRESSION</div><div class="kr">표현</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="en">STORY</div><div class="kr">의미</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="en">ARCHIVE</div><div class="kr">기록</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="en">INTEGRATION</div><div class="kr">세계관</div></div>
+  </div>
+</section>
+
+<!-- ===== Programs ===== -->
+<section id="program" class="wrap">
+  <div class="program-section wrap" style="padding:56px 32px;">
+    <div class="section-head">
+      <div class="eyebrow">Program</div>
+      <h2>연령과 마음의 속도에 맞춘 4가지 프로그램</h2>
+      <p>클릭 한 번으로 대상별 프로그램을 바로 확인하세요</p>
+    </div>
+    <div class="tabs" id="tabs">
+      <button class="tab-btn active" data-c="gold" data-p="child">CHILD ART</button>
+      <button class="tab-btn" data-c="berry" data-p="youth">YOUTH ART</button>
+      <button class="tab-btn" data-c="clay" data-p="adult">ADULT ART</button>
+      <button class="tab-btn" data-c="sage" data-p="mom">FOR MOM</button>
+    </div>
+    <div class="program-panel" id="programPanel"></div>
+  </div>
+</section>
+
+<!-- ===== Moments ===== -->
+<section id="moments" class="wrap">
+  <div class="section-head">
+    <div class="eyebrow">Voices &amp; Moments</div>
+    <h2>작은 변화가 큰 성장을 만든 순간들</h2>
+    <p>1,000명의 아이들을 만나며 들은 이야기</p>
+  </div>
+  <div class="moments-grid">
+    <div class="moment-card"><h4>감정 표현</h4><p>"말로 표현 못 했던 감정이 그림으로 전달되더라고요. 아이 표정이 더 부드러워졌어요."</p></div>
+    <div class="moment-card"><h4>집중력 향상</h4><p>"그림에 30분 이상 몰입하는 걸 처음 봤어요. 집에서도 스스로 색을 고릅니다."</p></div>
+    <div class="moment-card"><h4>정서 안정</h4><p>"아이와의 대화가 더 편안해졌어요. 화가 나도 스스로 그림으로 풀어요."</p></div>
+    <div class="moment-card"><h4>자기 표현</h4><p>"자기만의 세계가 생기기 시작했어요. 표현이 또렷해졌어요."</p></div>
+  </div>
+</section>
+
+<!-- ===== About ===== -->
+<section id="about" class="wrap">
+  <div class="section-head" style="text-align:left; max-width:600px; margin-bottom:36px;">
+    <div class="eyebrow">About</div>
+    <h2 style="margin-top:10px;">크레용숲을 만든 사람들</h2>
+  </div>
+  <div class="about-wrap">
+    <div class="founder-photo">원장님 프로필 사진<br>(업로드 예정)</div>
+    <div>
+      <div class="about-tabs" id="aboutTabs">
+        <button class="about-tab active" data-a="philo">철학</button>
+        <button class="about-tab" data-a="about">About Us</button>
+        <button class="about-tab" data-a="founder">Founder</button>
+      </div>
+      <div class="about-panel" id="aboutPanel"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Registration ===== -->
+<section id="register" class="wrap">
+  <div class="reg-section wrap" style="padding:56px 40px;">
+    <div class="reg-inner">
+      <div class="reg-side">
+        <div class="eyebrow">수강신청</div>
+        <h2>회원가입 없이,<br>이름과 연락처만으로 신청하세요</h2>
+        <p>신청 내용은 원장님께 바로 전달되며, 순차적으로 연락드립니다.</p>
+        <div class="reg-info">
+          <div><b>위치</b> 경기도 성남시 수정구 창곡동 563번지 위례역 푸르지오 6단지 107호</div>
+          <div><b>전화 (샘플)</b> 010-0000-0000 &nbsp;— 실제 번호로 교체해주세요</div>
+          <div><b>카카오톡 / 인스타그램</b> 문의 채널 바로가기 (하단 CONTACT 참고)</div>
+        </div>
+        <a href="#" class="admin-link" onclick="openAdmin(event)">선생님이신가요? 신청 현황 캘린더 보기 →</a>
+      </div>
+
+      <form class="form-card" id="regForm">
+        <div class="field">
+          <label>이름 *</label>
+          <input type="text" id="regName" placeholder="아이 이름 또는 신청자 이름" required>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>연락처 *</label>
+            <input type="tel" id="regPhone" placeholder="010-0000-0000" required>
+          </div>
+          <div class="field">
+            <label>관심 프로그램</label>
+            <select id="regProgram">
+              <option value="CHILD ART">CHILD ART</option>
+              <option value="YOUTH ART">YOUTH ART</option>
+              <option value="ADULT ART">ADULT ART</option>
+              <option value="FOR MOM">FOR MOM</option>
+              <option value="잘 모르겠어요">잘 모르겠어요 (상담 요청)</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>문의 내용</label>
+          <textarea id="regMsg" placeholder="아이 나이, 희망 요일, 궁금한 점 등을 편하게 남겨주세요"></textarea>
+        </div>
+        <label class="consent"><input type="checkbox" required style="margin-top:2px;"> 수강신청 상담을 위해 이름·연락처 등 개인정보를 수집·이용하는 것에 동의합니다.</label>
+        <button type="submit" class="submit-btn">수강신청 보내기</button>
+        <div class="toast" id="regToast">신청이 접수되었습니다. 빠르게 연락드릴게요 🌿</div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Admin calendar modal ===== -->
+<div class="admin-overlay" id="adminOverlay">
+  <div class="admin-modal">
+    <div class="admin-head">
+      <h3>수강신청 현황 캘린더</h3>
+      <button class="admin-close" onclick="closeAdmin()">×</button>
+    </div>
+    <div class="admin-sub">노란 칸을 클릭하면 해당 날짜의 신청자 목록을 볼 수 있어요. (데모용 예시 데이터 포함)</div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="reg-list">
+      <h4 id="regListTitle">날짜를 선택해주세요</h4>
+      <div id="regListBody"><div class="reg-empty">캘린더에서 표시된 날짜를 클릭해보세요.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Footer ===== -->
+<footer id="contact">
+  <div class="wrap" style="padding:64px 28px 30px;">
+    <div class="foot-grid">
+      <div>
+        <div class="brand logotype" style="font-size:19px; color:var(--forest);">Forêt des Crayons</div>
+        <p style="margin-top:10px;">크레용숲 · 예술로 자기 세계를 만드는 곳</p>
+      </div>
+      <div>
+        <h5>Location</h5>
+        <p>경기도 성남시 수정구 창곡동 563번지<br>위례역 푸르지오 6단지 107호</p>
+        <p>전화(샘플) 010-0000-0000</p>
+      </div>
+      <div>
+        <h5>Connect</h5>
+        <a href="#">카카오톡 채널</a>
+        <a href="#">Instagram · 크레용숲</a>
+        <a href="#">Instagram · 어린이색채학교</a>
+        <a href="#">Blog</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Forêt des Crayons. All rights reserved. · 사업자 등록번호 604-09-79660</span>
+      <div class="visitor-badge">오늘 방문 <b id="todayCount">-</b> · 누적 방문 <b id="totalCount">-</b></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ---------- Popup ---------- */
+let dontShowToday = false;
+function closePopup(){
+  document.getElementById('dontShowToday').checked && (dontShowToday = true);
+  document.getElementById('popupOverlay').style.display = 'none';
+}
+document.getElementById('popupOverlay').addEventListener('click', e=>{
+  if(e.target.id === 'popupOverlay') closePopup();
+});
+
+/* ---------- Hero carousel ---------- */
+const slides = document.querySelectorAll('.slide');
+const dotsWrap = document.getElementById('dots');
+slides.forEach((_,i)=>{
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = ()=>goTo(i);
+  dotsWrap.appendChild(d);
+});
+let current = 0;
+function goTo(i){
+  slides[current].classList.remove('active');
+  dotsWrap.children[current].classList.remove('active');
+  current = i;
+  slides[current].classList.add('active');
+  dotsWrap.children[current].classList.add('active');
+}
+setInterval(()=> goTo((current+1)%slides.length), 4500);
+
+/* ---------- Program tabs ---------- */
+const programData = {
+  child:{
+    page:'program-child.html',
+    color:'gold', eyebrow:'크레용숲 어린이색채학교', title:'CHILD ART', en:'Child Art',
+    meta:[['대상','4~12세'],['운영','학기제 · 소수정예 연령별'],['방식','월별 감정예술 테마 수업']],
+    desc:'스에나가 메소드 색채심리를 기반으로, 색과 감정의 5단계 구조를 통해 감각·표현력·창조성을 키웁니다. 감정·감각·표현이 처음 만나는 어린이 마음숲입니다.',
+    fit:['선·색·형태에 호기심이 많고 손으로 탐색하는 걸 좋아하는 아이','감정표현이 서툴지만 그림에서 마음이 잘 드러나는 아이','정답보다 자기 속도로 탐색하는 경험이 필요한 아이']
+  },
+  youth:{
+    page:'program-youth.html',
+    color:'berry', eyebrow:'크레용숲 철학미술관', title:'YOUTH ART', en:'Youth Art',
+    meta:[['대상','중·고등학생'],['운영','주 1회 100분 · 그룹수업(최대 6명)'],['구조','4ROOM 사유구조 · 1년 과정']],
+    desc:'감각→감정→상징→해석의 4개 방을 각 3개월씩 거치며 색·기억·상징·언어로 나만의 철학과 세계관을 완성해가는 청소년 사유의 숲입니다.',
+    fit:['감정의 결이 깊고 마음을 오래 바라보는 성향의 아이','정답보다 자기 생각을 갖고 싶은 아이','입시보다 서사·정체성·내적 성장을 중요하게 여기는 부모님']
+  },
+  adult:{
+    page:'program-adult.html',
+    color:'clay', eyebrow:'크레용숲 예술리추얼', title:'ADULT ART', en:'Adult Art · 마음을 그리다',
+    meta:[['대상','성인 전체'],['운영','일정 공지 후 상시 진행'],['활동','감정 리추얼 · 컬러링테라피 · 패턴드로잉']],
+    desc:'일상에서 잃어버린 감각과 감정의 언어를 회복하고, 나만의 색·패턴·서사를 발견하는 창의성 회복 프로그램입니다.',
+    fit:['오랜만에 나를 위한 시간을 갖고 싶은 분','색과 드로잉을 통해 감정 언어를 배우고 싶은 분','"예술은 어려울까?" 걱정되지만 마음으로 그리는 경험을 원하는 분']
+  },
+  mom:{
+    page:'program-mom.html',
+    color:'sage', eyebrow:'크레용숲 정원사', title:'FOR MOM', en:'For Mom',
+    meta:[['대상','자녀를 둔 어머니'],['운영','일정 공지 후 상시 진행'],['성격','웰니스 커뮤니티']],
+    desc:'엄마 자신의 마음에 물을 주고 다시 감각을 되찾는 시간. 완벽한 엄마가 되기보다, 나 자신과 다시 연결되는 길을 함께 걷습니다.',
+    fit:['무언가를 더 배우기보다 잠시 내려놓고 싶은 엄마','엄마라는 역할 뒤에 가려진 나를 다시 느끼고 싶은 분','작지만 확실한 나만의 시간이 필요한 분']
+  }
+};
+function renderProgram(key){
+  const d = programData[key];
+  document.getElementById('programPanel').style.borderTopColor = `var(--${d.color})`;
+  document.getElementById('programPanel').innerHTML = `
+    <div class="p-title">
+      <div class="eyebrow">${d.eyebrow}</div>
+      <h3>${d.title}</h3>
+      <div class="p-en">${d.en}</div>
+      <div class="p-meta">
+        ${d.meta.map(m=>`<div>${m[0]}<b>${m[1]}</b></div>`).join('')}
+      </div>
+      <p class="p-desc">${d.desc}</p>
+      <div class="p-cta" style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="${d.page}" class="btn-outline">커리큘럼 자세히 보기</a>
+        <a href="#register" class="cta-btn">이 프로그램으로 상담 신청</a>
+      </div>
+    </div>
+    <div class="p-fit">
+      <b>이런 친구 · 이런 분에게 맞아요</b>
+      <ul>${d.fit.map(f=>`<li>${f}</li>`).join('')}</ul>
+    </div>`;
+}
+renderProgram('child');
+document.getElementById('tabs').addEventListener('click', e=>{
+  const btn = e.target.closest('.tab-btn'); if(!btn) return;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProgram(btn.dataset.p);
+});
+
+/* ---------- About tabs ---------- */
+const aboutData = {
+  philo:{ title:'철학 · Philosophy', body:[
+    '흙에서 시작된 색의 이야기. 크레용의 기원부터 엔카우스틱 회화까지, 크레용숲이 믿는 예술의 본질을 담았습니다.',
+    '아이들은 감정을 먼저 느끼고, 그 마음은 몸·색·선으로 표현되며, 그 다음이 비로소 언어입니다. 크레용숲은 그 순서를 지키는 교육을 지향합니다.'
+  ]},
+  about:{ title:'About Us', body:[
+    '감각 기반 정서예술교육부터 파트너 기관까지, 크레용숲이 걸어온 길과 함께하는 사람들의 이야기입니다.',
+    '스에나가 메소드 색채심리 — 일본의 스에나가 타미오 박사가 체계화한 멘탈케어 시스템으로, 색채를 매개로 무의식의 심리적 에너지를 자유롭게 표출하도록 돕는 방법입니다. 크레용숲이 지향하는 예술 기반 정서교육의 핵심 토대입니다.'
+  ]},
+  founder:{ title:'Founder', body:[
+    '[원장님 성함] 원장은 미술교육과 아동심리를 전공하고, OO년간 정서예술교육 현장에서 아이들과 함께해왔습니다.',
+    '"완벽한 그림보다 솔직한 마음이 먼저"라는 믿음으로 크레용숲을 시작했습니다. 아이가 가진 내적 자원을 더욱 귀중히 여기고, 스스로 느끼고 상상하며 표현하는 가장 인간적인 능력이 상실되지 않도록 — 먼저 사랑하고, 그 다음 가르칩니다.'
+  ], flag:true}
+};
+function renderAbout(key){
+  const d = aboutData[key];
+  document.getElementById('aboutPanel').innerHTML = `
+    <h3>${d.title}</h3>
+    ${d.body.map(p=>`<p>${p}</p>`).join('')}
+    ${d.flag ? '<span class="sample-flag">※ 샘플 문구 — 실제 프로필로 교체해주세요</span>' : ''}
+  `;
+}
+renderAbout('philo');
+document.getElementById('aboutTabs').addEventListener('click', e=>{
+  const btn = e.target.closest('.about-tab'); if(!btn) return;
+  document.querySelectorAll('.about-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAbout(btn.dataset.a);
+});
+
+/* =========================================================
+   구글시트 연동 설정
+   -----------------------------------------------------------
+   1) Code.gs를 구글 Apps Script에 배포한 뒤 발급받은 웹 앱 URL을
+      아래 큰따옴표 안에 붙여넣으세요.
+   2) 비워두면(데모 모드) 신청/방문자수는 화면 안에서만 임시로 동작합니다.
+========================================================= */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbz2AldeJJTdq3uI4nWrgb1wYPZQeAgwVjIJFa8h_E6jCcyfBYamRuIqagf6wC2fyoUK/exec";
+const DEMO_MODE = !GAS_URL;
+
+/* ---------- Registration + admin calendar ---------- */
+let registrations = DEMO_MODE ? [
+  {name:'김O우', phone:'010-1234-5678', program:'CHILD ART', msg:'7세 아이, 토요일 오전반 문의드려요.', day:3},
+  {name:'박O연', phone:'010-2222-3333', program:'YOUTH ART', msg:'중2 딸 상담 희망합니다.', day:3},
+  {name:'이O미', phone:'010-4444-5555', program:'FOR MOM', msg:'평일 저녁반 있나요?', day:9},
+  {name:'정O호', phone:'010-6666-7777', program:'ADULT ART', msg:'초보자도 참여 가능한가요?', day:15},
+] : [];
+
+const now = new Date();
+const year = now.getFullYear(), month = now.getMonth();
+const firstDow = new Date(year, month, 1).getDay();
+const daysInMonth = new Date(year, month+1, 0).getDate();
+const todayDate = now.getDate();
+
+function buildCalendar(){
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  ['일','월','화','수','목','금','토'].forEach(d=>{
+    const el = document.createElement('div'); el.className='cal-dow'; el.textContent=d; grid.appendChild(el);
+  });
+  for(let i=0;i<firstDow;i++){
+    const el = document.createElement('div'); el.className='cal-day empty'; grid.appendChild(el);
+  }
+  for(let day=1; day<=daysInMonth; day++){
+    const hasReg = registrations.some(r=>r.day===day);
+    const el = document.createElement('div');
+    el.className = 'cal-day' + (day===todayDate?' today':'') + (hasReg?' has-reg':'');
+    el.innerHTML = day + (hasReg ? '<div class="reg-dot"></div>' : '');
+    if(hasReg) el.onclick = ()=> showDay(day);
+    grid.appendChild(el);
+  }
+}
+function showDay(day){
+  document.getElementById('regListTitle').textContent = `${month+1}월 ${day}일 신청자 (${registrations.filter(r=>r.day===day).length}건)`;
+  document.getElementById('regListBody').innerHTML = registrations.filter(r=>r.day===day).map(r=>`
+    <div class="reg-item">
+      <div class="top"><span>${r.name} · ${r.phone}</span><span class="tag">${r.program}</span></div>
+      <div>${r.msg}</div>
+    </div>`).join('');
+}
+function openAdmin(e){
+  e.preventDefault();
+  document.getElementById('adminOverlay').classList.add('show');
+  if (DEMO_MODE){
+    buildCalendar();
+  } else {
+    document.getElementById('calGrid').innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#aaa; font-size:13px; padding:20px 0;">불러오는 중...</p>';
+    fetch(GAS_URL + '?action=registrations')
+      .then(r => r.json())
+      .then(list => {
+        const now2 = new Date();
+        const ym = Utilities_formatYM(now2);
+        registrations = list
+          .filter(r => (r.date || '').startsWith(ym))
+          .map(r => ({
+            name: r.name, phone: r.phone, program: r.program, msg: r.message,
+            day: Number((r.date || '').split('-')[2])
+          }));
+        buildCalendar();
+      })
+      .catch(() => {
+        document.getElementById('calGrid').innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#c66; font-size:13px; padding:20px 0;">불러오기 실패. GAS_URL 설정을 확인해주세요.</p>';
+      });
+  }
+}
+function Utilities_formatYM(d){
+  const y = d.getFullYear(); const m = String(d.getMonth()+1).padStart(2,'0');
+  return `${y}-${m}`;
+}
+function closeAdmin(){ document.getElementById('adminOverlay').classList.remove('show'); }
+document.getElementById('adminOverlay').addEventListener('click', e=>{
+  if(e.target.id === 'adminOverlay') closeAdmin();
+});
+
+document.getElementById('regForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const name = document.getElementById('regName').value;
+  const phone = document.getElementById('regPhone').value;
+  const program = document.getElementById('regProgram').value;
+  const msg = document.getElementById('regMsg').value || '(문의 내용 없음)';
+  const submitBtn = this.querySelector('.submit-btn');
+  const form = this;
+
+  function showSuccess(){
+    document.getElementById('regToast').classList.add('show');
+    form.reset();
+    submitBtn.disabled = false;
+    submitBtn.textContent = '수강신청 보내기';
+  }
+
+  if (DEMO_MODE){
+    registrations.push({name, phone, program, msg, day: todayDate});
+    showSuccess();
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = '전송 중...';
+  fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // GAS CORS 프리플라이트 회피용
+    body: JSON.stringify({ name, phone, program, message: msg })
+  })
+    .then(() => showSuccess())
+    .catch(() => {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '수강신청 보내기';
+      alert('전송에 실패했어요. 잠시 후 다시 시도하거나 전화로 문의해주세요.');
+    });
+});
+
+/* ---------- Visitor counter (real backend when GAS_URL set, demo count-up otherwise) ---------- */
+function countUp(el, target){
+  let cur = 0; const step = Math.max(1, Math.ceil(target/40));
+  const t = setInterval(()=>{
+    cur += step;
+    if(cur >= target){ cur = target; clearInterval(t); }
+    el.textContent = cur.toLocaleString();
+  }, 25);
+}
+window.addEventListener('load', ()=>{
+  if (DEMO_MODE){
+    countUp(document.getElementById('todayCount'), 14);
+    countUp(document.getElementById('totalCount'), 3482);
+    return;
+  }
+  fetch(GAS_URL + '?action=visit')
+    .then(r => r.json())
+    .then(data => {
+      countUp(document.getElementById('todayCount'), data.today);
+      countUp(document.getElementById('totalCount'), data.total);
+    })
+    .catch(()=>{
+      document.getElementById('todayCount').textContent = '-';
+      document.getElementById('totalCount').textContent = '-';
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOR MOM | 크레용숲 정원사</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500;1,600&family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#FBF6EE; --ivory-deep:#F3EBDC; --forest:#2C4A3B; --clay:#BE6A42;
+    --gold:#D3A24C; --berry:#8B4B5C; --sage:#93AC8C; --ink:#2A2622; --paper:#FFFFFF; --line:#E4DBC9;
+    --accent: var(--sage);
+    --shadow: 0 20px 50px -25px rgba(44,74,59,0.35); --radius-lg:32px; --radius-md:20px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Noto Sans KR',sans-serif; background:var(--ivory); color:var(--ink); line-height:1.7; -webkit-font-smoothing:antialiased;}
+  .logotype{font-family:'Playfair Display',serif; font-style:italic; font-weight:500;}
+  a{color:inherit; text-decoration:none;} img,svg{display:block; max-width:100%;}
+  .eyebrow{font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:600; color:#7C9573;}
+  .wrap{max-width:1020px; margin:0 auto; padding:0 28px;}
+  section{padding:64px 0;}
+  @media(max-width:720px){section{padding:44px 0;} .wrap{padding:0 20px;}}
+  header{position:sticky; top:0; z-index:200; background:rgba(251,246,238,.92); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
+  .nav-inner{max-width:1020px; margin:0 auto; padding:16px 28px; display:flex; align-items:center; justify-content:space-between;}
+  .brand{font-size:20px; color:var(--forest);}
+  nav.menu{display:flex; gap:26px; align-items:center;}
+  nav.menu a{font-size:14px; font-weight:500; color:var(--forest); opacity:.75;}
+  .cta-btn{background:var(--clay); color:#fff; padding:10px 20px; border-radius:999px; font-size:13.5px; font-weight:600;}
+  @media(max-width:700px){nav.menu a:not(.cta-btn){display:none;}}
+
+  .banner{position:relative; height:340px; border-radius:0 0 var(--radius-lg) var(--radius-lg); overflow:hidden;
+    background:linear-gradient(160deg,#C9D6BE,#8FA888);}
+  .banner svg{position:absolute; inset:0; width:100%; height:100%;}
+  .banner::after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(44,74,59,0) 40%, rgba(30,26,20,.5) 100%);}
+  .banner-copy{position:relative; z-index:3; height:100%; display:flex; flex-direction:column; justify-content:flex-end; padding:44px; color:#fff; max-width:1020px; margin:0 auto;}
+  .crumb{font-size:12.5px; opacity:.85; margin-bottom:10px;}
+  .crumb a{text-decoration:underline;}
+  .banner-copy h1{font-family:'Noto Serif KR',serif; font-size:clamp(24px,3.4vw,34px);}
+  .banner-copy .sub{font-family:'Playfair Display',serif; font-style:italic; opacity:.9; margin-top:6px;}
+
+  .quote-block{text-align:center; max-width:640px; margin:0 auto;}
+  .quote-block p{font-family:'Noto Serif KR',serif; font-size:17px; color:var(--forest); margin-bottom:10px;}
+  .quote-block .lead{font-size:14.5px; color:#6b6459; margin-top:18px;}
+
+  .fit-box{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:30px 34px; margin-top:20px;}
+  .fit-box b{color:#7C9573; font-size:13px; display:block; margin-bottom:12px;}
+  .fit-box ul{list-style:none; display:flex; flex-direction:column; gap:8px;}
+  .fit-box li{font-size:14px; padding-left:16px; position:relative; color:#3f3b34;}
+  .fit-box li::before{content:"·"; position:absolute; left:0; color:#7C9573; font-weight:900;}
+
+  .grow-card{background:var(--ivory-deep); border-radius:var(--radius-md); padding:30px 34px; margin-top:26px;}
+  .grow-card h3{font-family:'Noto Serif KR',serif; color:var(--forest); font-size:19px; margin-bottom:12px;}
+  .grow-card p{font-size:14px; color:#4b463f; margin-bottom:8px;}
+
+  .quote-card{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:26px 30px; margin-top:24px; text-align:center;}
+  .quote-card p{font-family:'Noto Serif KR',serif; font-size:15px; color:var(--forest);}
+
+  .cta-section{background:var(--forest); border-radius:var(--radius-lg); color:#fff; text-align:center;}
+  .cta-section h2{font-family:'Noto Serif KR',serif; font-size:24px; margin-bottom:12px;}
+  .cta-section p{color:#C9D2C6; margin-bottom:22px; font-size:14.5px;}
+  .btn-white{background:#fff; color:var(--forest); padding:13px 26px; border-radius:999px; font-weight:700; font-size:14.5px;}
+
+  footer{background:var(--ivory-deep); border-top:1px solid var(--line); padding:36px 0; text-align:center; font-size:12.5px; color:#8a8378;}
+</style>
+</head>
+<body>
+<header>
+  <div class="nav-inner">
+    <a href="index.html" class="brand logotype">Forêt des Crayons</a>
+    <nav class="menu">
+      <a href="index.html#program">프로그램</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#contact">Contact</a>
+      <a href="index.html#register" class="cta-btn">수강신청</a>
+    </nav>
+  </div>
+</header>
+
+<div class="banner">
+  <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMax slice">
+    <ellipse cx="400" cy="392" rx="360" ry="14" fill="#3E5F4C" opacity=".25"/>
+    <path d="M400 375 Q396 320 400 300" stroke="#5C7A56" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M400 300 L385 275 L415 275 Z" fill="#C1683F"/>
+    <circle cx="400" cy="284" r="9" fill="#F3D9A8"/>
+    <g transform="translate(330,300)">
+      <path d="M-20 90 Q-20 42 0 42 Q20 42 20 90 Z" fill="#B0728B"/>
+      <circle cx="0" cy="24" r="20" fill="#F0C39A"/>
+    </g>
+    <g transform="translate(478,300) scale(0.78)">
+      <path d="M-20 90 Q-20 42 0 42 Q20 42 20 90 Z" fill="#D3A24C"/>
+      <circle cx="0" cy="24" r="20" fill="#F0C39A"/>
+    </g>
+    <path d="M420 250 q10 -14 -2 -22 q-8 10 2 22Z" fill="#E36B7A"/>
+  </svg>
+  <div class="banner-copy">
+    <div class="crumb"><a href="index.html">홈</a> · <a href="index.html#program">프로그램</a> · FOR MOM</div>
+    <h1>크레용숲 정원사</h1>
+    <div class="sub">FOR MOM · 자녀를 둔 어머니</div>
+  </div>
+</div>
+
+<section class="wrap">
+  <div class="quote-block">
+    <p>"아이 마음을 잘 돌보고 싶은데,<br>정작 내 마음은 어디쯤 있을까요?"</p>
+    <p class="lead">아이의 마음을 키우기 전에, 먼저 자신의 마음을 돌보는 엄마를 위한 예술 시간입니다. 엄마의 마음이 회복되면, 아이의 마음도 투명해집니다.</p>
+  </div>
+
+  <div class="fit-box">
+    <b>우리는 이런 엄마들을 기다립니다</b>
+    <ul>
+      <li>무언가를 더 배우기보다 잠시 내려놓고 싶은 엄마</li>
+      <li>엄마라는 역할 뒤에 가려진 나를 다시 느끼고 싶은 사람</li>
+      <li>지금 당장 아웃풋은 없어도, 삶이 조금 더 아름다워지길 바라는 사람</li>
+    </ul>
+  </div>
+
+  <div class="quote-card">
+    <p>『미스 럼피우스』가 그랬듯, 우리는 세상을 바꾸지 않습니다.<br>다만 각자의 삶에 작은 아름다움이 자라나길 바랄 뿐입니다.</p>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0;">
+  <div class="eyebrow">엄마는 크레용 정원사 · 일정 공지 후 상시 진행</div>
+  <div class="grow-card">
+    <h3>이 정원에서 일어나는 변화</h3>
+    <p>이곳의 변화는 조용합니다. 갑자기 인생이 바뀌지 않아도 괜찮고, 눈에 띄는 성장이 없어도 괜찮습니다.</p>
+    <p>다만 어느 날 문득, 아이를 대하는 태도가 조금 부드러워지고, 나를 바라보는 시선이 덜 날카로워지고, "나도 괜찮은 사람이었지"라는 생각이 스칩니다. 그 정도면 충분합니다.</p>
+    <p style="margin-top:14px; font-weight:600; color:var(--forest);">크레용숲 정원사는 엄마들이 '다시 나로 살아나도록' 씨앗을 나누는 웰니스 커뮤니티입니다.</p>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="cta-section" style="padding:44px 30px;">
+    <h2>엄마의 마음도 함께 자랄 수 있도록</h2>
+    <p>회원가입 없이 이름과 연락처만으로 상담 신청이 가능합니다.</p>
+    <a href="index.html#register" class="btn-white">수강신청 하러 가기</a>
+  </div>
+</section>
+
+<footer>© 2026 Forêt des Crayons · <a href="index.html">홈으로 돌아가기</a></footer>
+</body>
+</html>

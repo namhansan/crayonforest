@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YOUTH ART | 크레용숲 철학미술관</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500;1,600&family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#FBF6EE; --ivory-deep:#F3EBDC; --forest:#2C4A3B; --clay:#BE6A42;
+    --gold:#D3A24C; --berry:#8B4B5C; --sage:#93AC8C; --ink:#2A2622; --paper:#FFFFFF; --line:#E4DBC9;
+    --accent: var(--berry);
+    --shadow: 0 20px 50px -25px rgba(44,74,59,0.35); --radius-lg:32px; --radius-md:20px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Noto Sans KR',sans-serif; background:var(--ivory); color:var(--ink); line-height:1.7; -webkit-font-smoothing:antialiased;}
+  .logotype{font-family:'Playfair Display',serif; font-style:italic; font-weight:500;}
+  a{color:inherit; text-decoration:none;} img,svg{display:block; max-width:100%;}
+  .eyebrow{font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:600; color:var(--accent);}
+  .wrap{max-width:1020px; margin:0 auto; padding:0 28px;}
+  section{padding:64px 0;}
+  @media(max-width:720px){section{padding:44px 0;} .wrap{padding:0 20px;}}
+  header{position:sticky; top:0; z-index:200; background:rgba(251,246,238,.92); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
+  .nav-inner{max-width:1020px; margin:0 auto; padding:16px 28px; display:flex; align-items:center; justify-content:space-between;}
+  .brand{font-size:20px; color:var(--forest);}
+  nav.menu{display:flex; gap:26px; align-items:center;}
+  nav.menu a{font-size:14px; font-weight:500; color:var(--forest); opacity:.75;}
+  .cta-btn{background:var(--clay); color:#fff; padding:10px 20px; border-radius:999px; font-size:13.5px; font-weight:600;}
+  @media(max-width:700px){nav.menu a:not(.cta-btn){display:none;}}
+
+  .banner{position:relative; height:340px; border-radius:0 0 var(--radius-lg) var(--radius-lg); overflow:hidden;
+    background:linear-gradient(160deg,#D9AFC0,#B0728B);}
+  .banner svg{position:absolute; inset:0; width:100%; height:100%;}
+  .banner::after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(44,74,59,0) 40%, rgba(30,26,20,.5) 100%);}
+  .banner-copy{position:relative; z-index:3; height:100%; display:flex; flex-direction:column; justify-content:flex-end; padding:44px; color:#fff; max-width:1020px; margin:0 auto;}
+  .crumb{font-size:12.5px; opacity:.85; margin-bottom:10px;}
+  .crumb a{text-decoration:underline;}
+  .banner-copy h1{font-family:'Noto Serif KR',serif; font-size:clamp(24px,3.4vw,34px);}
+  .banner-copy .sub{font-family:'Playfair Display',serif; font-style:italic; opacity:.9; margin-top:6px;}
+
+  .quote-block{text-align:center; max-width:640px; margin:0 auto;}
+  .quote-block p{font-family:'Noto Serif KR',serif; font-size:17px; color:var(--forest); margin-bottom:10px;}
+  .quote-block .lead{font-size:14.5px; color:#6b6459; margin-top:18px;}
+
+  .fit-box{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:30px 34px; margin-top:20px;}
+  .fit-box b{color:var(--accent); font-size:13px; display:block; margin-bottom:12px;}
+  .fit-box ul{list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:10px 24px;}
+  @media(max-width:600px){.fit-box ul{grid-template-columns:1fr;}}
+  .fit-box li{font-size:14px; padding-left:16px; position:relative; color:#3f3b34;}
+  .fit-box li::before{content:"·"; position:absolute; left:0; color:var(--accent); font-weight:900;}
+
+  .chips{display:flex; gap:12px; flex-wrap:wrap; margin:20px 0 8px;}
+  .chip{background:var(--ivory-deep); border-radius:999px; padding:10px 18px; font-size:13.5px; color:var(--forest); font-weight:600;}
+
+  .room-flow{display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin:26px 0 30px;}
+  .room-pill{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:10px 16px; font-size:13px; color:var(--forest); text-align:center;}
+  .room-arrow{color:var(--line); font-size:16px;}
+
+  .room-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  @media(max-width:900px){.room-grid{grid-template-columns:1fr 1fr;}}
+  @media(max-width:520px){.room-grid{grid-template-columns:1fr;}}
+  .room-card{background:var(--paper); border:1px solid var(--line); border-radius:18px; padding:24px 20px; border-top:5px solid var(--accent);}
+  .room-num{font-size:11px; font-weight:700; color:var(--accent); letter-spacing:.08em;}
+  .room-card h4{font-family:'Noto Serif KR',serif; font-size:18px; color:var(--forest); margin:8px 0 4px;}
+  .room-card p{font-size:13px; color:#6b6459;}
+  .room-card .dur{font-size:11.5px; color:#9a9285; margin-top:8px;}
+
+  .meta-row{display:flex; gap:30px; flex-wrap:wrap; margin-top:24px;}
+  .meta-row div{font-size:12.5px; color:#847d70;}
+  .meta-row b{display:block; color:var(--forest); font-size:14.5px; margin-top:2px;}
+
+  .cta-section{background:var(--forest); border-radius:var(--radius-lg); color:#fff; text-align:center;}
+  .cta-section h2{font-family:'Noto Serif KR',serif; font-size:24px; margin-bottom:12px;}
+  .cta-section p{color:#C9D2C6; margin-bottom:22px; font-size:14.5px;}
+  .btn-white{background:#fff; color:var(--forest); padding:13px 26px; border-radius:999px; font-weight:700; font-size:14.5px;}
+
+  footer{background:var(--ivory-deep); border-top:1px solid var(--line); padding:36px 0; text-align:center; font-size:12.5px; color:#8a8378;}
+</style>
+</head>
+<body>
+<header>
+  <div class="nav-inner">
+    <a href="index.html" class="brand logotype">Forêt des Crayons</a>
+    <nav class="menu">
+      <a href="index.html#program">프로그램</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#contact">Contact</a>
+      <a href="index.html#register" class="cta-btn">수강신청</a>
+    </nav>
+  </div>
+</header>
+
+<div class="banner">
+  <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMax slice">
+    <circle cx="700" cy="80" r="26" fill="#F3D9A8" opacity=".8"/>
+    <g opacity=".9">
+      <path d="M40 380 L60 320 L80 380 Z" fill="#8B4B5C"/><rect x="52" y="340" width="16" height="40" rx="4" fill="#E0AE6C"/>
+    </g>
+    <ellipse cx="400" cy="392" rx="360" ry="14" fill="#3E5F4C" opacity=".25"/>
+    <path d="M470 190 Q520 150 580 185 Q590 210 560 220 Q530 225 500 215 Q475 210 470 190 Z" fill="#FBF6EE" opacity=".92"/>
+    <ellipse cx="400" cy="368" rx="60" ry="18" fill="#3E5F4C" opacity=".16"/>
+    <path d="M350 368 Q350 320 400 320 Q450 320 450 368 Z" fill="#B0728B"/>
+    <circle cx="400" cy="285" r="30" fill="#F0C39A"/>
+    <path d="M372 278 Q400 245 428 278 Q426 258 400 254 Q374 258 372 278 Z" fill="#3A2E22"/>
+    <rect x="366" y="345" width="68" height="46" rx="6" fill="#FBF6EE" stroke="#8B4B5C" stroke-width="2"/>
+  </svg>
+  <div class="banner-copy">
+    <div class="crumb"><a href="index.html">홈</a> · <a href="index.html#program">프로그램</a> · YOUTH ART</div>
+    <h1>크레용숲 철학미술관</h1>
+    <div class="sub">YOUTH ART · 중·고등학생</div>
+  </div>
+</div>
+
+<section class="wrap">
+  <div class="quote-block">
+    <p>"나는 누구일까?"</p>
+    <p>"나는 어떤 세계를 만들고 싶은 사람일까?"</p>
+    <p class="lead">청소년의 세계관이 자라는 시간, 자기다움이 언어가 되는 수업입니다. 색·기억·상징·언어를 모아 나만의 철학과 세계관을 만드는 과정 — "생각하는 법, 해석하는 법, 나를 설명하는 법"을 배웁니다.</p>
+  </div>
+
+  <div class="fit-box">
+    <b>이런 친구에게 맞아요</b>
+    <ul>
+      <li>감정의 결이 깊고, 마음을 오래 바라보는 성향의 아이</li>
+      <li>정답보다 자기 생각을 갖고 싶은 아이</li>
+      <li>입시보다 서사·정체성·내적 성장을 중요하게 여기는 부모님</li>
+      <li>말보다 창작으로 자신을 표현할 때 더 편안한 아이</li>
+    </ul>
+  </div>
+
+  <div class="meta-row">
+    <div>대상<b>중·고등학생</b></div>
+    <div>운영<b>주 1회 · 100분 · 그룹수업(최대 6명)</b></div>
+    <div>구성<b>4ROOM 사유구조 · 1년 과정</b></div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0;">
+  <div class="eyebrow">How it works</div>
+  <h2 style="font-family:'Noto Serif KR',serif; font-size:24px; color:var(--forest); margin-top:8px;">4개의 방을 지나며 완성하는 '나만의 철학미술관'</h2>
+  <p style="color:#6b6459; font-size:14px; margin-top:8px;">감각 → 감정 → 상징 → 해석의 구조로 1년간 누적 작업을 진행하며, 색·서사·기억을 조합한 개인 아카이브를 완성합니다.</p>
+  <div class="room-flow">
+    <div class="room-pill">감각</div><div class="room-arrow">→</div>
+    <div class="room-pill">감정</div><div class="room-arrow">→</div>
+    <div class="room-pill">상징</div><div class="room-arrow">→</div>
+    <div class="room-pill">해석</div>
+  </div>
+  <div class="room-grid">
+    <div class="room-card"><div class="room-num">1st ROOM</div><h4>Origin Room</h4><p>감각의 시작</p><div class="dur">3개월</div></div>
+    <div class="room-card"><div class="room-num">2nd ROOM</div><h4>Surface Room</h4><p>감정이 스치는 표면의 세계</p><div class="dur">3개월</div></div>
+    <div class="room-card"><div class="room-num">3rd ROOM</div><h4>Memory Room</h4><p>"색과 기억의 시간성"</p><div class="dur">3개월</div></div>
+    <div class="room-card"><div class="room-num">4th ROOM</div><h4>Self Room</h4><p>"나의 세계관을 구축하는 시간"</p><div class="dur">3개월</div></div>
+  </div>
+  <p style="text-align:center; font-size:13px; color:#8a8378; margin-top:22px;">각 ROOM은 3개월 과정으로 진행되며, 감각 → 감정 → 상징 → 세계의 단계를 거쳐 청소년의 철학적 사유를 확장합니다.</p>
+</section>
+
+<section class="wrap">
+  <div class="cta-section" style="padding:44px 30px;">
+    <h2>철학미술관에서 나만의 세계관을 그려보세요</h2>
+    <p>회원가입 없이 이름과 연락처만으로 상담 신청이 가능합니다.</p>
+    <a href="index.html#register" class="btn-white">수강신청 하러 가기</a>
+  </div>
+</section>
+
+<footer>© 2026 Forêt des Crayons · <a href="index.html">홈으로 돌아가기</a></footer>
+</body>
+</html>
