@@ -100,6 +100,47 @@
   .empty-state{text-align:center; padding:50px 0; color:#8a8378; font-size:14px;}
   footer{text-align:center; padding:40px 0; font-size:12.5px; color:#8a8378;}
 
+  /* ---------- 종합 요약 (색채 차트 + 원장님 해석) ---------- */
+  .summary-section{margin-top:30px;}
+  .sec-label{display:flex; align-items:center; gap:8px; margin-bottom:16px;}
+  .sec-label h3{font-family:'Noto Serif KR',serif; font-size:17px; color:var(--forest);}
+  .sec-label .tag{font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;}
+  .tag-auto{background:#E4F0E0; color:#5C7A56;}
+  .tag-manual{background:#F3E3E8; color:var(--berry);}
+
+  .timeline-card, .freq-card{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:28px 26px; margin-bottom:16px;}
+  .timeline{display:flex; align-items:flex-end; gap:6px; position:relative; padding-top:10px; flex-wrap:wrap;}
+  .t-node{flex:1; min-width:60px; text-align:center;}
+  .t-dot{width:24px; height:24px; border-radius:50%; margin:0 auto 8px; border:3px solid #fff; box-shadow:0 0 0 1px var(--line);}
+  .t-node .r{font-size:10.5px; color:var(--clay); font-weight:700;}
+  .t-node .c{font-family:'Noto Serif KR',serif; font-size:13px; color:var(--forest); margin-top:2px;}
+
+  .freq-row{display:flex; align-items:center; gap:14px; margin-bottom:12px;}
+  .freq-row:last-child{margin-bottom:0;}
+  .freq-label{width:76px; font-size:12.5px; color:var(--forest); font-weight:600; flex-shrink:0;}
+  .freq-bar-bg{flex:1; background:var(--ivory-deep); border-radius:8px; height:18px; overflow:hidden;}
+  .freq-bar{height:100%; border-radius:8px;}
+  .freq-count{width:20px; font-size:12px; color:#8a8378; text-align:right;}
+
+  .cat-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;}
+  @media(max-width:560px){ .cat-grid{grid-template-columns:1fr;} }
+  .cat-card{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:16px 18px;}
+  .cat-card .name{font-size:12px; font-weight:700; color:var(--clay); margin-bottom:6px;}
+  .cat-card .flow{font-family:'Noto Serif KR',serif; font-size:14px; color:var(--forest); display:flex; align-items:center; gap:6px;}
+  .cat-card .flow .arrow{color:var(--gold); font-size:13px;}
+
+  .highlight-list{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:22px 24px; margin-bottom:16px;}
+  .highlight-list div{display:flex; gap:10px; margin-bottom:10px; font-size:13.5px; color:#3f3b34;}
+  .highlight-list div:last-child{margin-bottom:0;}
+  .highlight-list .check{color:var(--sage); font-weight:900;}
+
+  .split{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media(max-width:560px){ .split{grid-template-columns:1fr;} }
+  .split-card{border-radius:var(--radius-md); padding:22px 24px; font-size:13.5px; color:#4b463f;}
+  .split-card.strength{background:#EFF4EC; border:1px solid #D7E3CF;}
+  .split-card.direction{background:#F7EFE4; border:1px solid #EAD9BE;}
+  .split-card h4{font-family:'Noto Serif KR',serif; font-size:14px; color:var(--forest); margin-bottom:8px;}
+
   /* ---------- 인쇄 (개인 책자용) ---------- */
   @media print{
     header, .privacy-note, .logout-link, .print-btn{ display:none !important; }
@@ -108,6 +149,7 @@
     .carte-cover{ min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; page-break-after:always; border-radius:0; }
     .month-card{ page-break-after:always; box-shadow:none; min-height:95vh; display:flex; flex-direction:column; justify-content:center; }
     .month-card:last-child{ page-break-after:auto; }
+    .summary-section{ page-break-before:always; }
     footer{ display:none; }
   }
 </style>
@@ -156,6 +198,7 @@
       <div><button class="print-btn" onclick="window.print()">🖨️ 개인 책자로 인쇄 / PDF 저장</button></div>
     </div>
     <div id="jEntries"></div>
+    <div id="jSummary"></div>
     <a href="#" class="logout-link" onclick="logoutJournal(event)">다른 아이 이름으로 다시 확인하기</a>
   </div>
 </div>
@@ -259,6 +302,84 @@ function renderJournal(data){
       </div>
     </div>
   `).join('');
+
+  renderSummarySection(entries, data.summary);
+}
+
+function renderSummarySection(entries, summary){
+  const box = document.getElementById('jSummary');
+  const colored = entries.filter(e => e.mainColor);
+
+  // 자동 생성: 색채 타임라인
+  let timelineHtml = '';
+  if(colored.length){
+    timelineHtml = `
+      <div class="timeline-card">
+        <div class="timeline">
+          ${colored.map(e => `
+            <div class="t-node">
+              <div class="r">${e.month}</div>
+              <div class="t-dot" style="background:${MAIN_COLOR_HEX[e.mainColor] || '#ccc'}"></div>
+              <div class="c">${e.mainColor}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  // 자동 생성: 색 사용 빈도
+  let freqHtml = '';
+  if(colored.length){
+    const counts = {};
+    colored.forEach(e => counts[e.mainColor] = (counts[e.mainColor]||0) + 1);
+    const max = Math.max(...Object.values(counts));
+    const rows = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([color,count])=>`
+      <div class="freq-row">
+        <div class="freq-label">${color}</div>
+        <div class="freq-bar-bg"><div class="freq-bar" style="width:${(count/max*100)}%; background:${MAIN_COLOR_HEX[color] || '#ccc'};"></div></div>
+        <div class="freq-count">${count}</div>
+      </div>`).join('');
+    freqHtml = `<div class="freq-card">${rows}</div>`;
+  }
+
+  let autoSection = '';
+  if(timelineHtml || freqHtml){
+    autoSection = `
+      <div class="summary-section">
+        <div class="sec-label"><span class="tag tag-auto">자동 생성</span><h3>회차별 색채 변화</h3></div>
+        ${timelineHtml}
+        ${freqHtml}
+      </div>`;
+  }
+
+  // 원장님 작성: 카테고리 요약 + 강점/방향
+  let manualSection = '';
+  if(summary){
+    const cat = (icon, name, before, after) => (before || after) ? `
+      <div class="cat-card"><div class="name">${icon} ${name}</div><div class="flow">${before||'-'} <span class="arrow">→</span> ${after||'-'}</div></div>` : '';
+
+    const cats = [
+      cat('🔵','표현', summary.expression?.before, summary.expression?.after),
+      cat('🟢','색채', summary.color?.before, summary.color?.after),
+      cat('🟡','심리', summary.psychology?.before, summary.psychology?.after),
+      cat('🔴','사고', summary.thinking?.before, summary.thinking?.after),
+    ].filter(Boolean).join('');
+
+    const highlights = (summary.highlights||[]).map(h => `<div><span class="check">✔</span>${h}</div>`).join('');
+
+    manualSection = `
+      <div class="summary-section">
+        <div class="sec-label"><span class="tag tag-manual">꽃밭샘 종합 관찰</span><h3>성장 카테고리 요약</h3></div>
+        ${cats ? `<div class="cat-grid">${cats}</div>` : ''}
+        ${highlights ? `<div class="highlight-list">${highlights}</div>` : ''}
+        ${(summary.strength || summary.direction) ? `
+        <div class="split">
+          ${summary.strength ? `<div class="split-card strength"><h4>강점</h4><p>${summary.strength}</p></div>` : ''}
+          ${summary.direction ? `<div class="split-card direction"><h4>앞으로의 방향</h4><p>${summary.direction}</p></div>` : ''}
+        </div>` : ''}
+      </div>`;
+  }
+
+  box.innerHTML = autoSection + manualSection;
 }
 
 function logoutJournal(e){
