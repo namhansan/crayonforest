@@ -133,11 +133,15 @@
     height:150px; background:linear-gradient(135deg,var(--gold),var(--clay));
     display:flex; align-items:center; justify-content:center; color:#fff;
     font-family:'Noto Serif KR',serif; font-size:17px; text-align:center; padding:16px;
+    position:relative; overflow:hidden;
   }
+  .popup-banner.has-image{padding:0;}
+  .popup-banner img{width:100%; height:100%; object-fit:cover; display:block; cursor:pointer;}
+  .popup-more{font-size:12.5px; color:var(--clay); text-decoration:underline; display:inline-block; margin-top:2px;}
   .popup-body{padding:24px;}
   .popup-body h3{font-family:'Noto Serif KR',serif; font-size:19px; color:var(--forest); margin-bottom:8px;}
-  .popup-body p{font-size:14px; color:#5b564e; margin-bottom:18px;}
-  .popup-actions{display:flex; justify-content:space-between; align-items:center;}
+  .popup-body p{font-size:14px; color:#5b564e; margin-bottom:10px;}
+  .popup-actions{display:flex; justify-content:space-between; align-items:center; margin-top:8px;}
   .popup-check{font-size:12.5px; color:#8a8378; display:flex; gap:6px; align-items:center;}
   .popup-close{font-size:13px; font-weight:600; color:var(--forest); text-decoration:underline;}
 
@@ -352,10 +356,14 @@
 <!-- ===== Popup ===== -->
 <div class="popup-overlay" id="popupOverlay">
   <div class="popup-card">
-    <div class="popup-banner" id="popupBannerText">🌿 2026 여름방학 특강<br>신규가족 체험수업 모집중</div>
+    <div class="popup-banner" id="popupBanner">
+      <span id="popupBannerText">🌿 2026 여름방학 특강<br>신규가족 체험수업 모집중</span>
+      <img id="popupImage" src="" alt="포스터" style="display:none;" onclick="window.open(this.src,'_blank')">
+    </div>
     <div class="popup-body">
       <h3 id="popupTitle">여름방학 감정예술 캠프</h3>
       <p id="popupBody">8월 한 달, 새 학기를 준비하는 아이들을 위한 단기 체험 클래스를 진행합니다. 지금 신청하고 첫 수업을 무료로 체험해보세요.</p>
+      <a href="#" id="popupMoreLink" class="popup-more" target="_blank" style="display:none;">이미지로 자세히 보기 →</a>
       <div class="popup-actions">
         <label class="popup-check"><input type="checkbox" id="dontShowToday"> 오늘 하루 보지 않기</label>
         <button class="popup-close" onclick="closePopup()">닫기</button>
@@ -795,6 +803,18 @@ function loadSiteContent(){
     if(p.banner_text) document.getElementById('popupBannerText').innerHTML = p.banner_text.replace(/\n/g,'<br>');
     if(p.title) document.getElementById('popupTitle').textContent = p.title;
     if(p.body) document.getElementById('popupBody').textContent = p.body;
+    if(p.image){
+      const img = document.getElementById('popupImage');
+      img.src = p.image;
+      img.style.display = 'block';
+      document.getElementById('popupBannerText').style.display = 'none';
+      document.getElementById('popupBanner').classList.add('has-image');
+    }
+    if(p.image2){
+      const link = document.getElementById('popupMoreLink');
+      link.href = p.image2;
+      link.style.display = 'inline-block';
+    }
   }).catch(()=>{}).finally(()=> maybeShowPopup());
 
   fetch('content/banners.json').then(r=>r.json()).then(b=>{
