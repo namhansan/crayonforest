@@ -541,7 +541,8 @@
     <div class="hero-card">
       <div>
         <div class="eyebrow">감정은 예술이 되고, 예술은 세계관이 됩니다</div>
-        <h1>아이는 <em>감각</em>으로, 어른은 <em>기억</em>으로<br>자기다운 세계를 그려가는 곳</h1>
+        <h1>서로 다른 색을 가진 사람들이 <em>자기다움</em> 표현으로<br>함께 자라는 곳, 크레용숲</h1>
+        <p style="margin-top:14px; font-size:15.5px; color:#6b6459; line-height:1.75;">예술로 자기결을 세워가도록, 크레용숲은 그 시작을 함께 합니다.</p>
       </div>
       <div class="hero-btns">
         <a href="#program" class="btn-outline">프로그램 보기</a>
@@ -765,7 +766,7 @@
         <h5>Connect</h5>
         <a href="#" id="linkKakao">카카오톡 채널</a>
         <a href="#" id="linkInsta1">Instagram · 크레용숲</a>
-        <a href="#" id="linkInsta2">Instagram · 어린이색채학교</a>
+        <a href="#" id="linkInsta2">Instagram · 크레용숲 Reels</a>
         <a href="#" id="linkBlog">Blog</a>
       </div>
     </div>
@@ -919,28 +920,28 @@ setInterval(()=> goTo((current+1)%slides.length), 4500);
 const programData = {
   child:{
     page:'program-child.html',
-    color:'gold', eyebrow:'크레용숲 어린이색채학교', title:'CHILD ART', en:'Child Art',
-    meta:[['대상','4~12세'],['운영','학기제 · 소수정예 연령별'],['방식','월별 감정예술 테마 수업']],
+    color:'gold', eyebrow:'크레용숲 어린이색채학교', title:'CHILD ART', en:'감각의 숲(5~7세) · 상징의 숲(초등)',
+    meta:[['대상','4~12세'],['운영','소수정예 연령별 그룹수업'],['방식','월별 감정예술 테마 수업']],
     desc:'스에나가 메소드 색채심리를 기반으로, 색과 감정의 5단계 구조를 통해 감각·표현력·창조성을 키웁니다. 감정·감각·표현이 처음 만나는 어린이 마음숲입니다.',
     fit:['선·색·형태에 호기심이 많고 손으로 탐색하는 걸 좋아하는 아이','감정표현이 서툴지만 그림에서 마음이 잘 드러나는 아이','정답보다 자기 속도로 탐색하는 경험이 필요한 아이']
   },
   youth:{
     page:'program-youth.html',
-    color:'berry', eyebrow:'크레용숲 철학미술관', title:'YOUTH ART', en:'Youth Art',
-    meta:[['대상','중·고등학생'],['운영','주 1회 100분 · 그룹수업(최대 6명)'],['구조','4ROOM 사유구조 · 1년 과정']],
+    color:'berry', eyebrow:'크레용숲 사유의 숲', title:'YOUTH ART', en:'사유의 숲',
+    meta:[['대상','중·고등학생'],['운영','주 1회 100분 · 그룹수업(최대 6명)'],['구조','4ROOM 사유구조']],
     desc:'감각→감정→상징→해석의 4개 방을 각 3개월씩 거치며 색·기억·상징·언어로 나만의 철학과 세계관을 완성해가는 청소년 사유의 숲입니다.',
     fit:['감정의 결이 깊고 마음을 오래 바라보는 성향의 아이','정답보다 자기 생각을 갖고 싶은 아이','입시보다 서사·정체성·내적 성장을 중요하게 여기는 부모님']
   },
   adult:{
     page:'program-adult.html',
-    color:'clay', eyebrow:'크레용숲 예술리추얼', title:'ADULT ART', en:'Adult Art · 마음을 그리다',
+    color:'clay', eyebrow:'크레용숲 예술리추얼', title:'ADULT ART', en:'창조의 숲',
     meta:[['대상','성인 전체'],['운영','일정 공지 후 상시 진행'],['활동','감정 리추얼 · 컬러링테라피 · 패턴드로잉']],
     desc:'일상에서 잃어버린 감각과 감정의 언어를 회복하고, 나만의 색·패턴·서사를 발견하는 창의성 회복 프로그램입니다.',
     fit:['오랜만에 나를 위한 시간을 갖고 싶은 분','색과 드로잉을 통해 감정 언어를 배우고 싶은 분','"예술은 어려울까?" 걱정되지만 마음으로 그리는 경험을 원하는 분']
   },
   mom:{
     page:'program-mom.html',
-    color:'sage', eyebrow:'크레용숲 정원사', title:'FOR MOM', en:'For Mom',
+    color:'sage', eyebrow:'크레용숲 정원사', title:'FOR MOM', en:'창조의 숲',
     meta:[['대상','자녀를 둔 어머니'],['운영','일정 공지 후 상시 진행'],['성격','웰니스 커뮤니티']],
     desc:'엄마 자신의 마음에 물을 주고 다시 감각을 되찾는 시간. 완벽한 엄마가 되기보다, 나 자신과 다시 연결되는 길을 함께 걷습니다.',
     fit:['무언가를 더 배우기보다 잠시 내려놓고 싶은 엄마','엄마라는 역할 뒤에 가려진 나를 다시 느끼고 싶은 분','작지만 확실한 나만의 시간이 필요한 분']
@@ -1181,7 +1182,7 @@ const sampleEvents = [
   { y:year, m:month, d:5,  title:'여름방학 특강 접수 시작', desc:'8월 단기 체험 클래스 신규가족 모집' },
   { y:year, m:month, d:12, title:'예비초등 마음드로잉 워크숍', desc:'새 학년을 앞둔 아이들을 위한 특별 프로그램' },
   { y:year, m:month, d:19, title:'가족 감정 아카이브 참여 수업', desc:'부모 참여형 워크 · CHILD ART 5월 테마 연계' },
-  { y:year, m:month, d:26, title:'철학미술관 오픈스튜디오', desc:'YOUTH ART 1년 작업물 미니 전시' },
+  { y:year, m:month, d:26, title:'사유의 숲 오픈스튜디오', desc:'YOUTH ART 1년 작업물 미니 전시' },
 ];
 function changeEvMonth(delta){
   evMonth += delta;

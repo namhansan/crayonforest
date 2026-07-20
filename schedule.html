@@ -111,7 +111,6 @@
         </div>
       </div>
       <div class="cal-grid" id="calGrid"></div>
-      <div class="sample-flag">※ 지금 뜨는 정규수업 시간표는 샘플이에요 — 실제 시간표로 교체해드릴게요</div>
     </div>
 
     <div class="detail-card">
@@ -126,23 +125,31 @@
 <footer>© 2026 Forêt des Crayons · <a href="index.html" style="text-decoration:underline;">홈으로 돌아가기</a></footer>
 
 <script>
-/* ---------- 정규 수업 시간표 (샘플 — 실제 시간표로 교체 예정) ----------
-   요일별로 다르게 구성: 월/수/금 = 오후 중심 4클래스, 화/목/토 = 어린이 수업 위주, 일 = 휴무 */
+/* ---------- 정규 수업 시간표 ---------- */
 const PROGRAM_COLOR = { 'CHILD ART':'var(--gold)', 'YOUTH ART':'var(--berry)', 'ADULT ART':'var(--clay)', 'FOR MOM':'var(--sage)' };
 
-const MWF = [
-  { start:'14:00', end:'16:00', program:'CHILD ART', desc:'유아~초등 저학년 · 소수정예반' },
-  { start:'16:00', end:'18:00', program:'YOUTH ART', desc:'중·고등학생 · 철학미술관 그룹수업' },
-  { start:'18:00', end:'20:00', program:'ADULT ART', desc:'성인 예술리추얼 · 마음을 그리다' },
+const MON = [
+  { start:'14:00', end:'15:30', program:'CHILD ART', desc:'초등 고학년' },
+  { start:'16:00', end:'17:30', program:'CHILD ART', desc:'유치부' },
 ];
-const TThS = [
-  { start:'10:00', end:'12:00', program:'CHILD ART', desc:'유아 오전반' },
-  { start:'14:00', end:'16:00', program:'CHILD ART', desc:'초등 저학년반' },
-  { start:'16:00', end:'18:00', program:'CHILD ART', desc:'초등 고학년반' },
-  { start:'18:00', end:'19:30', program:'FOR MOM', desc:'엄마는 크레용 정원사 · 웰니스 모임' },
+const TUE = [
+  { start:'13:00', end:'14:30', program:'ADULT ART', desc:'성인 리추얼' },
+  { start:'16:00', end:'17:30', program:'CHILD ART', desc:'초등 저학년' },
 ];
-const WEEKLY_SCHEDULE = { 0: [], 1: MWF, 2: TThS, 3: MWF, 4: TThS, 5: MWF, 6: TThS };
-const DOW_NAMES = ['일요일 · 휴무','월요일','화요일','수요일','목요일','금요일','토요일'];
+const WED = [
+  { start:'14:00', end:'15:30', program:'CHILD ART', desc:'초등 저학년' },
+  { start:'16:00', end:'17:30', program:'CHILD ART', desc:'유치' },
+];
+const THU = [
+  { start:'16:00', end:'17:30', program:'CHILD ART', desc:'유치' },
+  { start:'18:00', end:'19:30', program:'YOUTH ART', desc:'청소년' },
+];
+const FRI = [
+  { start:'16:00', end:'17:30', program:'CHILD ART', desc:'유치' },
+  { start:'18:00', end:'19:00', program:'CHILD ART', desc:'유치' },
+];
+const WEEKLY_SCHEDULE = { 0: [], 1: MON, 2: TUE, 3: WED, 4: THU, 5: FRI, 6: [] };
+const DOW_NAMES = ['일요일 · 휴무','월요일','화요일','수요일','목요일','금요일','토요일 · 휴무'];
 
 /* ---------- 특강/공지 (SCHEDULE 이벤트, 홈페이지와 동일 데이터 구조 사용 예정) ---------- */
 let sampleEvents = [
