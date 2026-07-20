@@ -26,6 +26,8 @@ collections:
         name: "popup"
         fields:
           - { label: "팝업 사용 여부 (끄면 안 뜸)", name: "enabled", widget: "boolean", default: true }
+          - { label: "포스터 이미지 (선택)", name: "image", widget: "image", required: false }
+          - { label: "포스터 이미지2 - 자세히보기용 (선택)", name: "image2", widget: "image", required: false }
           - { label: "상단 배너 문구", name: "banner_text", widget: "string" }
           - { label: "제목", name: "title", widget: "string" }
           - { label: "본문", name: "body", widget: "text" }
