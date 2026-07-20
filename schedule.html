@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수업 시간표 | 크레용숲</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500;1,600&family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#FBF6EE; --ivory-deep:#F3EBDC; --forest:#2C4A3B; --clay:#BE6A42;
+    --gold:#D3A24C; --berry:#8B4B5C; --sage:#93AC8C; --ink:#2A2622; --paper:#FFFFFF; --line:#E4DBC9;
+    --radius-lg:28px; --radius-md:18px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Noto Sans KR',sans-serif; background:var(--ivory); color:var(--ink); line-height:1.7;}
+  a{color:inherit; text-decoration:none;}
+  .logotype{font-family:'Playfair Display',serif; font-style:italic; font-weight:500;}
+  .wrap{max-width:980px; margin:0 auto; padding:44px 24px 80px;}
+  .eyebrow{font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:600; color:var(--clay);}
+  header{padding:16px 0; border-bottom:1px solid var(--line);}
+  .header-inner{max-width:980px; margin:0 auto; padding:0 24px; display:flex; justify-content:space-between; align-items:center;}
+  .brand{font-size:19px; color:var(--forest);}
+  .cta-btn{background:var(--clay); color:#fff; padding:9px 16px; border-radius:999px; font-size:13px; font-weight:600;}
+
+  h1{font-family:'Noto Serif KR',serif; font-size:clamp(22px,3vw,28px); color:var(--forest); margin:10px 0 8px;}
+  .sub{color:#8a8378; font-size:13.5px; margin-bottom:34px;}
+
+  .legend{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:26px;}
+  .legend-item{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--forest);}
+  .legend-dot{width:10px; height:10px; border-radius:50%;}
+
+  .layout{display:grid; grid-template-columns:0.95fr 1.05fr; gap:30px; align-items:start;}
+  @media(max-width:820px){ .layout{grid-template-columns:1fr;} }
+
+  .cal-card{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:26px;}
+  .cal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+  .cal-head b{font-family:'Noto Serif KR',serif; color:var(--forest); font-size:16px;}
+  .cal-nav{display:flex; gap:6px;}
+  .cal-nav button{border:none; background:var(--ivory-deep); color:var(--forest); border-radius:8px; padding:0 10px; height:30px; font-size:12.5px; cursor:pointer;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+  .cal-dow{font-size:11px; text-align:center; color:#aaa; font-weight:600; padding-bottom:4px;}
+  .cal-day{
+    aspect-ratio:1; border-radius:10px; background:var(--ivory-deep); display:flex; flex-direction:column;
+    align-items:center; justify-content:center; font-size:12.5px; color:#6b6459; cursor:pointer; position:relative;
+  }
+  .cal-day:hover{background:#EFE4CE;}
+  .cal-day.selected{background:var(--forest); color:#fff; font-weight:700;}
+  .cal-day.today:not(.selected){outline:2px solid var(--gold);}
+  .cal-day.empty{background:transparent; cursor:default;}
+  .cal-day .ev-dot{width:5px; height:5px; border-radius:50%; background:var(--clay); margin-top:2px;}
+  .cal-day.selected .ev-dot{background:#fff;}
+
+  .detail-card{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:26px;}
+  .detail-date{font-family:'Noto Serif KR',serif; font-size:18px; color:var(--forest); margin-bottom:4px;}
+  .detail-dow{font-size:12.5px; color:#8a8378; margin-bottom:20px;}
+
+  .special-card{background:#FCEFD8; border:1px solid #E8CE95; border-radius:14px; padding:16px 18px; margin-bottom:18px;}
+  .special-card .tag{font-size:11px; font-weight:700; color:var(--clay); margin-bottom:6px;}
+  .special-card h4{font-size:14px; color:var(--forest); margin-bottom:4px;}
+  .special-card p{font-size:12.5px; color:#6b6459;}
+
+  .slot{display:flex; gap:14px; align-items:flex-start; padding:12px 0; border-bottom:1px dashed var(--line);}
+  .slot:last-child{border-bottom:none;}
+  .slot-time{width:98px; font-size:12.5px; color:var(--forest); font-weight:700; flex-shrink:0; padding-top:2px;}
+  .slot-badge{display:inline-block; font-size:11.5px; font-weight:700; color:#fff; padding:3px 10px; border-radius:7px; margin-bottom:4px;}
+  .slot-desc{font-size:12.5px; color:#6b6459;}
+  .now-badge{display:inline-block; font-size:10.5px; font-weight:700; color:var(--clay); background:#FCEFD8; padding:2px 8px; border-radius:6px; margin-left:8px;}
+  .closed-note{color:#9a9285; font-size:13px; text-align:center; padding:30px 0;}
+
+  .sample-flag{display:inline-block; margin-top:20px; font-size:11.5px; background:#FCEFD8; color:var(--clay); padding:4px 10px; border-radius:8px; font-weight:600;}
+  footer{text-align:center; padding:30px 0; font-size:12px; color:#9a9285; border-top:1px solid var(--line); margin-top:30px;}
+  .back-to-top{
+    position:fixed; right:22px; bottom:22px; z-index:150;
+    width:46px; height:46px; border-radius:50%; background:var(--forest); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:18px; border:none; cursor:pointer;
+    box-shadow:0 10px 24px -10px rgba(44,74,59,.6);
+    opacity:0; pointer-events:none; transform:translateY(8px); transition:.25s;
+  }
+  .back-to-top.show{opacity:1; pointer-events:auto; transform:none;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="brand logotype">Forêt des Crayons</a>
+    <a href="index.html#register" class="cta-btn">수강신청</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="eyebrow">Schedule</div>
+  <h1>수업 시간표</h1>
+  <div class="sub">날짜를 클릭하면 그날 진행되는 정규 수업과 특강 소식을 함께 볼 수 있어요.</div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:var(--gold);"></span>CHILD ART</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--berry);"></span>YOUTH ART</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--clay);"></span>ADULT ART</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--sage);"></span>FOR MOM</div>
+  </div>
+
+  <div class="layout">
+    <div class="cal-card">
+      <div class="cal-head">
+        <b id="calLabel"></b>
+        <div class="cal-nav">
+          <button onclick="changeMonth(-1)">‹</button>
+          <button onclick="goToday()">오늘</button>
+          <button onclick="changeMonth(1)">›</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="sample-flag">※ 지금 뜨는 정규수업 시간표는 샘플이에요 — 실제 시간표로 교체해드릴게요</div>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-date" id="detailDate"></div>
+      <div class="detail-dow" id="detailDow"></div>
+      <div id="specialArea"></div>
+      <div id="slotArea"></div>
+    </div>
+  </div>
+</div>
+
+<footer>© 2026 Forêt des Crayons · <a href="index.html" style="text-decoration:underline;">홈으로 돌아가기</a></footer>
+
+<script>
+/* ---------- 정규 수업 시간표 (샘플 — 실제 시간표로 교체 예정) ----------
+   요일별로 다르게 구성: 월/수/금 = 오후 중심 4클래스, 화/목/토 = 어린이 수업 위주, 일 = 휴무 */
+const PROGRAM_COLOR = { 'CHILD ART':'var(--gold)', 'YOUTH ART':'var(--berry)', 'ADULT ART':'var(--clay)', 'FOR MOM':'var(--sage)' };
+
+const MWF = [
+  { start:'14:00', end:'16:00', program:'CHILD ART', desc:'유아~초등 저학년 · 소수정예반' },
+  { start:'16:00', end:'18:00', program:'YOUTH ART', desc:'중·고등학생 · 철학미술관 그룹수업' },
+  { start:'18:00', end:'20:00', program:'ADULT ART', desc:'성인 예술리추얼 · 마음을 그리다' },
+];
+const TThS = [
+  { start:'10:00', end:'12:00', program:'CHILD ART', desc:'유아 오전반' },
+  { start:'14:00', end:'16:00', program:'CHILD ART', desc:'초등 저학년반' },
+  { start:'16:00', end:'18:00', program:'CHILD ART', desc:'초등 고학년반' },
+  { start:'18:00', end:'19:30', program:'FOR MOM', desc:'엄마는 크레용 정원사 · 웰니스 모임' },
+];
+const WEEKLY_SCHEDULE = { 0: [], 1: MWF, 2: TThS, 3: MWF, 4: TThS, 5: MWF, 6: TThS };
+const DOW_NAMES = ['일요일 · 휴무','월요일','화요일','수요일','목요일','금요일','토요일'];
+
+/* ---------- 특강/공지 (SCHEDULE 이벤트, 홈페이지와 동일 데이터 구조 사용 예정) ---------- */
+let sampleEvents = [
+  { y:2026, m:6, d:1,  title:'크레용숲 아트캉스 시작', desc:'마음을 만나 말랑해지는 여름방학. 정원 4명, 4명 이상 모집 시 오픈됩니다.' },
+  { y:2026, m:6, d:15, title:'여름색 아트메뉴 운영중', desc:'빨강·노랑·초록·파랑·보라, 다섯 가지 색의 시간.' },
+  { y:2026, m:7, d:15, title:'여름색 아트메뉴 운영중', desc:'8월에도 계속되는 여름색 아트메뉴.' },
+  { y:2026, m:7, d:31, title:'크레용숲 아트캉스 마감', desc:'문의 및 신청: 꽃밭샘 010-3387-1813' },
+];
+fetch('content/events.json').then(r=>r.json()).then(ev=>{
+  if(Array.isArray(ev.items) && ev.items.length){
+    sampleEvents = ev.items.map(it=>{
+      const [y,m,d] = (it.date||'').split('-').map(Number);
+      return { y, m: m-1, d, title: it.title, desc: it.desc };
+    }).filter(e=>e.y);
+    if(calYear !== undefined) renderCalendar();
+  }
+}).catch(()=>{});
+
+const now = new Date();
+let calYear = now.getFullYear(), calMonth = now.getMonth();
+let selectedDate = { y: now.getFullYear(), m: now.getMonth(), d: now.getDate() };
+
+function changeMonth(delta){
+  calMonth += delta;
+  if(calMonth<0){ calMonth=11; calYear--; }
+  if(calMonth>11){ calMonth=0; calYear++; }
+  renderCalendar();
+}
+function goToday(){
+  calYear = now.getFullYear(); calMonth = now.getMonth();
+  selectDate(now.getFullYear(), now.getMonth(), now.getDate());
+}
+function selectDate(y,m,d){
+  selectedDate = { y, m, d };
+  renderCalendar();
+  renderDetail();
+}
+function renderCalendar(){
+  document.getElementById('calLabel').textContent = `${calYear}년 ${calMonth+1}월`;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  ['일','월','화','수','목','금','토'].forEach(d=>{
+    const el = document.createElement('div'); el.className='cal-dow'; el.textContent=d; grid.appendChild(el);
+  });
+  const fDow = new Date(calYear, calMonth, 1).getDay();
+  const dim = new Date(calYear, calMonth+1, 0).getDate();
+  for(let i=0;i<fDow;i++){ const el=document.createElement('div'); el.className='cal-day empty'; grid.appendChild(el); }
+  for(let d=1; d<=dim; d++){
+    const isToday = d===now.getDate() && calMonth===now.getMonth() && calYear===now.getFullYear();
+    const isSelected = d===selectedDate.d && calMonth===selectedDate.m && calYear===selectedDate.y;
+    const hasEv = sampleEvents.some(ev=> ev.y===calYear && ev.m===calMonth && ev.d===d);
+    const el = document.createElement('div');
+    el.className = 'cal-day' + (isToday?' today':'') + (isSelected?' selected':'');
+    el.innerHTML = d + (hasEv ? '<div class="ev-dot"></div>' : '');
+    el.onclick = () => selectDate(calYear, calMonth, d);
+    grid.appendChild(el);
+  }
+}
+function renderDetail(){
+  const { y, m, d } = selectedDate;
+  const dow = new Date(y, m, d).getDay();
+  document.getElementById('detailDate').textContent = `${y}년 ${m+1}월 ${d}일`;
+  document.getElementById('detailDow').textContent = DOW_NAMES[dow];
+
+  const todaysEvents = sampleEvents.filter(ev=> ev.y===y && ev.m===m && ev.d===d);
+  document.getElementById('specialArea').innerHTML = todaysEvents.map(ev=>`
+    <div class="special-card">
+      <div class="tag">🌿 특강 · 공지</div>
+      <h4>${ev.title}</h4>
+      <p>${ev.desc}</p>
+    </div>`).join('');
+
+  const slots = WEEKLY_SCHEDULE[dow] || [];
+  const slotArea = document.getElementById('slotArea');
+  if(slots.length === 0){
+    slotArea.innerHTML = '<div class="closed-note">이 날은 정규 수업이 없어요.</div>';
+    return;
+  }
+  const isToday = d===now.getDate() && m===now.getMonth() && y===now.getFullYear();
+  const nowMinutes = now.getHours()*60 + now.getMinutes();
+  slotArea.innerHTML = slots.map(s=>{
+    const [sh,sm] = s.start.split(':').map(Number);
+    const [eh,em] = s.end.split(':').map(Number);
+    const isNow = isToday && (nowMinutes >= sh*60+sm) && (nowMinutes < eh*60+em);
+    return `
+      <div class="slot">
+        <div class="slot-time">${s.start}–${s.end}</div>
+        <div>
+          <span class="slot-badge" style="background:${PROGRAM_COLOR[s.program]}">${s.program}</span>
+          ${isNow ? '<span class="now-badge">● 진행중</span>' : ''}
+          <div class="slot-desc">${s.desc}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+renderCalendar();
+renderDetail();
+</script>
+
+<button class="back-to-top" id="backToTop" aria-label="맨 위로">↑</button>
+<script>
+const backToTop = document.getElementById('backToTop');
+window.addEventListener('scroll', ()=>{ backToTop.classList.toggle('show', window.scrollY > 500); });
+backToTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+</script>
+</body>
+</html>
