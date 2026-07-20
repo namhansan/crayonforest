@@ -96,6 +96,16 @@
   .gallery-item img{width:100%; height:100%; object-fit:cover; display:block;}
   .gallery-caption{position:absolute; left:0; right:0; bottom:0; background:linear-gradient(0deg, rgba(0,0,0,.55), transparent); color:#fff; font-size:11.5px; padding:14px 10px 8px;}
   .gallery-empty{text-align:center; color:#9a9285; font-size:13px; padding:20px 0; grid-column:1/-1;}
+
+  .highlight-card{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-lg); padding:38px 40px; box-shadow:var(--shadow);}
+  @media(max-width:600px){.highlight-card{padding:28px 24px;}}
+  .karte-box{background:#F8E4DC; border:1px solid #EBC7B8; border-radius:18px; padding:24px 26px; margin:26px 0;}
+  .karte-tag{font-family:'Noto Serif KR',serif; font-size:16px; color:var(--forest); font-weight:700; margin-bottom:12px;}
+  .karte-tag span{font-size:12px; font-weight:400; color:#8a6a5c;}
+  .karte-row{font-size:14.5px; color:var(--clay); font-weight:700; margin-top:8px;}
+  .karte-row b{color:var(--forest);}
+  .karte-desc p{font-size:13.5px; color:#5b564e; margin-top:10px; max-width:680px;}
+  .karte-closing{font-weight:700; color:var(--forest); margin-top:16px; font-size:14px;}
 </style>
 </head>
 <body>
@@ -162,8 +172,29 @@
 </section>
 
 <section class="wrap" style="padding-top:0;">
+  <div class="highlight-card">
+    <div class="eyebrow" style="color:var(--clay);">크레용숲만의 강점</div>
+    <h2 style="font-family:'Noto Serif KR',serif; font-size:26px; color:var(--forest); margin-top:8px;">아이의 마음은 기록될 때 자랍니다</h2>
+    <p style="color:#6b6459; font-size:14.5px; margin-top:10px; max-width:680px;">크레용숲은 1년의 감정 흐름을 색과 패턴으로 기록해 아이만의 자기서사(Self-Narrative)를 키웁니다.</p>
+
+    <div class="karte-box">
+      <div class="karte-tag">6개월 성장카르테 <span>(스에나가하트앤컬러 메소드)</span></div>
+      <div class="karte-row"><b>색채표현의 변화</b> = 마음의 성장 기록</div>
+      <div class="karte-row"><b>싹트기 시작한 능력</b> = 향후 발달 방향 예측</div>
+    </div>
+
+    <div class="karte-desc">
+      <p>아이의 성장에는 '마음의 방향성'이 중요합니다. 그래서 크레용숲은 결과보다 마음의 흐름과 성장의 흔적을 기록합니다.</p>
+      <p>색과 선으로 드러난 감정은 스에나가 메소드 기반의 근거에 따라 섬세하게 해석되며, 특히 유아·아동기에 아이가 '정보를 발신하는 경험'을 하는 것은 매우 중요합니다.</p>
+      <p class="karte-closing">아이가 감정을 발신하고, 어른은 그 신호를 읽고 반응하는 쌍방향 소통 — 크레용숲이 가장 소중히 여기는 가치입니다.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0;">
   <div class="eyebrow">By Age</div>
   <h2 class="logotype" style="font-family:'Noto Serif KR',serif; font-style:normal; font-size:24px; color:var(--forest); margin-top:8px;">발달 단계에 따라 자라는 예술 여정</h2>
+  <p style="color:#8a8378; font-size:13px; margin-top:6px;">아이의 예술발달은 숫자로 나뉘어 보이지만 실제로는 감각에서 사고까지 자연스럽게 이어지는 하나의 예술 여정입니다</p>
   <div class="stage-grid">
     <div class="stage-card">
       <span class="age">3~5세</span>
