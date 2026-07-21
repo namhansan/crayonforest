@@ -106,6 +106,21 @@
   .karte-row b{color:var(--forest);}
   .karte-desc p{font-size:13.5px; color:#5b564e; margin-top:10px; max-width:680px;}
   .karte-closing{font-weight:700; color:var(--forest); margin-top:16px; font-size:14px;}
+
+  .karte-preview{background:var(--paper); border:1.5px dashed var(--clay); border-radius:16px; padding:22px 24px; margin:22px 0;}
+  .karte-preview-head{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; font-family:'Noto Serif KR',serif; font-size:15px; color:var(--forest); font-weight:700; margin-bottom:18px;}
+  .kp-name{color:var(--clay); border-bottom:2px dotted var(--clay); padding:0 2px;}
+  .kp-badge{background:var(--forest); color:#fff; font-size:11px; font-weight:600; padding:5px 12px; border-radius:999px; font-family:'Noto Sans KR',sans-serif; white-space:nowrap;}
+  .kp-timeline{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:16px;}
+  .kp-month{display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .kp-dot{width:26px; height:26px; border-radius:50%; display:block; box-shadow:0 4px 10px -4px rgba(0,0,0,.35);}
+  .kp-label{font-size:11px; color:#8a8378; font-weight:600;}
+  .kp-arrow{color:#c9bfa8; font-size:14px;}
+  .kp-note{font-size:13px; color:#5b564e; font-style:italic; border-top:1px dashed var(--line); padding-top:12px; line-height:1.7;}
+
+  .kp-radar-row{display:flex; gap:22px; align-items:center; flex-wrap:wrap; margin-bottom:14px;}
+  .kp-radar-legend{display:flex; flex-direction:column; gap:8px; font-size:11.5px; color:#6b6459;}
+  .kp-legend-dot{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle;}
 </style>
 </head>
 <body>
@@ -181,6 +196,54 @@
       <div class="karte-tag">6개월 성장카르테 <span>(스에나가하트앤컬러 메소드)</span></div>
       <div class="karte-row"><b>색채표현의 변화</b> = 마음의 성장 기록</div>
       <div class="karte-row"><b>싹트기 시작한 능력</b> = 향후 발달 방향 예측</div>
+    </div>
+
+    <p style="font-family:'Noto Serif KR',serif; font-size:15.5px; color:var(--forest); font-weight:700; margin-top:24px;">이름만 바꾸면, 그대로 우리 아이의 카르테가 됩니다</p>
+
+    <div class="karte-preview">
+      <div class="karte-preview-head">
+        <span><span class="kp-name">OO</span>이의 6개월 성장카르테</span>
+        <span class="kp-badge">크레용숲 선생님이 직접 만들어드려요</span>
+      </div>
+      <div class="kp-timeline">
+        <div class="kp-month"><span class="kp-dot" style="background:#C1443B"></span><span class="kp-label">1월</span></div>
+        <div class="kp-arrow">→</div>
+        <div class="kp-month"><span class="kp-dot" style="background:#D3A24C"></span><span class="kp-label">2월</span></div>
+        <div class="kp-arrow">→</div>
+        <div class="kp-month"><span class="kp-dot" style="background:#E0C368"></span><span class="kp-label">3월</span></div>
+        <div class="kp-arrow">→</div>
+        <div class="kp-month"><span class="kp-dot" style="background:#93AC8C"></span><span class="kp-label">4월</span></div>
+        <div class="kp-arrow">→</div>
+        <div class="kp-month"><span class="kp-dot" style="background:#6E9C7D"></span><span class="kp-label">5월</span></div>
+        <div class="kp-arrow">→</div>
+        <div class="kp-month"><span class="kp-dot" style="background:#5E8FA6"></span><span class="kp-label">6월</span></div>
+      </div>
+
+      <div class="kp-radar-row">
+        <svg viewBox="0 0 200 190" width="140" height="133" style="flex-shrink:0;">
+          <polygon points="100,30 166.6,78.4 141.2,156.6 58.8,156.6 33.4,78.4" fill="none" stroke="#E4DBC9" stroke-width="1"/>
+          <polygon points="100,65 133.3,89.2 120.6,128.3 79.4,128.3 66.7,89.2" fill="none" stroke="#E4DBC9" stroke-width="1"/>
+          <line x1="100" y1="100" x2="100" y2="30" stroke="#E4DBC9"/>
+          <line x1="100" y1="100" x2="166.6" y2="78.4" stroke="#E4DBC9"/>
+          <line x1="100" y1="100" x2="141.2" y2="156.6" stroke="#E4DBC9"/>
+          <line x1="100" y1="100" x2="58.8" y2="156.6" stroke="#E4DBC9"/>
+          <line x1="100" y1="100" x2="33.4" y2="78.4" stroke="#E4DBC9"/>
+          <polygon points="100,75.5 120.0,93.5 116.5,122.7 87.7,117.0 83.4,94.6" fill="#C1443B" fill-opacity="0.16" stroke="#C1443B" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <polygon points="100,44 149.9,83.8 128.8,139.6 67.1,145.3 43.4,81.6" fill="#3E5F4C" fill-opacity="0.22" stroke="#2C4A3B" stroke-width="1.8"/>
+          <circle cx="100" cy="75.5" r="2.5" fill="#C1443B"/><circle cx="120.0" cy="93.5" r="2.5" fill="#C1443B"/><circle cx="116.5" cy="122.7" r="2.5" fill="#C1443B"/><circle cx="87.7" cy="117.0" r="2.5" fill="#C1443B"/><circle cx="83.4" cy="94.6" r="2.5" fill="#C1443B"/>
+          <circle cx="100" cy="44" r="2.5" fill="#2C4A3B"/><circle cx="149.9" cy="83.8" r="2.5" fill="#2C4A3B"/><circle cx="128.8" cy="139.6" r="2.5" fill="#2C4A3B"/><circle cx="67.1" cy="145.3" r="2.5" fill="#2C4A3B"/><circle cx="43.4" cy="81.6" r="2.5" fill="#2C4A3B"/>
+          <text x="100" y="20" font-size="9" fill="#8a8378" text-anchor="middle">감정표현</text>
+          <text x="182" y="76" font-size="9" fill="#8a8378" text-anchor="middle">색채다양성</text>
+          <text x="146" y="174" font-size="9" fill="#8a8378" text-anchor="middle">집중력</text>
+          <text x="54" y="174" font-size="9" fill="#8a8378" text-anchor="middle">자기표현</text>
+          <text x="18" y="76" font-size="9" fill="#8a8378" text-anchor="middle">안정감</text>
+        </svg>
+        <div class="kp-radar-legend">
+          <div><span class="kp-legend-dot" style="background:#C1443B; opacity:.55;"></span>1월 · 처음 만났을 때</div>
+          <div><span class="kp-legend-dot" style="background:#2C4A3B;"></span>6월 · 다섯 영역이 고르게 자란 지금</div>
+        </div>
+      </div>
+      <p class="kp-note">"빨강으로 가득했던 1월의 그림이, 6월엔 초록과 파랑이 균형을 이루는 그림으로 — 정서적 안정과 자기표현의 확장을 보여줍니다."</p>
     </div>
 
     <div class="karte-desc">
