@@ -1,5 +1,30 @@
 {
-  "child": [],
+  "child": [
+    {
+      "image": "/images/uploads/kakaotalk_photo_2026-07-21-11-41-23-009.jpeg"
+    },
+    {
+      "image": "/images/uploads/kakaotalk_photo_2026-07-21-11-41-23-007.jpeg"
+    },
+    {
+      "image": "/images/uploads/kakaotalk_photo_2026-07-21-11-41-23-006.jpeg"
+    },
+    {
+      "image": "/images/uploads/kakaotalk_photo_2026-07-21-11-41-23-005.jpeg"
+    },
+    {
+      "image": "/images/uploads/kakaotalk_photo_2026-07-21-11-41-23-004.jpeg"
+    },
+    {
+      "image": "/images/uploads/kakaotalk_photo_2026-07-21-11-41-23-003.jpeg"
+    },
+    {
+      "image": "/images/uploads/kakaotalk_photo_2026-07-21-11-41-23-002.jpeg"
+    },
+    {
+      "image": "/images/uploads/kakaotalk_photo_2026-07-21-11-41-22-001.jpeg"
+    }
+  ],
   "youth": [],
   "adult": [],
   "mom": []
