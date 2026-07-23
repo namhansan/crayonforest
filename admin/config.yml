@@ -55,6 +55,33 @@ collections:
               - { label: "날짜", name: "date", widget: "date", format: "YYYY-MM-DD" }
               - { label: "설명", name: "desc", widget: "text" }
 
+      - file: "content/intensive.json"
+        label: "SCHEDULE · 방학특강 시간표"
+        name: "intensive"
+        fields:
+          - { label: "표 사용 여부 (끄면 시간표 페이지에서 안 보임)", name: "enabled", widget: "boolean", default: true }
+          - { label: "제목", name: "title", widget: "string", default: "여름 방학특강 시간표" }
+          - { label: "기간 표시 문구 (예: 7.27 월 ~ 8.1 토)", name: "date_range", widget: "string" }
+          - label: "요일/날짜 (왼쪽부터 순서대로, 보통 6칸: 월~토)"
+            name: "columns"
+            widget: "list"
+            fields:
+              - { label: "표시할 요일·날짜", name: "day_label", widget: "string" }
+          - label: "시간대별 줄"
+            name: "rows"
+            widget: "list"
+            fields:
+              - { label: "시간 (예: 오전 11:00~12:30)", name: "time_label", widget: "string" }
+              - label: "각 요일 칸 (columns와 같은 순서·개수로 입력)"
+                name: "cells"
+                widget: "list"
+                fields:
+                  - { label: "말머리 태그 (예: *방학특강*, 없으면 비워두기)", name: "tag", widget: "string", required: false }
+                  - { label: "프로그램/반 이름 (없으면 비워두기)", name: "program", widget: "string", required: false }
+                  - { label: "상태", name: "status", widget: "select", options: ["없음","자리있음","마감"], default: "없음" }
+                  - { label: "상태 문구 (예: 2명 자리 / 마감)", name: "status_label", widget: "string", required: false }
+          - { label: "하단 안내 문구", name: "note", widget: "text", required: false }
+
       - file: "content/gallery.json"
         label: "프로그램별 활동사진"
         name: "gallery"
