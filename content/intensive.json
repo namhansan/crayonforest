@@ -1,0 +1,60 @@
+{
+  "enabled": true,
+  "title": "여름 방학특강 시간표",
+  "date_range": "7.27 월 ~ 8.1 토",
+  "columns": [
+    { "day_label": "월 27일" },
+    { "day_label": "화 28일" },
+    { "day_label": "수 29일" },
+    { "day_label": "목 30일" },
+    { "day_label": "금 31일" },
+    { "day_label": "토" }
+  ],
+  "rows": [
+    {
+      "time_label": "오전 11:00~12:30",
+      "cells": [
+        { "tag": "*방학특강*", "program": "아트캉스 초등고", "status": "자리있음", "status_label": "2명 자리" },
+        { "tag": "*방학특강*", "program": "미술관한점", "status": "마감", "status_label": "마감" },
+        { "tag": "*방학특강*", "program": "미술관한점", "status": "마감", "status_label": "마감" },
+        { "tag": "", "program": "", "status": "없음", "status_label": "" },
+        { "tag": "", "program": "", "status": "없음", "status_label": "" },
+        { "tag": "", "program": "토요특별반", "status": "마감", "status_label": "마감" }
+      ]
+    },
+    {
+      "time_label": "오후 2:00~3:40",
+      "cells": [
+        { "tag": "", "program": "마음여행가 정규반 초등고", "status": "자리있음", "status_label": "2명 자리" },
+        { "tag": "", "program": "", "status": "없음", "status_label": "" },
+        { "tag": "", "program": "마음여행가 정규반 초등저", "status": "마감", "status_label": "마감" },
+        { "tag": "", "program": "마음여행가 정규반 초등저", "status": "자리있음", "status_label": "2명 자리" },
+        { "tag": "*방학특강*", "program": "아트캉스", "status": "마감", "status_label": "마감" },
+        { "tag": "", "program": "", "status": "없음", "status_label": "" }
+      ]
+    },
+    {
+      "time_label": "오후 4:00~5:40",
+      "cells": [
+        { "tag": "", "program": "마음의 실험실 정규반 6~7세", "status": "자리있음", "status_label": "2명 자리" },
+        { "tag": "", "program": "", "status": "없음", "status_label": "" },
+        { "tag": "", "program": "마음의 실험실 정규반 6~7세", "status": "마감", "status_label": "마감" },
+        { "tag": "", "program": "마음의 실험실 정규반 6~7세", "status": "자리있음", "status_label": "1명 자리" },
+        { "tag": "", "program": "마음의 실험실 정규반 6~7세", "status": "마감", "status_label": "마감" },
+        { "tag": "", "program": "", "status": "없음", "status_label": "" }
+      ]
+    },
+    {
+      "time_label": "오후 6~8시 (학생 시간 협의)",
+      "cells": [
+        { "tag": "", "program": "", "status": "없음", "status_label": "" },
+        { "tag": "", "program": "", "status": "없음", "status_label": "" },
+        { "tag": "", "program": "", "status": "없음", "status_label": "" },
+        { "tag": "", "program": "청소년미술", "status": "없음", "status_label": "" },
+        { "tag": "", "program": "", "status": "없음", "status_label": "" },
+        { "tag": "", "program": "", "status": "없음", "status_label": "" }
+      ]
+    }
+  ],
+  "note": "※ 빈 칸도 방학특강 그룹(4명 이상) 신청 가능합니다. 오전 시간대와 청소년미술 시간대는 학생 시간에 맞춰 협의 가능해요."
+}
