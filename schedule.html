@@ -78,6 +78,22 @@
     opacity:0; pointer-events:none; transform:translateY(8px); transition:.25s;
   }
   .back-to-top.show{opacity:1; pointer-events:auto; transform:none;}
+
+  .intensive-wrap{margin-bottom:44px;}
+  .intensive-note{font-size:12.5px; color:#8a8378; margin:14px 0 4px;}
+  .intensive-scroll{overflow-x:auto; border:1px solid var(--line); border-radius:var(--radius-md); background:var(--paper);}
+  table.intensive-table{width:100%; border-collapse:collapse; min-width:640px; font-size:12.5px;}
+  table.intensive-table th, table.intensive-table td{border:1px solid var(--line); padding:10px 8px; text-align:center; vertical-align:middle;}
+  table.intensive-table thead th{background:var(--ivory-deep); color:var(--forest); font-weight:700; font-size:12px;}
+  table.intensive-table thead th:first-child{width:90px;}
+  table.intensive-table td.time-cell{background:var(--ivory-deep); color:var(--forest); font-weight:700; font-size:11.5px;}
+  table.intensive-table td .prog-name{display:block; font-weight:700; color:var(--ink); font-size:12px;}
+  table.intensive-table td .prog-tag{display:block; font-size:10px; color:var(--clay); font-weight:700; margin-bottom:2px;}
+  table.intensive-table td .status-open{display:block; font-size:11px; font-weight:700; color:#3E7A4E; margin-top:3px;}
+  table.intensive-table td .status-closed{display:block; font-size:11px; font-weight:700; color:#C0473F; margin-top:3px;}
+  .intensive-legend{display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; font-size:12px;}
+  .intensive-legend span{display:inline-flex; align-items:center; gap:5px;}
+  .intensive-legend i{width:9px; height:9px; border-radius:50%; display:inline-block;}
 </style>
 </head>
 <body>
@@ -98,6 +114,19 @@
     <div class="legend-item"><span class="legend-dot" style="background:var(--berry);"></span>YOUTH ART</div>
     <div class="legend-item"><span class="legend-dot" style="background:var(--clay);"></span>ADULT ART</div>
     <div class="legend-item"><span class="legend-dot" style="background:var(--sage);"></span>FOR MOM</div>
+  </div>
+
+  <div class="intensive-wrap" id="intensiveWrap">
+    <div class="eyebrow">Summer Intensive</div>
+    <h1 id="intensiveTitle" style="font-size:clamp(19px,2.6vw,24px); margin-top:6px;"></h1>
+    <div class="intensive-scroll">
+      <table class="intensive-table" id="intensiveTable"></table>
+    </div>
+    <div class="intensive-legend">
+      <span><i style="background:#3E7A4E;"></i>자리 있음</span>
+      <span><i style="background:#C0473F;"></i>마감</span>
+    </div>
+    <div class="intensive-note" id="intensiveNote"></div>
   </div>
 
   <div class="layout">
@@ -125,6 +154,35 @@
 <footer>© 2026 Forêt des Crayons · <a href="index.html" style="text-decoration:underline;">홈으로 돌아가기</a></footer>
 
 <script>
+/* ---------- 방학특강 시간표 (CMS 관리: content/intensive.json) ---------- */
+function renderIntensive(data){
+  const wrap = document.getElementById('intensiveWrap');
+  if(!data || data.enabled === false){ wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  document.getElementById('intensiveTitle').textContent = `${data.title || '방학특강 시간표'}${data.date_range ? ' ('+data.date_range+')' : ''}`;
+  document.getElementById('intensiveNote').textContent = data.note || '';
+
+  const cols = data.columns || [];
+  const rows = data.rows || [];
+  let html = '<thead><tr><th>시간</th>' + cols.map(c=>`<th>${c.day_label||''}</th>`).join('') + '</tr></thead><tbody>';
+  rows.forEach(r=>{
+    html += `<tr><td class="time-cell">${(r.time_label||'').replace(/\n/g,'<br>')}</td>`;
+    (r.cells||[]).forEach(c=>{
+      if(!c.program && !c.tag){ html += '<td></td>'; return; }
+      let inner = '';
+      if(c.tag) inner += `<span class="prog-tag">${c.tag}</span>`;
+      if(c.program) inner += `<span class="prog-name">${c.program.replace(/\n/g,'<br>')}</span>`;
+      if(c.status === '자리있음') inner += `<span class="status-open">${c.status_label||'자리있음'}</span>`;
+      else if(c.status === '마감') inner += `<span class="status-closed">${c.status_label||'마감'}</span>`;
+      html += `<td>${inner}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  document.getElementById('intensiveTable').innerHTML = html;
+}
+fetch('content/intensive.json').then(r=>r.json()).then(renderIntensive).catch(()=>{ document.getElementById('intensiveWrap').style.display='none'; });
+
 /* ---------- 정규 수업 시간표 ---------- */
 const PROGRAM_COLOR = { 'CHILD ART':'var(--gold)', 'YOUTH ART':'var(--berry)', 'ADULT ART':'var(--clay)', 'FOR MOM':'var(--sage)' };
 
