@@ -222,6 +222,10 @@
   .pebble-lead .c1{color:var(--sage);} .pebble-lead .c2{color:var(--gold);}
   .pebble-row{display:flex; justify-content:center; gap:26px; flex-wrap:nowrap; max-width:1080px; margin:0 auto;}
   @media(max-width:760px){ .pebble-row{flex-wrap:wrap;} }
+  @media(min-width:1150px){
+    .pebble-row{max-width:1300px; gap:40px;}
+    .pebble, .pebble-circle{width:230px; height:230px;}
+  }
   .pebble{width:190px; display:flex; flex-direction:column; align-items:center; opacity:0; transform:scale(.15) rotate(-8deg); transition:opacity .8s cubic-bezier(.34,1.56,.64,1), transform .8s cubic-bezier(.34,1.56,.64,1);}
   .pebble.in{opacity:1; transform:scale(1) rotate(0deg);}
   .pebble.in .pebble-circle{animation:pebbleWobble 6s ease-in-out .8s infinite;}
@@ -241,6 +245,23 @@
   }
   .pebble-tag{margin-top:20px; padding:8px 20px; border-radius:999px; border:1.5px solid; font-size:12px; font-weight:700; letter-spacing:1px;}
   .pebble-note{margin-top:64px; font-size:14px; color:var(--clay); font-weight:600;}
+
+  /* ---------- Mobile fallback: no scroll-jacking, everything flows normally ---------- */
+  @media(max-width:760px){
+    .hero-scroll{height:auto;}
+    .hero-panel{position:relative; height:auto; overflow:visible; padding:56px 0; background:linear-gradient(180deg,var(--ivory),#EDE4CE);}
+    .hp-bg{display:none;}
+    #hpanel1, #hpanel3{color:var(--forest);}
+    #hpanel2, #hpanel4{background:var(--forest); border-radius:24px; padding:36px 22px; margin-left:16px; margin-right:16px; max-width:none !important; width:auto;}
+    .hp-content{position:relative; opacity:1 !important; transform:none !important; max-width:100% !important; padding:0 22px; margin-bottom:64px;}
+    .hp-content:last-of-type{margin-bottom:0;}
+    #hpanel3{padding:0 12px;}
+    .pebble-row{gap:20px;}
+    .pebble{opacity:1 !important; transform:none !important; width:150px;}
+    .pebble-circle{width:150px; height:150px; font-size:11.5px;}
+    .flow-mini span, .flow-mini b{opacity:.95 !important; transform:none !important;}
+    .scroll-hint, .hero-dots{display:none;}
+  }
 
   /* ---------- Programs ---------- */
   .program-section{background:var(--ivory-deep); border-radius:var(--radius-lg); }
@@ -478,7 +499,7 @@
         <span><i class="fdot" style="background:#fff;"></i>INTEGRATION<em>세계관</em></span>
       </div>
     </div>
-    <div class="hp-content" id="hpanel3" style="max-width:1100px;">
+    <div class="hp-content" id="hpanel3" style="max-width:min(1320px, 94vw);">
       <div class="pebble-lead">크레용숲은 <b class="c1">감정과 감각</b> 그리고 <b class="c2">창조적 표현</b>을 통해<br>모든 사람이 <b class="c2">자기다운 세계</b>를 만들어가는 방식을 함께 탐구합니다.</div>
       <div class="pebble-row" id="pebbleRow">
         <div class="pebble">
