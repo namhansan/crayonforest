@@ -166,17 +166,18 @@
   .popup-close{font-size:13px; font-weight:600; color:var(--forest); text-decoration:underline;}
 
   /* ---------- Hero (scroll) ---------- */
-  .hero-scroll{height:280vh; position:relative;}
+  .hero-scroll{height:370vh; position:relative;}
   .hero-panel{
     position:sticky; top:0; height:100vh; display:flex; align-items:center; justify-content:center;
     flex-direction:column; text-align:center; overflow:hidden; border-radius:0 0 var(--radius-lg) var(--radius-lg);
   }
-  @media(max-width:720px){ .hero-scroll{height:260vh;} }
+  @media(max-width:720px){ .hero-scroll{height:340vh;} }
   .hp-bg{position:absolute; inset:0; opacity:0; transition:opacity 1s ease; overflow:hidden;}
   .hp-bg.on{opacity:1;}
   #hbg1{background:linear-gradient(160deg,var(--ivory),#D9E0C9);}
   #hbg2{background:linear-gradient(160deg,var(--sage),var(--forest-soft));}
-  #hbg3{background:linear-gradient(160deg,var(--forest),#16281E);}
+  #hbg3{background:linear-gradient(160deg,var(--ivory),#EFE6D0);}
+  #hbg4{background:linear-gradient(160deg,var(--forest),#16281E);}
   .blob{position:absolute; filter:blur(46px); opacity:.35; animation:heroDrift 13s ease-in-out infinite; border-radius:42% 58% 63% 37% / 47% 42% 58% 53%;}
   @keyframes heroDrift{
     0%{transform:translate(0,0) scale(1) rotate(0deg); border-radius:42% 58% 63% 37% / 47% 42% 58% 53%;}
@@ -190,11 +191,11 @@
   .hp-eyebrow{font-size:12px; letter-spacing:4px; text-transform:uppercase; font-weight:600; margin-bottom:18px; opacity:.85;}
   .hp-title{font-family:'Noto Serif KR',serif; font-size:clamp(24px,4.6vw,46px); line-height:1.4; font-weight:700;}
   .hp-title em{font-style:normal; color:var(--gold);}
-  #hpanel1 .hp-eyebrow, #hpanel1 .hp-title{color:var(--forest);}
-  #hpanel2 .hp-eyebrow, #hpanel2 .hp-title, #hpanel3 .hp-eyebrow, #hpanel3 .hp-title{color:#fff;}
+  #hpanel1 .hp-eyebrow, #hpanel1 .hp-title, #hpanel3 .hp-eyebrow, #hpanel3 .hp-title{color:var(--forest);}
+  #hpanel2 .hp-eyebrow, #hpanel2 .hp-title, #hpanel4 .hp-eyebrow, #hpanel4 .hp-title{color:#fff;}
   .hp-sub{margin-top:18px; font-size:15px; font-weight:300; line-height:1.8;}
-  #hpanel1 .hp-sub{color:#4b5548;}
-  #hpanel2 .hp-sub, #hpanel3 .hp-sub{color:#e7ecdf;}
+  #hpanel1 .hp-sub, #hpanel3 .hp-sub{color:#4b5548;}
+  #hpanel2 .hp-sub, #hpanel4 .hp-sub{color:#e7ecdf;}
   .hero-scroll .scroll-hint{position:absolute; bottom:30px; left:50%; transform:translateX(-50%); font-size:11px; letter-spacing:3px; z-index:2; opacity:.7; animation:bob 2s infinite; color:var(--forest);}
   @keyframes bob{0%,100%{transform:translate(-50%,0);} 50%{transform:translate(-50%,8px);}}
   .hero-dots{position:absolute; right:34px; top:50%; transform:translateY(-50%); z-index:3; display:flex; flex-direction:column; gap:11px;}
@@ -212,7 +213,7 @@
     border:1.5px solid var(--forest); color:var(--forest); padding:12px 22px; border-radius:999px;
     font-size:14px; font-weight:600;
   }
-  #hpanel3 .btn-outline{border-color:#fff; color:#fff;}
+  #hpanel4 .btn-outline{border-color:#fff; color:#fff;}
 
   /* ---------- Pebble reveal ---------- */
   .pebble-section{padding:100px 28px 70px; text-align:center; background:var(--ivory); position:relative; overflow:hidden;}
@@ -450,6 +451,11 @@
       <div class="blob" style="width:260px; height:260px; background:var(--berry); top:38%; right:22%; opacity:.4; animation-delay:-13s;"></div>
     </div>
     <div class="hp-bg" id="hbg3">
+      <div class="blob" style="width:420px; height:420px; background:var(--clay); top:4%; left:12%; opacity:.18; animation-delay:-2s;"></div>
+      <div class="blob" style="width:320px; height:320px; background:var(--gold); bottom:2%; right:6%; opacity:.16; animation-delay:-11s;"></div>
+    </div>
+
+    <div class="hp-bg" id="hbg4">
       <div class="blob" style="width:420px; height:420px; background:var(--clay); top:4%; left:12%; opacity:.4; animation-delay:-2s;"></div>
       <div class="blob" style="width:320px; height:320px; background:var(--gold); bottom:2%; right:6%; opacity:.35; animation-delay:-11s;"></div>
     </div>
@@ -472,7 +478,98 @@
         <span><i class="fdot" style="background:#fff;"></i>INTEGRATION<em>세계관</em></span>
       </div>
     </div>
-    <div class="hp-content" id="hpanel3">
+    <div class="hp-content" id="hpanel3" style="max-width:1100px;">
+      <div class="pebble-lead">크레용숲은 <b class="c1">감정과 감각</b> 그리고 <b class="c2">창조적 표현</b>을 통해<br>모든 사람이 <b class="c2">자기다운 세계</b>를 만들어가는 방식을 함께 탐구합니다.</div>
+      <div class="pebble-row" id="pebbleRow">
+        <div class="pebble">
+          <div class="pebble-circle">
+            <svg viewBox="230 220 220 220" preserveAspectRatio="xMidYMid slice">
+              <rect x="230" y="220" width="220" height="220" fill="#FBF6EE"/>
+              <ellipse cx="300" cy="365" rx="46" ry="16" fill="#3E5F4C" opacity=".18"/>
+              <path d="M262 365 Q260 300 300 300 Q340 300 338 365 Z" fill="#F4CE7E"/>
+              <circle cx="300" cy="270" r="32" fill="#F0C39A"/>
+              <path d="M270 260 Q300 225 330 260 Q328 240 300 236 Q272 240 270 260 Z" fill="#6B4A34"/>
+              <circle cx="290" cy="272" r="3" fill="#3A2E22"/><circle cx="310" cy="272" r="3" fill="#3A2E22"/>
+              <path d="M292 282 Q300 288 308 282" stroke="#3A2E22" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <path d="M330 305 L360 260" stroke="#F0C39A" stroke-width="12" stroke-linecap="round"/>
+              <rect x="352" y="248" width="10" height="26" rx="3" fill="#C1683F" transform="rotate(28 357 261)"/>
+            </svg>
+            <div class="tint" style="background:var(--gold);"></div>
+            <div class="scrim"></div>
+            <div class="ptext">감정·감각·표현이<br>처음 만나는<br>어린이 마음숲</div>
+          </div>
+          <div class="pebble-tag" style="border-color:var(--gold); color:var(--gold);">CHILD ART</div>
+        </div>
+        <div class="pebble">
+          <div class="pebble-circle">
+            <svg viewBox="330 230 220 220" preserveAspectRatio="xMidYMid slice">
+              <rect x="330" y="230" width="220" height="220" fill="#FBF6EE"/>
+              <path d="M470 190 Q520 150 580 185 Q590 210 560 220 Q530 225 500 215 Q475 210 470 190 Z" fill="#FBF6EE" opacity=".92"/>
+              <path d="M500 195 Q520 185 540 198" stroke="#8B4B5C" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <ellipse cx="400" cy="368" rx="60" ry="18" fill="#3E5F4C" opacity=".16"/>
+              <path d="M350 368 Q350 320 400 320 Q450 320 450 368 Z" fill="#B0728B"/>
+              <circle cx="400" cy="285" r="30" fill="#F0C39A"/>
+              <path d="M372 278 Q400 245 428 278 Q426 258 400 254 Q374 258 372 278 Z" fill="#3A2E22"/>
+              <circle cx="391" cy="288" r="2.6" fill="#3A2E22"/><circle cx="409" cy="288" r="2.6" fill="#3A2E22"/>
+              <rect x="366" y="345" width="68" height="46" rx="6" fill="#FBF6EE" stroke="#8B4B5C" stroke-width="2"/>
+              <path d="M378 360 h44 M378 372 h30" stroke="#C9B98A" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+            <div class="tint" style="background:var(--berry);"></div>
+            <div class="scrim"></div>
+            <div class="ptext">'나만의 사유의 숲'을<br>완성하는<br>청소년 사유의 숲</div>
+          </div>
+          <div class="pebble-tag" style="border-color:var(--berry); color:var(--berry);">YOUTH ART</div>
+        </div>
+        <div class="pebble">
+          <div class="pebble-circle">
+            <svg viewBox="285 215 285 285" preserveAspectRatio="xMidYMid slice">
+              <rect x="285" y="215" width="285" height="285" fill="#FBF6EE"/>
+              <ellipse cx="420" cy="330" rx="110" ry="26" fill="#FBF6EE" stroke="#fff" stroke-width="3"/>
+              <rect x="500" y="230" width="70" height="90" rx="8" fill="#FBF6EE" stroke="#C1683F" stroke-width="3" transform="rotate(6 535 275)"/>
+              <path d="M515 300 Q535 270 560 295" stroke="#D3A24C" stroke-width="5" fill="none" stroke-linecap="round" transform="rotate(6 535 275)"/>
+              <ellipse cx="330" cy="368" rx="55" ry="16" fill="#3E5F4C" opacity=".16"/>
+              <path d="M295 368 Q295 322 330 322 Q365 322 365 368 Z" fill="#8B4B5C"/>
+              <circle cx="330" cy="292" r="28" fill="#F0C39A"/>
+              <path d="M304 285 Q330 258 356 285 Q352 268 330 264 Q308 268 304 285 Z" fill="#5A4636"/>
+              <circle cx="322" cy="294" r="2.4" fill="#3A2E22"/><circle cx="338" cy="294" r="2.4" fill="#3A2E22"/>
+              <ellipse cx="370" cy="322" rx="16" ry="10" fill="#FBF6EE" stroke="#C1683F" stroke-width="2"/>
+              <path d="M382 320 q10 -2 10 6 q-4 6 -10 2" fill="none" stroke="#C1683F" stroke-width="2"/>
+              <path d="M366 306 q-3 -8 2 -12 M373 306 q2 -9 -2 -13" stroke="#C9B98A" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </svg>
+            <div class="tint" style="background:var(--clay);"></div>
+            <div class="scrim"></div>
+            <div class="ptext">감각을 회복하고,<br>삶의 결을 다시 짓는<br>어른의 감정의 숲</div>
+          </div>
+          <div class="pebble-tag" style="border-color:var(--clay); color:var(--clay);">ADULT ART</div>
+        </div>
+        <div class="pebble">
+          <div class="pebble-circle">
+            <svg viewBox="290 260 260 220" preserveAspectRatio="xMidYMid slice">
+              <rect x="290" y="260" width="260" height="220" fill="#FBF6EE"/>
+              <path d="M400 375 Q396 320 400 300" stroke="#5C7A56" stroke-width="6" fill="none" stroke-linecap="round"/>
+              <path d="M400 320 Q385 305 375 312 M400 315 Q415 300 428 308" stroke="#8FA888" stroke-width="5" fill="none" stroke-linecap="round"/>
+              <g transform="translate(330,300)">
+                <ellipse cx="0" cy="90" rx="26" ry="8" fill="#3E5F4C" opacity=".15"/>
+                <path d="M-20 90 Q-20 42 0 42 Q20 42 20 90 Z" fill="#B0728B"/>
+                <circle cx="0" cy="24" r="20" fill="#F0C39A"/>
+                <path d="M-16 18 Q0 -4 16 18 Q13 3 0 0 Q-13 3 -16 18 Z" fill="#5A4636"/>
+              </g>
+              <g transform="translate(478,300) scale(0.78)">
+                <ellipse cx="0" cy="90" rx="26" ry="8" fill="#3E5F4C" opacity=".15"/>
+                <path d="M-20 90 Q-20 42 0 42 Q20 42 20 90 Z" fill="#D3A24C"/>
+                <circle cx="0" cy="24" r="20" fill="#F0C39A"/>
+                <path d="M-16 20 Q0 -2 16 20 Q13 4 0 2 Q-13 4 -16 20 Z" fill="#3A2E22"/>
+              </g>
+            </svg>
+            <div class="tint" style="background:var(--sage);"></div>
+            <div class="scrim"></div>
+            <div class="ptext">엄마의 마음까지<br>함께 살피는<br>창조의 숲</div>
+          </div>
+          <div class="pebble-tag" style="border-color:var(--sage); color:var(--sage);">FOR MOM</div>
+        </div>
+      </div>
+    </div>
+    <div class="hp-content" id="hpanel4">
       <div class="hp-eyebrow">FORÊT DES CRAYONS</div>
       <h1 class="hp-title" style="font-size:clamp(22px,3.6vw,36px);">예술로 자기결을 세워가도록,<br>그 시작을 함께 합니다</h1>
       <div class="hero-btns">
@@ -483,104 +580,10 @@
 
     <div class="scroll-hint" id="heroScrollHint">SCROLL ↓</div>
     <div class="hero-dots" id="heroDots">
-      <span class="on"></span><span></span><span></span>
+      <span class="on"></span><span></span><span></span><span></span>
     </div>
   </div>
 </div>
-
-<!-- ===== 4가지 조약돌 ===== -->
-<section class="pebble-section">
-  <div class="pebble-lead">크레용숲은 <b class="c1">감정과 감각</b> 그리고 <b class="c2">창조적 표현</b>을 통해<br>모든 사람이 <b class="c2">자기다운 세계</b>를 만들어가는 방식을 함께 탐구합니다.</div>
-  <div class="pebble-row" id="pebbleRow">
-    <div class="pebble">
-      <div class="pebble-circle">
-        <svg viewBox="230 220 220 220" preserveAspectRatio="xMidYMid slice">
-          <rect x="230" y="220" width="220" height="220" fill="#FBF6EE"/>
-          <ellipse cx="300" cy="365" rx="46" ry="16" fill="#3E5F4C" opacity=".18"/>
-          <path d="M262 365 Q260 300 300 300 Q340 300 338 365 Z" fill="#F4CE7E"/>
-          <circle cx="300" cy="270" r="32" fill="#F0C39A"/>
-          <path d="M270 260 Q300 225 330 260 Q328 240 300 236 Q272 240 270 260 Z" fill="#6B4A34"/>
-          <circle cx="290" cy="272" r="3" fill="#3A2E22"/><circle cx="310" cy="272" r="3" fill="#3A2E22"/>
-          <path d="M292 282 Q300 288 308 282" stroke="#3A2E22" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-          <path d="M330 305 L360 260" stroke="#F0C39A" stroke-width="12" stroke-linecap="round"/>
-          <rect x="352" y="248" width="10" height="26" rx="3" fill="#C1683F" transform="rotate(28 357 261)"/>
-        </svg>
-        <div class="tint" style="background:var(--gold);"></div>
-        <div class="scrim"></div>
-        <div class="ptext">감정·감각·표현이<br>처음 만나는<br>어린이 마음숲</div>
-      </div>
-      <div class="pebble-tag" style="border-color:var(--gold); color:var(--gold);">CHILD ART</div>
-    </div>
-    <div class="pebble">
-      <div class="pebble-circle">
-        <svg viewBox="330 230 220 220" preserveAspectRatio="xMidYMid slice">
-          <rect x="330" y="230" width="220" height="220" fill="#FBF6EE"/>
-          <path d="M470 190 Q520 150 580 185 Q590 210 560 220 Q530 225 500 215 Q475 210 470 190 Z" fill="#FBF6EE" opacity=".92"/>
-          <path d="M500 195 Q520 185 540 198" stroke="#8B4B5C" stroke-width="4" fill="none" stroke-linecap="round"/>
-          <ellipse cx="400" cy="368" rx="60" ry="18" fill="#3E5F4C" opacity=".16"/>
-          <path d="M350 368 Q350 320 400 320 Q450 320 450 368 Z" fill="#B0728B"/>
-          <circle cx="400" cy="285" r="30" fill="#F0C39A"/>
-          <path d="M372 278 Q400 245 428 278 Q426 258 400 254 Q374 258 372 278 Z" fill="#3A2E22"/>
-          <circle cx="391" cy="288" r="2.6" fill="#3A2E22"/><circle cx="409" cy="288" r="2.6" fill="#3A2E22"/>
-          <rect x="366" y="345" width="68" height="46" rx="6" fill="#FBF6EE" stroke="#8B4B5C" stroke-width="2"/>
-          <path d="M378 360 h44 M378 372 h30" stroke="#C9B98A" stroke-width="3" stroke-linecap="round"/>
-        </svg>
-        <div class="tint" style="background:var(--berry);"></div>
-        <div class="scrim"></div>
-        <div class="ptext">'나만의 사유의 숲'을<br>완성하는<br>청소년 사유의 숲</div>
-      </div>
-      <div class="pebble-tag" style="border-color:var(--berry); color:var(--berry);">YOUTH ART</div>
-    </div>
-    <div class="pebble">
-      <div class="pebble-circle">
-        <svg viewBox="285 215 285 285" preserveAspectRatio="xMidYMid slice">
-          <rect x="285" y="215" width="285" height="285" fill="#FBF6EE"/>
-          <ellipse cx="420" cy="330" rx="110" ry="26" fill="#FBF6EE" stroke="#fff" stroke-width="3"/>
-          <rect x="500" y="230" width="70" height="90" rx="8" fill="#FBF6EE" stroke="#C1683F" stroke-width="3" transform="rotate(6 535 275)"/>
-          <path d="M515 300 Q535 270 560 295" stroke="#D3A24C" stroke-width="5" fill="none" stroke-linecap="round" transform="rotate(6 535 275)"/>
-          <ellipse cx="330" cy="368" rx="55" ry="16" fill="#3E5F4C" opacity=".16"/>
-          <path d="M295 368 Q295 322 330 322 Q365 322 365 368 Z" fill="#8B4B5C"/>
-          <circle cx="330" cy="292" r="28" fill="#F0C39A"/>
-          <path d="M304 285 Q330 258 356 285 Q352 268 330 264 Q308 268 304 285 Z" fill="#5A4636"/>
-          <circle cx="322" cy="294" r="2.4" fill="#3A2E22"/><circle cx="338" cy="294" r="2.4" fill="#3A2E22"/>
-          <ellipse cx="370" cy="322" rx="16" ry="10" fill="#FBF6EE" stroke="#C1683F" stroke-width="2"/>
-          <path d="M382 320 q10 -2 10 6 q-4 6 -10 2" fill="none" stroke="#C1683F" stroke-width="2"/>
-          <path d="M366 306 q-3 -8 2 -12 M373 306 q2 -9 -2 -13" stroke="#C9B98A" stroke-width="2" fill="none" stroke-linecap="round"/>
-        </svg>
-        <div class="tint" style="background:var(--clay);"></div>
-        <div class="scrim"></div>
-        <div class="ptext">감각을 회복하고,<br>삶의 결을 다시 짓는<br>어른의 감정의 숲</div>
-      </div>
-      <div class="pebble-tag" style="border-color:var(--clay); color:var(--clay);">ADULT ART</div>
-    </div>
-    <div class="pebble">
-      <div class="pebble-circle">
-        <svg viewBox="290 260 260 220" preserveAspectRatio="xMidYMid slice">
-          <rect x="290" y="260" width="260" height="220" fill="#FBF6EE"/>
-          <path d="M400 375 Q396 320 400 300" stroke="#5C7A56" stroke-width="6" fill="none" stroke-linecap="round"/>
-          <path d="M400 320 Q385 305 375 312 M400 315 Q415 300 428 308" stroke="#8FA888" stroke-width="5" fill="none" stroke-linecap="round"/>
-          <g transform="translate(330,300)">
-            <ellipse cx="0" cy="90" rx="26" ry="8" fill="#3E5F4C" opacity=".15"/>
-            <path d="M-20 90 Q-20 42 0 42 Q20 42 20 90 Z" fill="#B0728B"/>
-            <circle cx="0" cy="24" r="20" fill="#F0C39A"/>
-            <path d="M-16 18 Q0 -4 16 18 Q13 3 0 0 Q-13 3 -16 18 Z" fill="#5A4636"/>
-          </g>
-          <g transform="translate(478,300) scale(0.78)">
-            <ellipse cx="0" cy="90" rx="26" ry="8" fill="#3E5F4C" opacity=".15"/>
-            <path d="M-20 90 Q-20 42 0 42 Q20 42 20 90 Z" fill="#D3A24C"/>
-            <circle cx="0" cy="24" r="20" fill="#F0C39A"/>
-            <path d="M-16 20 Q0 -2 16 20 Q13 4 0 2 Q-13 4 -16 20 Z" fill="#3A2E22"/>
-          </g>
-        </svg>
-        <div class="tint" style="background:var(--sage);"></div>
-        <div class="scrim"></div>
-        <div class="ptext">엄마의 마음까지<br>함께 살피는<br>창조의 숲</div>
-      </div>
-      <div class="pebble-tag" style="border-color:var(--sage); color:var(--sage);">FOR MOM</div>
-    </div>
-  </div>
-  <div class="pebble-note">아이들은 예술의 씨앗을 심고, 어른들은 감정의 숲을 거니는 곳</div>
-</section>
 
 <!-- ===== Programs ===== -->
 <section id="program" class="wrap">
@@ -903,12 +906,13 @@ function loadSiteContent(){
 /* ---------- Hero scroll (3-stage) ---------- */
 const heroScroller = document.getElementById('heroScroll');
 let flowTriggered = false;
+let pebbleTriggered = false;
 window.addEventListener('scroll', ()=>{
   const rect = heroScroller.getBoundingClientRect();
   const total = heroScroller.offsetHeight - window.innerHeight;
   const scrolled = Math.min(Math.max(-rect.top,0), total);
   const progress = total > 0 ? scrolled / total : 0;
-  const stage = Math.min(2, Math.floor(progress * 3));
+  const stage = Math.min(3, Math.floor(progress * 4));
 
   document.querySelectorAll('.hp-bg').forEach((el,i)=> el.classList.toggle('on', i===stage));
   document.querySelectorAll('.hp-content').forEach((el,i)=> el.classList.toggle('on', i===stage));
@@ -923,21 +927,11 @@ window.addEventListener('scroll', ()=>{
     const items = document.querySelectorAll('#hpanel2 .flow-mini span, #hpanel2 .flow-mini b');
     items.forEach((el,i)=> setTimeout(()=> el.classList.add('fm-in'), i*220));
   }
+  if(stage===2 && !pebbleTriggered){
+    pebbleTriggered = true;
+    document.querySelectorAll('.pebble').forEach((p,i)=> setTimeout(()=> p.classList.add('in'), i*160));
+  }
 });
-
-/* ---------- 조약돌 리빌 ---------- */
-const pebbles = document.querySelectorAll('.pebble');
-if(pebbles.length){
-  const pebbleObserver = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{
-      if(e.isIntersecting){
-        pebbles.forEach((p,i)=> setTimeout(()=> p.classList.add('in'), i*160));
-        pebbleObserver.disconnect();
-      }
-    });
-  }, {threshold:0.3});
-  pebbleObserver.observe(document.getElementById('pebbleRow'));
-}
 
 /* ---------- Program tabs ---------- */
 const programData = {
