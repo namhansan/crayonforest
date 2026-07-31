@@ -254,6 +254,35 @@
   .pebble-tag{margin-top:20px; padding:8px 20px; border-radius:999px; border:1.5px solid; font-size:12px; font-weight:700; letter-spacing:1px;}
   .pebble-note{margin-top:64px; font-size:14px; color:var(--clay); font-weight:600;}
 
+  /* ---------- Intro loader: blobs drift -> crayons appear/disappear -> title reveal ---------- */
+  .intro-loader{
+    position:fixed; inset:0; z-index:9999; background:var(--ivory);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    transition:opacity .9s ease;
+  }
+  .intro-loader.hide{opacity:0; pointer-events:none;}
+  .intro-loader .blob{animation-duration:14s;}
+  .intro-crayons{position:relative; z-index:2; display:flex; align-items:flex-end; gap:22px;}
+  .intro-crayon{width:34px; opacity:0; transform:translateY(46px) scale(.4) rotate(-14deg); animation:crayonInOut 2.6s ease forwards;}
+  .intro-crayon svg{width:100%; display:block; filter:drop-shadow(0 10px 14px rgba(0,0,0,.15));}
+  @keyframes crayonInOut{
+    0%{opacity:0; transform:translateY(46px) scale(.4) rotate(-14deg);}
+    16%{opacity:1; transform:translateY(0) scale(1.1) rotate(5deg);}
+    28%{opacity:1; transform:translateY(0) scale(1) rotate(-3deg);}
+    72%{opacity:1; transform:translateY(-6px) scale(1) rotate(2deg);}
+    100%{opacity:0; transform:translateY(-58px) scale(.5) rotate(12deg);}
+  }
+  @media(max-width:600px){ .intro-crayons{gap:12px;} .intro-crayon{width:24px;} }
+
+  .hp-title.brand-title{
+    font-family:'Playfair Display',serif; font-style:italic; font-weight:600;
+    font-size:clamp(32px,7.6vw,88px); letter-spacing:.5px; line-height:1.05; color:var(--forest);
+  }
+  .hp-taglist{
+    margin-top:24px; display:flex; gap:30px; flex-wrap:wrap; align-items:center; justify-content:center;
+    font-size:13px; color:#8a8378; letter-spacing:.2px;
+  }
+
   /* ---------- Mobile fallback: no scroll-jacking, everything flows normally ---------- */
   @media(max-width:760px){
     .hero-scroll{height:auto;}
@@ -420,6 +449,31 @@
 </head>
 <body>
 
+<!-- ===== Intro loader: drifting color blobs, then crayons appear & fade, then hero title reveals ===== -->
+<div class="intro-loader" id="introLoader">
+  <div class="blob" style="width:300px; height:300px; background:var(--gold); top:6%; left:8%; opacity:.4; animation-delay:0s;"></div>
+  <div class="blob" style="width:240px; height:240px; background:var(--sage); bottom:8%; right:10%; opacity:.4; animation-delay:-5s;"></div>
+  <div class="blob" style="width:260px; height:260px; background:var(--clay); top:10%; right:6%; opacity:.3; animation-delay:-9s;"></div>
+  <div class="blob" style="width:220px; height:220px; background:var(--berry); bottom:4%; left:6%; opacity:.28; animation-delay:-3s;"></div>
+  <div class="intro-crayons" id="introCrayons">
+    <div class="intro-crayon" style="animation-delay:.05s;">
+      <svg viewBox="0 0 44 150"><path d="M22 4 L34 30 L34 130 Q34 140 24 140 L20 140 Q10 140 10 130 L10 30 Z" fill="var(--gold)"/><path d="M22 4 L34 30 L10 30 Z" fill="var(--gold)" opacity=".7"/><rect x="10" y="60" width="24" height="24" fill="#FBF6EE" opacity=".92"/><rect x="10" y="66" width="24" height="3" fill="var(--gold)" opacity=".6"/><rect x="10" y="75" width="24" height="3" fill="var(--gold)" opacity=".6"/></svg>
+    </div>
+    <div class="intro-crayon" style="animation-delay:.22s;">
+      <svg viewBox="0 0 44 150"><path d="M22 4 L34 30 L34 130 Q34 140 24 140 L20 140 Q10 140 10 130 L10 30 Z" fill="var(--clay)"/><path d="M22 4 L34 30 L10 30 Z" fill="var(--clay)" opacity=".7"/><rect x="10" y="60" width="24" height="24" fill="#FBF6EE" opacity=".92"/><rect x="10" y="66" width="24" height="3" fill="var(--clay)" opacity=".6"/><rect x="10" y="75" width="24" height="3" fill="var(--clay)" opacity=".6"/></svg>
+    </div>
+    <div class="intro-crayon" style="animation-delay:.4s;">
+      <svg viewBox="0 0 44 150"><path d="M22 4 L34 30 L34 130 Q34 140 24 140 L20 140 Q10 140 10 130 L10 30 Z" fill="var(--berry)"/><path d="M22 4 L34 30 L10 30 Z" fill="var(--berry)" opacity=".7"/><rect x="10" y="60" width="24" height="24" fill="#FBF6EE" opacity=".92"/><rect x="10" y="66" width="24" height="3" fill="var(--berry)" opacity=".6"/><rect x="10" y="75" width="24" height="3" fill="var(--berry)" opacity=".6"/></svg>
+    </div>
+    <div class="intro-crayon" style="animation-delay:.58s;">
+      <svg viewBox="0 0 44 150"><path d="M22 4 L34 30 L34 130 Q34 140 24 140 L20 140 Q10 140 10 130 L10 30 Z" fill="var(--sage)"/><path d="M22 4 L34 30 L10 30 Z" fill="var(--sage)" opacity=".7"/><rect x="10" y="60" width="24" height="24" fill="#FBF6EE" opacity=".92"/><rect x="10" y="66" width="24" height="3" fill="var(--sage)" opacity=".6"/><rect x="10" y="75" width="24" height="3" fill="var(--sage)" opacity=".6"/></svg>
+    </div>
+    <div class="intro-crayon" style="animation-delay:.76s;">
+      <svg viewBox="0 0 44 150"><path d="M22 4 L34 30 L34 130 Q34 140 24 140 L20 140 Q10 140 10 130 L10 30 Z" fill="var(--forest)"/><path d="M22 4 L34 30 L10 30 Z" fill="var(--forest)" opacity=".7"/><rect x="10" y="60" width="24" height="24" fill="#FBF6EE" opacity=".92"/><rect x="10" y="66" width="24" height="3" fill="var(--forest)" opacity=".6"/><rect x="10" y="75" width="24" height="3" fill="var(--forest)" opacity=".6"/></svg>
+    </div>
+  </div>
+</div>
+
 <!-- ===== Popup ===== -->
 <div class="popup-overlay" id="popupOverlay">
   <div class="popup-card">
@@ -489,9 +543,12 @@
       <div class="blob" style="width:320px; height:320px; background:var(--gold); bottom:2%; right:6%; opacity:.35; animation-delay:-11s;"></div>
     </div>
 
-    <div class="hp-content on" id="hpanel1">
-      <div class="hp-eyebrow">감정은 예술이 되고, 예술은 세계관이 됩니다</div>
-      <h1 class="hp-title">서로 다른 색을 가진 사람들이<br><em>자기다움</em>으로 자라는 크레용숲</h1>
+    <div class="hp-content" id="hpanel1">
+      <div class="hp-eyebrow">감정은 예술이 되고, 예술은 세계관이 됩니다.</div>
+      <h1 class="hp-title brand-title">FORÊT DES CRAYONS</h1>
+      <div class="hp-taglist">
+        <span>Emotional Art</span><span>Color Psychology + Child Art</span><span>Forêt des Crayons</span>
+      </div>
       <div class="hero-btns">
         <a href="#program" class="btn-outline">프로그램 보기</a>
       </div>
@@ -931,6 +988,26 @@ function loadSiteContent(){
     }
   }).catch(()=>{});
 }
+
+/* ---------- Intro loader: blobs drift, crayons pop in/out, then hero title reveals ---------- */
+(function(){
+  const loader = document.getElementById('introLoader');
+  const hpanel1 = document.getElementById('hpanel1');
+  if(!loader) return;
+  if(sessionStorage.getItem('cfIntroPlayed')){
+    loader.style.display = 'none';
+    if(hpanel1) hpanel1.classList.add('on');
+    return;
+  }
+  document.body.style.overflow = 'hidden';
+  setTimeout(()=>{
+    loader.classList.add('hide');
+    if(hpanel1) hpanel1.classList.add('on');
+    document.body.style.overflow = '';
+    sessionStorage.setItem('cfIntroPlayed','1');
+    setTimeout(()=>{ loader.style.display = 'none'; }, 950);
+  }, 3300);
+})();
 
 /* ---------- Hero scroll (3-stage) ---------- */
 const heroScroller = document.getElementById('heroScroll');
