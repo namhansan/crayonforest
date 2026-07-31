@@ -194,7 +194,11 @@
     75%{transform:translate(110px,60px) scale(1.15) rotate(10deg); border-radius:63% 37% 46% 54% / 40% 55% 45% 60%;}
     100%{transform:translate(0,0) scale(1) rotate(0deg); border-radius:42% 58% 63% 37% / 47% 42% 58% 53%;}
   }
-  .hp-content{position:relative; z-index:2; max-width:760px; padding:0 30px; opacity:0; transform:translateY(18px); transition:opacity .8s ease, transform .8s ease;}
+  .hp-content{
+    position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:0 30px; opacity:0; transform:translateY(18px); transition:opacity .8s ease, transform .8s ease;
+  }
+  .hp-content > *{max-width:760px;}
   .hp-content.on{opacity:1; transform:translateY(0);}
   .hp-eyebrow{font-size:12px; letter-spacing:4px; text-transform:uppercase; font-weight:600; margin-bottom:18px; opacity:.85;}
   .hp-title{font-family:'Noto Serif KR',serif; font-size:clamp(24px,4.6vw,46px); line-height:1.4; font-weight:700;}
@@ -256,7 +260,7 @@
 
   /* ---------- Intro loader: blobs drift -> crayons appear/disappear -> title reveal ---------- */
   .intro-loader{
-    position:fixed; inset:0; z-index:9999; background:var(--ivory);
+    position:fixed; inset:0; z-index:150; background:var(--ivory);
     display:flex; align-items:center; justify-content:center; overflow:hidden;
     transition:opacity .9s ease;
   }
@@ -279,7 +283,7 @@
   .hp-title.brand-title{
     font-family:'Playfair Display',serif; font-style:italic; font-weight:600;
     font-size:clamp(26px,6.4vw,74px); letter-spacing:.5px; line-height:1.05; color:var(--forest);
-    white-space:nowrap;
+    white-space:nowrap; width:max-content; max-width:92vw; margin:0 auto;
   }
   .hp-taglist{
     margin-top:24px; display:flex; gap:30px; flex-wrap:wrap; align-items:center; justify-content:center;
@@ -546,7 +550,7 @@
       <div class="blob" style="width:320px; height:320px; background:var(--gold); bottom:2%; right:6%; opacity:.35; animation-delay:-11s;"></div>
     </div>
 
-    <div class="hp-content" id="hpanel1" style="max-width:min(1200px, 94vw);">
+    <div class="hp-content" id="hpanel1">
       <div class="hp-eyebrow">감정은 예술이 되고, 예술은 세계관이 됩니다.</div>
       <h1 class="hp-title brand-title">FORÊT DES CRAYONS</h1>
       <div class="hp-taglist">
@@ -567,7 +571,7 @@
         <span><i class="fdot" style="background:#fff;"></i>INTEGRATION<em>세계관</em></span>
       </div>
     </div>
-    <div class="hp-content" id="hpanel3" style="max-width:min(1320px, 94vw);">
+    <div class="hp-content" id="hpanel3">
       <div class="pebble-lead">크레용숲은 <b class="c1">감정과 감각</b> 그리고 <b class="c2">창조적 표현</b>을 통해<br>모든 사람이 <b class="c2">자기다운 세계</b>를 만들어가는 방식을 함께 탐구합니다.</div>
       <div class="pebble-row" id="pebbleRow">
         <div class="pebble">
@@ -993,10 +997,19 @@ function loadSiteContent(){
 }
 
 /* ---------- Intro loader: blobs drift, crayons pop in/out, then hero title reveals ---------- */
-(function(){
+function playIntro(){
   const loader = document.getElementById('introLoader');
   const hpanel1 = document.getElementById('hpanel1');
   if(!loader) return;
+  loader.style.display = 'flex';
+  loader.classList.remove('hide');
+  if(hpanel1) hpanel1.classList.remove('on');
+  // restart the crayon pop animations from frame 0
+  const crayons = document.querySelectorAll('.intro-crayon');
+  crayons.forEach(el=>{ el.style.animation = 'none'; });
+  void loader.offsetWidth; // force reflow so the reset takes effect
+  crayons.forEach(el=>{ el.style.animation = ''; });
+
   document.body.style.overflow = 'hidden';
   setTimeout(()=>{
     loader.classList.add('hide');
@@ -1004,7 +1017,16 @@ function loadSiteContent(){
     document.body.style.overflow = '';
     setTimeout(()=>{ loader.style.display = 'none'; }, 950);
   }, 5300);
-})();
+}
+playIntro();
+
+document.querySelectorAll('a[href="#top"]').forEach(link=>{
+  link.addEventListener('click', (e)=>{
+    e.preventDefault();
+    window.scrollTo({top:0, behavior:'instant'});
+    playIntro();
+  });
+});
 
 /* ---------- Hero scroll (3-stage) ---------- */
 const heroScroller = document.getElementById('heroScroll');
