@@ -204,7 +204,7 @@
   .hp-sub{margin-top:18px; font-size:15px; font-weight:300; line-height:1.8;}
   #hpanel1 .hp-sub, #hpanel3 .hp-sub{color:#4b5548;}
   #hpanel2 .hp-sub, #hpanel4 .hp-sub{color:#e7ecdf;}
-  .hero-scroll .scroll-hint{position:absolute; bottom:30px; left:50%; transform:translateX(-50%); font-size:11px; letter-spacing:3px; z-index:2; opacity:.7; animation:bob 2s infinite; color:var(--forest);}
+  .hero-scroll .scroll-hint{position:absolute; bottom:30px; left:50%; transform:translateX(-50%); font-size:12px; font-weight:700; letter-spacing:3px; z-index:6; opacity:.85; animation:bob 2s infinite; color:var(--forest);}
   @keyframes bob{0%,100%{transform:translate(-50%,0);} 50%{transform:translate(-50%,8px);}}
   .hero-dots{position:absolute; right:34px; top:50%; transform:translateY(-50%); z-index:3; display:flex; flex-direction:column; gap:11px;}
   .hero-dots span{width:6px; height:6px; border-radius:50%; background:#999; opacity:.35; transition:.3s;}
@@ -262,21 +262,24 @@
   }
   .intro-loader.hide{opacity:0; pointer-events:none;}
   .intro-loader .blob{animation-duration:14s;}
-  .intro-crayons{position:relative; z-index:2; display:flex; align-items:flex-end; gap:22px;}
-  .intro-crayon{width:34px; opacity:0; transform:translateY(46px) scale(.4) rotate(-14deg); animation:crayonInOut 2.6s ease forwards;}
+  .intro-crayons{position:relative; z-index:2; display:flex; align-items:flex-end; gap:26px;}
+  .intro-crayon{width:52px; opacity:0; transform:translateY(46px) scale(.4) rotate(-14deg); animation:crayonInOut 3.8s ease forwards;}
   .intro-crayon svg{width:100%; display:block; filter:drop-shadow(0 10px 14px rgba(0,0,0,.15));}
   @keyframes crayonInOut{
     0%{opacity:0; transform:translateY(46px) scale(.4) rotate(-14deg);}
-    16%{opacity:1; transform:translateY(0) scale(1.1) rotate(5deg);}
-    28%{opacity:1; transform:translateY(0) scale(1) rotate(-3deg);}
-    72%{opacity:1; transform:translateY(-6px) scale(1) rotate(2deg);}
+    14%{opacity:1; transform:translateY(0) scale(1.1) rotate(5deg);}
+    24%{opacity:1; transform:translateY(0) scale(1) rotate(-3deg);}
+    40%{transform:translateY(-4px) scale(1) rotate(2deg);}
+    60%{transform:translateY(0) scale(1) rotate(-2deg);}
+    82%{opacity:1; transform:translateY(-4px) scale(1) rotate(1deg);}
     100%{opacity:0; transform:translateY(-58px) scale(.5) rotate(12deg);}
   }
-  @media(max-width:600px){ .intro-crayons{gap:12px;} .intro-crayon{width:24px;} }
+  @media(max-width:600px){ .intro-crayons{gap:16px;} .intro-crayon{width:36px;} }
 
   .hp-title.brand-title{
     font-family:'Playfair Display',serif; font-style:italic; font-weight:600;
-    font-size:clamp(32px,7.6vw,88px); letter-spacing:.5px; line-height:1.05; color:var(--forest);
+    font-size:clamp(26px,6.4vw,74px); letter-spacing:.5px; line-height:1.05; color:var(--forest);
+    white-space:nowrap;
   }
   .hp-taglist{
     margin-top:24px; display:flex; gap:30px; flex-wrap:wrap; align-items:center; justify-content:center;
@@ -456,20 +459,20 @@
   <div class="blob" style="width:260px; height:260px; background:var(--clay); top:10%; right:6%; opacity:.3; animation-delay:-9s;"></div>
   <div class="blob" style="width:220px; height:220px; background:var(--berry); bottom:4%; left:6%; opacity:.28; animation-delay:-3s;"></div>
   <div class="intro-crayons" id="introCrayons">
-    <div class="intro-crayon" style="animation-delay:.05s;">
-      <svg viewBox="0 0 44 150"><path d="M22 4 L34 30 L34 130 Q34 140 24 140 L20 140 Q10 140 10 130 L10 30 Z" fill="var(--gold)"/><path d="M22 4 L34 30 L10 30 Z" fill="var(--gold)" opacity=".7"/><rect x="10" y="60" width="24" height="24" fill="#FBF6EE" opacity=".92"/><rect x="10" y="66" width="24" height="3" fill="var(--gold)" opacity=".6"/><rect x="10" y="75" width="24" height="3" fill="var(--gold)" opacity=".6"/></svg>
+    <div class="intro-crayon" style="animation-delay:.1s;">
+      <svg viewBox="0 0 60 150"><path d="M30 8 Q47 18 44 44 L16 44 Q13 18 30 8 Z" fill="var(--gold)"/><ellipse cx="24" cy="24" rx="4" ry="9" fill="#fff" opacity=".28"/><rect x="12" y="42" width="36" height="96" rx="16" fill="var(--gold)"/><rect x="12" y="80" width="36" height="34" rx="7" fill="#FBF6EE" opacity=".93"/><rect x="12" y="88" width="36" height="4" fill="var(--gold)" opacity=".6"/><rect x="12" y="99" width="36" height="4" fill="var(--gold)" opacity=".6"/></svg>
     </div>
-    <div class="intro-crayon" style="animation-delay:.22s;">
-      <svg viewBox="0 0 44 150"><path d="M22 4 L34 30 L34 130 Q34 140 24 140 L20 140 Q10 140 10 130 L10 30 Z" fill="var(--clay)"/><path d="M22 4 L34 30 L10 30 Z" fill="var(--clay)" opacity=".7"/><rect x="10" y="60" width="24" height="24" fill="#FBF6EE" opacity=".92"/><rect x="10" y="66" width="24" height="3" fill="var(--clay)" opacity=".6"/><rect x="10" y="75" width="24" height="3" fill="var(--clay)" opacity=".6"/></svg>
+    <div class="intro-crayon" style="animation-delay:.45s;">
+      <svg viewBox="0 0 60 150"><path d="M30 8 Q47 18 44 44 L16 44 Q13 18 30 8 Z" fill="var(--clay)"/><ellipse cx="24" cy="24" rx="4" ry="9" fill="#fff" opacity=".28"/><rect x="12" y="42" width="36" height="96" rx="16" fill="var(--clay)"/><rect x="12" y="80" width="36" height="34" rx="7" fill="#FBF6EE" opacity=".93"/><rect x="12" y="88" width="36" height="4" fill="var(--clay)" opacity=".6"/><rect x="12" y="99" width="36" height="4" fill="var(--clay)" opacity=".6"/></svg>
     </div>
-    <div class="intro-crayon" style="animation-delay:.4s;">
-      <svg viewBox="0 0 44 150"><path d="M22 4 L34 30 L34 130 Q34 140 24 140 L20 140 Q10 140 10 130 L10 30 Z" fill="var(--berry)"/><path d="M22 4 L34 30 L10 30 Z" fill="var(--berry)" opacity=".7"/><rect x="10" y="60" width="24" height="24" fill="#FBF6EE" opacity=".92"/><rect x="10" y="66" width="24" height="3" fill="var(--berry)" opacity=".6"/><rect x="10" y="75" width="24" height="3" fill="var(--berry)" opacity=".6"/></svg>
+    <div class="intro-crayon" style="animation-delay:.8s;">
+      <svg viewBox="0 0 60 150"><path d="M30 8 Q47 18 44 44 L16 44 Q13 18 30 8 Z" fill="var(--berry)"/><ellipse cx="24" cy="24" rx="4" ry="9" fill="#fff" opacity=".28"/><rect x="12" y="42" width="36" height="96" rx="16" fill="var(--berry)"/><rect x="12" y="80" width="36" height="34" rx="7" fill="#FBF6EE" opacity=".93"/><rect x="12" y="88" width="36" height="4" fill="var(--berry)" opacity=".6"/><rect x="12" y="99" width="36" height="4" fill="var(--berry)" opacity=".6"/></svg>
     </div>
-    <div class="intro-crayon" style="animation-delay:.58s;">
-      <svg viewBox="0 0 44 150"><path d="M22 4 L34 30 L34 130 Q34 140 24 140 L20 140 Q10 140 10 130 L10 30 Z" fill="var(--sage)"/><path d="M22 4 L34 30 L10 30 Z" fill="var(--sage)" opacity=".7"/><rect x="10" y="60" width="24" height="24" fill="#FBF6EE" opacity=".92"/><rect x="10" y="66" width="24" height="3" fill="var(--sage)" opacity=".6"/><rect x="10" y="75" width="24" height="3" fill="var(--sage)" opacity=".6"/></svg>
+    <div class="intro-crayon" style="animation-delay:1.15s;">
+      <svg viewBox="0 0 60 150"><path d="M30 8 Q47 18 44 44 L16 44 Q13 18 30 8 Z" fill="var(--sage)"/><ellipse cx="24" cy="24" rx="4" ry="9" fill="#fff" opacity=".28"/><rect x="12" y="42" width="36" height="96" rx="16" fill="var(--sage)"/><rect x="12" y="80" width="36" height="34" rx="7" fill="#FBF6EE" opacity=".93"/><rect x="12" y="88" width="36" height="4" fill="var(--sage)" opacity=".6"/><rect x="12" y="99" width="36" height="4" fill="var(--sage)" opacity=".6"/></svg>
     </div>
-    <div class="intro-crayon" style="animation-delay:.76s;">
-      <svg viewBox="0 0 44 150"><path d="M22 4 L34 30 L34 130 Q34 140 24 140 L20 140 Q10 140 10 130 L10 30 Z" fill="var(--forest)"/><path d="M22 4 L34 30 L10 30 Z" fill="var(--forest)" opacity=".7"/><rect x="10" y="60" width="24" height="24" fill="#FBF6EE" opacity=".92"/><rect x="10" y="66" width="24" height="3" fill="var(--forest)" opacity=".6"/><rect x="10" y="75" width="24" height="3" fill="var(--forest)" opacity=".6"/></svg>
+    <div class="intro-crayon" style="animation-delay:1.5s;">
+      <svg viewBox="0 0 60 150"><path d="M30 8 Q47 18 44 44 L16 44 Q13 18 30 8 Z" fill="var(--forest)"/><ellipse cx="24" cy="24" rx="4" ry="9" fill="#fff" opacity=".28"/><rect x="12" y="42" width="36" height="96" rx="16" fill="var(--forest)"/><rect x="12" y="80" width="36" height="34" rx="7" fill="#FBF6EE" opacity=".93"/><rect x="12" y="88" width="36" height="4" fill="var(--forest)" opacity=".6"/><rect x="12" y="99" width="36" height="4" fill="var(--forest)" opacity=".6"/></svg>
     </div>
   </div>
 </div>
@@ -543,7 +546,7 @@
       <div class="blob" style="width:320px; height:320px; background:var(--gold); bottom:2%; right:6%; opacity:.35; animation-delay:-11s;"></div>
     </div>
 
-    <div class="hp-content" id="hpanel1">
+    <div class="hp-content" id="hpanel1" style="max-width:min(1200px, 94vw);">
       <div class="hp-eyebrow">감정은 예술이 되고, 예술은 세계관이 됩니다.</div>
       <h1 class="hp-title brand-title">FORÊT DES CRAYONS</h1>
       <div class="hp-taglist">
@@ -994,19 +997,13 @@ function loadSiteContent(){
   const loader = document.getElementById('introLoader');
   const hpanel1 = document.getElementById('hpanel1');
   if(!loader) return;
-  if(sessionStorage.getItem('cfIntroPlayed')){
-    loader.style.display = 'none';
-    if(hpanel1) hpanel1.classList.add('on');
-    return;
-  }
   document.body.style.overflow = 'hidden';
   setTimeout(()=>{
     loader.classList.add('hide');
     if(hpanel1) hpanel1.classList.add('on');
     document.body.style.overflow = '';
-    sessionStorage.setItem('cfIntroPlayed','1');
     setTimeout(()=>{ loader.style.display = 'none'; }, 950);
-  }, 3300);
+  }, 5300);
 })();
 
 /* ---------- Hero scroll (3-stage) ---------- */
