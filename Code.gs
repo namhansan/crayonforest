@@ -3,7 +3,11 @@
  * ------------------------------------------------
  * 이 코드는 아래 4가지를 처리합니다.
  * 1) 수강신청 저장 (action=register)
- * 2) 방문자수 카운트 (action=visit)
+ * 2) 방문자수 카운트 (action=visit) — 오늘/누적 숫자와 별도로, 날짜별 방문수를
+ *    "방문통계" 시트 탭에 자동으로 기록합니다. 시트는 처음 방문이 발생할 때
+ *    자동으로 만들어지며, 별도 설정이 필요 없습니다. 이 시트는 스프레드시트
+ *    소유자만 볼 수 있어서, 그날 확인 못한 방문수도 나중에 언제든 열어서
+ *    지난 추이를 확인할 수 있습니다.
  * 3) 관리자용 신청 목록 조회 (action=registrations)
  * 4) 부모용 성장일지 조회 (action=journal) — 이름 + 전화번호 뒷4자리가
  *    정확히 일치하는 아이의 기록만 골라서 돌려줍니다. 스프레드시트 전체를
@@ -33,6 +37,7 @@
 const SHEET_NAME = '수강신청';
 const JOURNAL_SHEET_NAME = '성장일지';
 const SUMMARY_SHEET_NAME = '성장요약';
+const VISIT_SHEET_NAME = '방문통계';
 
 function doGet(e) {
   const action = e.parameter.action;
@@ -95,6 +100,7 @@ function recordVisit() {
   const totalCount = Number(props.getProperty('total_visits') || 0) + 1;
   props.setProperty(todayKey, String(todayCount));
   props.setProperty('total_visits', String(totalCount));
+  logDailyVisitToSheet(todayStr, todayCount);
   return { today: todayCount, total: totalCount };
 }
 
@@ -105,6 +111,33 @@ function getVisitCounts() {
     today: Number(props.getProperty('visits_' + todayStr) || 0),
     total: Number(props.getProperty('total_visits') || 0)
   };
+}
+
+// 날짜별 방문수를 "방문통계" 시트에 기록. 같은 날 안에서는 마지막 줄 숫자만
+// 계속 갱신하고, 날짜가 바뀌면 새 줄을 추가합니다 (시트 전체를 매번 훑지
+// 않도록 마지막 줄만 확인해서 빠르게 처리).
+function logDailyVisitToSheet(dateStr, count) {
+  const sheet = getOrCreateVisitSheet();
+  const lastRow = sheet.getLastRow();
+  if (lastRow >= 2) {
+    const lastDate = sheet.getRange(lastRow, 1).getValue();
+    if (lastDate === dateStr) {
+      sheet.getRange(lastRow, 2).setValue(count);
+      return;
+    }
+  }
+  sheet.appendRow([dateStr, count]);
+}
+
+function getOrCreateVisitSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(VISIT_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(VISIT_SHEET_NAME);
+    sheet.appendRow(['날짜', '방문수']);
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
 }
 
 /* ---------- 성장일지 (개인정보 보호용 필터링 조회) ---------- */
