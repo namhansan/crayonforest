@@ -462,7 +462,14 @@ function renderToneGrid(entries){
     <div class="wheel-card" style="text-align:left;">
       <div class="tone-grid-head"><div></div><div>deep</div><div>vivid</div><div>pastel</div></div>
       ${rows}
-      <div class="wheel-caption" style="text-align:center; margin-top:14px;">진하고 탁할수록(deep) 강한 의욕과 에너지를, 맑고 연할수록(pastel) 부드럽고 편안한 마음을 나타내요 · 표시된 칸이 우리 아이가 실제로 고른 색과 톤이에요</div>
+      <div class="wheel-caption" style="text-align:left; margin-top:14px; line-height:1.9;">
+        진하고 탁할수록 강한 의욕과 에너지, 조금 더 깊고 묵직한 감정을 나타낼 수 있어요. 맑고 연할수록 부드럽고 편안한 마음, 조용히 쉬고 싶은 마음을 나타낼 수 있어요.<br>
+        빨, 주, 노, 연두 색은 의욕, 에너지, 몸을 움직이고 싶은 마음과 연결됩니다.<br>
+        초록 계열의 색은 마음의 균형, 안정감, 편안함과 연결됩니다.<br>
+        파랑, 보라, 핑크 계열의 색은 생각하는 힘, 상상력, 스스로 표현하고 싶은 마음과 연결됩니다.<br>
+        표시된 색은 우리 아이가 수업 안에서 실제로 고른 색과 톤입니다.<br>
+        색 하나로 마음을 단정하기보다 아이의 말과 행동, 작품 이야기와 함께 살펴봅니다.
+      </div>
     </div>`;
 }
 
@@ -861,18 +868,18 @@ function renderSummarySection(entries, summary, childName){
     const hintsHtml = renderParentingHints(entries);
     autoSection = `
       <div class="summary-section">
-        <div class="sec-label"><span class="tag tag-auto">자동 생성</span><h3>회차별 색채 변화</h3></div>
+        <div class="sec-label"><h3>회차별 색채 변화</h3></div>
         ${narrativeHtml}
         ${wheelHtml}
         ${timelineHtml}
         ${freqHtml}
-        ${colorToneWheelHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>6개월 색채 여정 (색상 · 톤)</h3></div>${colorToneWheelHtml}` : ''}
-        ${toneGridHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>색상 · 톤 체크판</h3></div>${toneGridHtml}` : ''}
-        ${abilityBoardHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>싹트고 있는 능력</h3></div>${abilityBoardHtml}` : ''}
-        ${materialWheelHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>재료 효과 바퀴 (사고·감정·뉴트럴)</h3></div>${materialWheelHtml}` : ''}
-        ${effectBalanceHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>재료 효과 비율</h3></div>${effectBalanceHtml}` : ''}
-        ${keywordCloudHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>자주 나온 감정 · 성장 키워드</h3></div>${keywordCloudHtml}` : ''}
-        ${hintsHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 제안</span><h3>양육 힌트 (초안)</h3></div>${hintsHtml}` : ''}
+        ${colorToneWheelHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>6개월 색채 여정 (색상 · 톤)</h3></div>${colorToneWheelHtml}` : ''}
+        ${toneGridHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>색으로 보는 마음의 결</h3></div>${toneGridHtml}` : ''}
+        ${abilityBoardHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>싹트고 있는 능력</h3></div>${abilityBoardHtml}` : ''}
+        ${materialWheelHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>재료 효과 바퀴 (사고·감정·뉴트럴)</h3></div>${materialWheelHtml}` : ''}
+        ${effectBalanceHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>재료 효과 비율</h3></div>${effectBalanceHtml}` : ''}
+        ${keywordCloudHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>자주 나온 감정 · 성장 키워드</h3></div>${keywordCloudHtml}` : ''}
+        ${hintsHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>양육 힌트 (초안)</h3></div>${hintsHtml}` : ''}
       </div>`;
   }
 
