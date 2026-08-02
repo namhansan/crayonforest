@@ -157,6 +157,9 @@
   .effect-legend i{display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:middle;}
 
   .info-note{font-size:13px; color:#4b463f; line-height:1.7;}
+  .keyword-group{margin-bottom:16px;}
+  .keyword-group:last-child{margin-bottom:0;}
+  .keyword-group-label{font-size:11.5px; font-weight:700; color:var(--clay); margin-bottom:8px; display:block;}
 
   .split{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
   @media(max-width:560px){ .split{grid-template-columns:1fr;} }
@@ -253,6 +256,24 @@ const HUE_TONE_HEX = {
 function toneHex(hue, tone){
   const t = TONE_COLS.includes(tone) ? tone : 'vivid';
   return (HUE_TONE_HEX[hue] && HUE_TONE_HEX[hue][t]) || MAIN_COLOR_HEX[hue] || '#ccc';
+}
+
+// 감정·성장 키워드를 자유 텍스트 그대로 두되, 몇 가지 큰 갈래로 묶어서 보여주기
+// 위한 사전. 완벽한 분류는 아니고, 실제 자주 쓰이는 표현 기준으로 구성했어요.
+// 사전에 없는 단어는 자동으로 "기타" 갈래로 들어가고, 절대 숨기지 않아요.
+const KEYWORD_CATEGORIES = [
+  ['자기이해·자신감', ['자기이해','자기수용','자기인식','자기존중','자기격려','자기표현','자신감','용기','주도성','주체']],
+  ['정서표현', ['감정표현','감정인식','기쁨','슬픔','분노','화남','두려움','불안','안정감','차분함','뿌듯함','애정표현','애착','가족애','상징화','기억','부드러운표현','내면표현','만족감','편안']],
+  ['관계·사회성', ['관계','회복력','협동','배려','공감','소통','한결같음','신뢰']],
+  ['사고·문제해결', ['사고력','문제해결','창의','주도력','계획','집중력','논리','판단력']],
+  ['감각·신체발달', ['손가락','운동력','감각탐색','심신','형태','상상력','색채감각','대근육','소근육']],
+  ['놀이성·호기심', ['놀이성','자유로움','즐거움','즐기','호기심','도전','언어확장','탐구']]
+];
+function categorizeKeyword(k){
+  for(const [cat, roots] of KEYWORD_CATEGORIES){
+    if(roots.some(root => k.includes(root) || root.includes(k))) return cat;
+  }
+  return '기타';
 }
 const HUE_ANGLE = {
   "빨강":0,"다홍":18,"주황":42,"노랑":80,"연두":110,"초록":140,"청록":175,"민트":190,
@@ -405,18 +426,37 @@ function renderEffectBalance(entries){
     </div>`;
 }
 
-// 감정·성장 키워드 모음: 자주 등장한 키워드일수록 크게 보여줘요.
+// 감정·성장 키워드 모음: 갈래별로 묶어서 보여주고, 그 아이한테 가장 많이
+// 나온 갈래가 위로 오도록 정렬해요. 자주 등장한 키워드일수록 크게 보여줘요.
 function renderKeywordCloud(entries){
   const counts = {};
   entries.forEach(e => (e.emotionKeywords||[]).forEach(k => { if(k) counts[k] = (counts[k]||0) + 1; }));
   const keys = Object.keys(counts);
   if(!keys.length) return '';
   const max = Math.max(...Object.values(counts));
-  const pills = keys.sort((a,b)=>counts[b]-counts[a]).map(k => {
-    const size = 12 + Math.round((counts[k]/max) * 6);
-    return `<span class="pill" style="font-size:${size}px;">${k}${counts[k]>1?` ×${counts[k]}`:''}</span>`;
+
+  const groups = {};
+  keys.forEach(k => {
+    const cat = categorizeKeyword(k);
+    (groups[cat] = groups[cat] || []).push(k);
+  });
+
+  const groupTotal = cat => groups[cat].reduce((s,k)=>s+counts[k], 0);
+  const orderedCats = Object.keys(groups).sort((a,b) => {
+    if(a === '기타') return 1;
+    if(b === '기타') return -1;
+    return groupTotal(b) - groupTotal(a);
+  });
+
+  const groupsHtml = orderedCats.map(cat => {
+    const pills = groups[cat].sort((a,b)=>counts[b]-counts[a]).map(k => {
+      const size = 12 + Math.round((counts[k]/max) * 6);
+      return `<span class="pill" style="font-size:${size}px;">${k}${counts[k]>1?` ×${counts[k]}`:''}</span>`;
+    }).join('');
+    return `<div class="keyword-group"><span class="keyword-group-label">${cat}</span><div class="material-pills">${pills}</div></div>`;
   }).join('');
-  return `<div class="freq-card"><div class="material-pills">${pills}</div></div>`;
+
+  return `<div class="freq-card">${groupsHtml}</div>`;
 }
 
 // 지난 회차와 비교해서 달라진 점을 문장으로 자동 생성 (색, 톤, 재료 효과 영역,
