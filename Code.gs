@@ -132,13 +132,40 @@ function logDailyVisitToSheet(dateStr, count) {
   const sheet = getOrCreateVisitSheet();
   const lastRow = sheet.getLastRow();
   if (lastRow >= 2) {
-    const lastDate = sheet.getRange(lastRow, 1).getValue();
-    if (lastDate === dateStr) {
+    const rawDate = sheet.getRange(lastRow, 1).getValue();
+    // 구글시트가 "2026-08-02" 같은 문자열을 자동으로 날짜 타입으로 바꿔버리기
+    // 때문에, 비교 전에 항상 같은 형식의 문자열로 맞춰줘야 함.
+    const lastDateStr = rawDate instanceof Date
+      ? Utilities.formatDate(rawDate, 'Asia/Seoul', 'yyyy-MM-dd')
+      : String(rawDate);
+    if (lastDateStr === dateStr) {
       sheet.getRange(lastRow, 2).setValue(count);
       return;
     }
   }
   sheet.appendRow([dateStr, count]);
+}
+
+// 위 버그 때문에 하루에 여러 줄로 쪼개져 쌓인 기존 기록을, 날짜별로 하나의
+// 줄(그날의 최댓값 = 실제 누적 방문수)로 정리해줍니다. Apps Script 편집기에서
+// 딱 한 번만 실행해주세요.
+function dedupeVisitSheet() {
+  const sheet = getOrCreateVisitSheet();
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return;
+  const header = data[0];
+  const order = [];
+  const maxByDate = {};
+  data.slice(1).forEach(r => {
+    const raw = r[0];
+    const dateStr = raw instanceof Date ? Utilities.formatDate(raw, 'Asia/Seoul', 'yyyy-MM-dd') : String(raw);
+    const count = Number(r[1]) || 0;
+    if (!(dateStr in maxByDate)) order.push(dateStr);
+    maxByDate[dateStr] = Math.max(maxByDate[dateStr] || 0, count);
+  });
+  sheet.clearContents();
+  sheet.appendRow(header);
+  order.forEach(d => sheet.appendRow([d, maxByDate[d]]));
 }
 
 function getOrCreateVisitSheet() {
