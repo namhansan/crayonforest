@@ -37,8 +37,16 @@
  * 함수 위 주석 참고)
  *
  * (선택) 종합 요약 시트 준비 — 6개월 마지막에 한 번만 작성:
- * "성장요약"이라는 이름의 시트 탭을 만들고, 첫 줄에 다음 14개를 순서대로 넣어주세요:
- * 이름 | 전화번호뒷4자리 | 강점 | 성장방향 | 표현_전 | 표현_후 | 색채_전 | 색채_후 | 심리_전 | 심리_후 | 사고_전 | 사고_후 | 눈에띄는성장 | 공개여부
+ * "성장요약"이라는 이름의 시트 탭을 만들고, 첫 줄에 다음 16개를 순서대로 넣어주세요:
+ * 이름 | 전화번호뒷4자리 | 강점 | 성장방향 | 표현_전 | 표현_후 | 색채_전 | 색채_후 | 심리_전 | 심리_후 | 사고_전 | 사고_후 | 눈에띄는성장 | 공개여부 |
+ * 한줄요약(직접입력) | 양육힌트(직접입력)
+ *
+ * 마지막 2개(한줄요약/양육힌트 직접입력)는 선택 입력이에요. 성장카르테 화면의
+ * "성장 한 줄 요약"과 "양육 힌트"는 원래 성장일지 데이터로 자동 생성되는데,
+ * 이 2칸에 직접 문장을 써넣으면 그게 자동 생성된 것 대신 화면에 나와요.
+ * 비워두면 지금처럼 자동 생성된 내용이 계속 나옵니다. "양육힌트(직접입력)"에
+ * 여러 줄을 쓰고 싶으면 셀 안에서 줄바꿈(Alt+Enter)으로 구분해주세요 — 한 줄씩
+ * 하나의 힌트 항목으로 나와요.
  *
  * "공개여부" 열은 체크박스로 만들어주세요 (열 선택 후 삽입 > 체크박스).
  * 월별 성장일지 기록은 언제나 그대로 보입니다. "공개여부"를 체크해야 보이는 건
@@ -258,7 +266,11 @@ function getJournal(name, phone4) {
   const summary = getSummary(nameTrim, phoneTrim);
   const publishedSummary = (summary && summary.published === true) ? summary : null;
 
-  return { found: true, name: nameTrim, term: term, entries: entries, summary: publishedSummary };
+  return {
+    found: true, name: nameTrim, term: term, entries: entries, summary: publishedSummary,
+    narrativeOverride: summary ? summary.narrativeOverride : '',
+    hintsOverride: summary ? summary.hintsOverride : []
+  };
 }
 
 function getSummary(name, phone4) {
@@ -278,7 +290,9 @@ function getSummary(name, phone4) {
     psychology: { before: row[8], after: row[9] },
     thinking: { before: row[10], after: row[11] },
     highlights: String(row[12] || '').split('\n').map(s => s.trim()).filter(Boolean),
-    published: row[13] === true
+    published: row[13] === true,
+    narrativeOverride: row[14] || '',
+    hintsOverride: String(row[15] || '').split('\n').map(s => s.trim()).filter(Boolean)
   };
 }
 

@@ -680,7 +680,7 @@ function renderParentingHints(entries){
 
   if(!hints.length) return '';
   const items = hints.slice(0,4).map(h=>`<div><span class="check">✔</span>${h}</div>`).join('');
-  return `<div class="highlight-list">${items}<div class="wheel-caption" style="margin-top:10px;">* 성장일지 데이터를 기준으로 자동 제안된 초안이에요 — 선생님의 관찰로 다듬어서 사용해주세요.</div></div>`;
+  return `<div class="highlight-list">${items}</div>`;
 }
 
 function checkJournal(){
@@ -817,10 +817,10 @@ function renderJournal(data){
     </div>
   `).join('');
 
-  renderSummarySection(entries, data.summary, data.name);
+  renderSummarySection(entries, data.summary, data.name, data.narrativeOverride, data.hintsOverride);
 }
 
-function renderSummarySection(entries, summary, childName){
+function renderSummarySection(entries, summary, childName, narrativeOverride, hintsOverride){
   const box = document.getElementById('jSummary');
   const colored = entries.filter(e => e.mainColor);
 
@@ -864,8 +864,12 @@ function renderSummarySection(entries, summary, childName){
     const effectBalanceHtml = renderEffectBalance(entries);
     const keywordCloudHtml = renderKeywordCloud(entries);
     const abilityBoardHtml = renderAbilityBoard(entries);
-    const narrativeHtml = renderGrowthNarrative(entries, childName);
-    const hintsHtml = renderParentingHints(entries);
+    const narrativeHtml = (narrativeOverride && narrativeOverride.trim())
+      ? `<div class="growth-narrative">✨ ${narrativeOverride.trim()}</div>`
+      : renderGrowthNarrative(entries, childName);
+    const hintsHtml = (hintsOverride && hintsOverride.length)
+      ? `<div class="highlight-list">${hintsOverride.map(h=>`<div><span class="check">✔</span>${h}</div>`).join('')}</div>`
+      : renderParentingHints(entries);
     autoSection = `
       <div class="summary-section">
         <div class="sec-label"><h3>회차별 색채 변화</h3></div>
@@ -879,7 +883,7 @@ function renderSummarySection(entries, summary, childName){
         ${materialWheelHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>재료 효과 바퀴 (사고·감정·뉴트럴)</h3></div>${materialWheelHtml}` : ''}
         ${effectBalanceHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>재료 효과 비율</h3></div>${effectBalanceHtml}` : ''}
         ${keywordCloudHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>자주 나온 감정 · 성장 키워드</h3></div>${keywordCloudHtml}` : ''}
-        ${hintsHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>양육 힌트 (초안)</h3></div>${hintsHtml}` : ''}
+        ${hintsHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>양육 힌트</h3></div>${hintsHtml}` : ''}
       </div>`;
   }
 
