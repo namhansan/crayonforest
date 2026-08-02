@@ -137,6 +137,22 @@
   .highlight-list div:last-child{margin-bottom:0;}
   .highlight-list .check{color:var(--sage); font-weight:900;}
 
+  /* ---------- 색상×톤 그리드 (색상심리 체크판) ---------- */
+  .tone-grid-head{display:grid; grid-template-columns:56px repeat(3,1fr); gap:6px; margin-bottom:8px; font-size:11px; color:#9a9285; text-align:center;}
+  .tone-row{display:grid; grid-template-columns:56px repeat(3,1fr); gap:6px; margin-bottom:6px; align-items:center;}
+  .tone-row-label{font-size:12px; font-weight:700; color:var(--forest); text-align:right; padding-right:4px;}
+  .tone-cell{height:32px; border-radius:8px; border:1px solid rgba(0,0,0,.06); display:flex; align-items:center; justify-content:center; opacity:.32; transition:opacity .2s;}
+  .tone-cell.picked{opacity:1; box-shadow:0 0 0 2px var(--paper), 0 0 0 3.5px var(--clay);}
+  .tone-mark{color:#fff; font-size:11.5px; font-weight:800; text-shadow:0 1px 2px rgba(0,0,0,.45);}
+
+  /* ---------- 재료 효과 비율 바 ---------- */
+  .effect-bar{display:flex; height:22px; border-radius:11px; overflow:hidden; margin-bottom:14px;}
+  .effect-seg{height:100%;}
+  .effect-legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:#4b463f;}
+  .effect-legend i{display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:middle;}
+
+  .info-note{font-size:13px; color:#4b463f; line-height:1.7;}
+
   .split{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
   @media(max-width:560px){ .split{grid-template-columns:1fr;} }
   .split-card{border-radius:var(--radius-md); padding:22px 24px; font-size:13.5px; color:#4b463f;}
@@ -211,11 +227,28 @@
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyahvBkqM7NVzHde2vdtpWTGdOhaUs8i-ewGe9WBpuyyetVIv1VEPJrhhCNy3fgrmad/exec";
 const MAIN_COLOR_HEX = {
-  "빨강":"#D96B5C","주황":"#E0A24C","노랑":"#E8CE68","초록":"#8FA888","청록":"#5C9A93",
+  "빨강":"#D96B5C","주황":"#E0A24C","노랑":"#E8CE68","연두":"#9ACD32","초록":"#8FA888","청록":"#5C9A93",
   "파랑":"#5C7FA6","남색":"#41577A","보라":"#8B6BA6","분홍":"#D98FA6","갈색":"#8A6B4E",
   "회색":"#A6A29A","검정":"#3A362F","흰색":"#F3EBDC","보랏빛 파랑":"#6E6BA6",
   "민트":"#7FBFA6","핑크":"#D98FA6","자주":"#8B4B5C","무지개":"#C9A6D9"
 };
+const TONE_COLS = ['deep','vivid','pastel'];
+const TONE_HUES = ['검정','빨강','주황','노랑','연두','초록','파랑','보라','핑크'];
+const HUE_TONE_HEX = {
+  검정:{deep:'#2B2B2B',vivid:'#6B6B6B',pastel:'#E6E2DA'},
+  빨강:{deep:'#8E1B1B',vivid:'#E63946',pastel:'#F3B7B0'},
+  주황:{deep:'#8A4A12',vivid:'#F2812E',pastel:'#F5CBA0'},
+  노랑:{deep:'#8A7B12',vivid:'#F2E22E',pastel:'#F5F0A8'},
+  연두:{deep:'#4B6B1E',vivid:'#9ACD32',pastel:'#D6EFB0'},
+  초록:{deep:'#1F4B33',vivid:'#2E8B57',pastel:'#A8D8C0'},
+  파랑:{deep:'#1B3A6B',vivid:'#3E6FE0',pastel:'#AFC6EF'},
+  보라:{deep:'#4A1B6B',vivid:'#8E4FD1',pastel:'#D6BEEF'},
+  핑크:{deep:'#6B1B4A',vivid:'#E24FA0',pastel:'#F5C2E0'}
+};
+function toneHex(hue, tone){
+  const t = TONE_COLS.includes(tone) ? tone : 'vivid';
+  return (HUE_TONE_HEX[hue] && HUE_TONE_HEX[hue][t]) || MAIN_COLOR_HEX[hue] || '#ccc';
+}
 const HUE_ANGLE = {
   "빨강":0,"다홍":18,"주황":42,"노랑":80,"연두":110,"초록":140,"청록":175,"민트":190,
   "파랑":210,"남색":235,"보랏빛 파랑":250,"보라":270,"자주":290,"분홍":330,"핑크":330,"갈색":25
@@ -318,6 +351,69 @@ function renderColorWheel(entries){
     </div>`;
 }
 
+// 색상×톤 체크판: 아이가 고른 색과 톤(deep/vivid/pastel)이 어디쯤인지
+// 예전에 손으로 표시하던 종이 체크판을 그대로 디지털 버전으로 보여줘요.
+function renderToneGrid(entries){
+  const picks = {};
+  entries.forEach(e=>{
+    const tone = e.tone;
+    if(!TONE_COLS.includes(tone)) return;
+    [e.color1, e.color2, e.color3].filter(Boolean).forEach(c=>{
+      if(!TONE_HUES.includes(c)) return;
+      const key = c + '|' + tone;
+      picks[key] = (picks[key] || 0) + 1;
+    });
+  });
+  if(Object.keys(picks).length === 0) return '';
+
+  const rows = TONE_HUES.map(hue => {
+    const cells = TONE_COLS.map(tone => {
+      const key = hue + '|' + tone;
+      const count = picks[key] || 0;
+      return `<div class="tone-cell${count ? ' picked' : ''}" style="background:${toneHex(hue,tone)};" title="${hue} · ${tone}${count ? ' · '+count+'회' : ''}">${count ? `<span class="tone-mark">${count>1?count:'●'}</span>` : ''}</div>`;
+    }).join('');
+    return `<div class="tone-row"><div class="tone-row-label">${hue}</div>${cells}</div>`;
+  }).join('');
+
+  return `
+    <div class="wheel-card" style="text-align:left;">
+      <div class="tone-grid-head"><div></div><div>deep</div><div>vivid</div><div>pastel</div></div>
+      ${rows}
+      <div class="wheel-caption" style="text-align:center; margin-top:14px;">진하고 탁할수록(deep) 강한 의욕과 에너지를, 맑고 연할수록(pastel) 부드럽고 편안한 마음을 나타내요 · 표시된 칸이 우리 아이가 실제로 고른 색과 톤이에요</div>
+    </div>`;
+}
+
+// 재료 효과 비율: 사고활동(집중)·감정활동(발산)·뉴트럴(중립) 중 어느 쪽으로
+// 더 많이 활동했는지 전체 회차 기준 비율로 보여줘요.
+function renderEffectBalance(entries){
+  const zoned = entries.map(e => normalizeZone(e.materialEffect)).filter(Boolean);
+  if(!zoned.length) return '';
+  const counts = {'감정활동':0, '뉴트럴':0, '사고활동':0};
+  zoned.forEach(z => counts[z]++);
+  const total = zoned.length;
+  const seg = name => `<div class="effect-seg" style="width:${(counts[name]/total*100)}%; background:${MATERIAL_ZONE.colors[name]};" title="${name} ${Math.round(counts[name]/total*100)}%"></div>`;
+  const legend = name => `<span><i style="background:${MATERIAL_ZONE.colors[name]}"></i>${name === '감정활동' ? '감정활동(발산효과)' : name === '뉴트럴' ? '뉴트럴(중립)' : '사고활동(집중효과)'} ${counts[name]}회</span>`;
+  return `
+    <div class="freq-card">
+      <div class="effect-bar">${seg('감정활동')}${seg('뉴트럴')}${seg('사고활동')}</div>
+      <div class="effect-legend">${legend('감정활동')}${legend('뉴트럴')}${legend('사고활동')}</div>
+    </div>`;
+}
+
+// 감정·성장 키워드 모음: 자주 등장한 키워드일수록 크게 보여줘요.
+function renderKeywordCloud(entries){
+  const counts = {};
+  entries.forEach(e => (e.emotionKeywords||[]).forEach(k => { if(k) counts[k] = (counts[k]||0) + 1; }));
+  const keys = Object.keys(counts);
+  if(!keys.length) return '';
+  const max = Math.max(...Object.values(counts));
+  const pills = keys.sort((a,b)=>counts[b]-counts[a]).map(k => {
+    const size = 12 + Math.round((counts[k]/max) * 6);
+    return `<span class="pill" style="font-size:${size}px;">${k}${counts[k]>1?` ×${counts[k]}`:''}</span>`;
+  }).join('');
+  return `<div class="freq-card"><div class="material-pills">${pills}</div></div>`;
+}
+
 function checkJournal(){
   const name = document.getElementById('jName').value.trim();
   const phone4 = document.getElementById('jPhone4').value.trim();
@@ -391,13 +487,21 @@ function renderJournal(data){
         </div>
         <div>
           ${e.photo2 ? `<img class="photo-sub" src="${e.photo2}" alt="${e.month} 활동 사진" onerror="this.style.display='none'">` : ''}
+          ${e.selfColor ? `
           <div class="info-block">
-            <span class="info-label">이 달의 메인컬러</span>
+            <span class="info-label">자신을 나타내는 색</span>
             <div class="color-row">
-              <span class="swatch" style="background:${MAIN_COLOR_HEX[e.mainColor] || '#ccc'}"></span>
-              <span>${e.mainColor || '-'}</span>
+              <span class="swatch" style="background:${toneHex(e.selfColor, e.tone)}"></span>
+              <span>${e.selfColor}</span>
             </div>
-          </div>
+          </div>` : ''}
+          ${(e.color1 || e.color2 || e.color3) ? `
+          <div class="info-block">
+            <span class="info-label">이 달 선택한 색${e.tone ? ` · ${e.tone}` : ''}</span>
+            <div class="material-pills">
+              ${[e.color1,e.color2,e.color3].filter(Boolean).map(c=>`<span class="pill" style="border-color:${toneHex(c,e.tone)}; box-shadow:inset 0 0 0 1.5px ${toneHex(c,e.tone)};">${c}</span>`).join('')}
+            </div>
+          </div>` : ''}
           ${e.materials ? `
           <div class="info-block">
             <span class="info-label">사용 재료</span>
@@ -412,6 +516,16 @@ function renderJournal(data){
           <div class="info-block">
             <span class="info-label">몰입도</span>
             <div class="material-pills"><span class="pill">${e.engagement}</span></div>
+          </div>` : ''}
+          ${e.materialTendency ? `
+          <div class="info-block">
+            <span class="info-label">재료 선택의 경향</span>
+            <p class="info-note">${e.materialTendency}</p>
+          </div>` : ''}
+          ${e.growingAbility ? `
+          <div class="info-block">
+            <span class="info-label">성장하고 있는 능력</span>
+            <p class="info-note">${e.growingAbility}</p>
           </div>` : ''}
         </div>
       </div>
@@ -460,13 +574,19 @@ function renderSummarySection(entries, summary){
   if(timelineHtml || freqHtml){
     const wheelHtml = renderColorWheel(entries);
     const materialWheelHtml = renderMaterialWheel(entries);
+    const toneGridHtml = renderToneGrid(entries);
+    const effectBalanceHtml = renderEffectBalance(entries);
+    const keywordCloudHtml = renderKeywordCloud(entries);
     autoSection = `
       <div class="summary-section">
         <div class="sec-label"><span class="tag tag-auto">자동 생성</span><h3>회차별 색채 변화</h3></div>
         ${wheelHtml}
         ${timelineHtml}
         ${freqHtml}
+        ${toneGridHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>색상 · 톤 체크판</h3></div>${toneGridHtml}` : ''}
         ${materialWheelHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>재료 효과 바퀴 (사고·감정·뉴트럴)</h3></div>${materialWheelHtml}` : ''}
+        ${effectBalanceHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>재료 효과 비율</h3></div>${effectBalanceHtml}` : ''}
+        ${keywordCloudHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>자주 나온 감정 · 성장 키워드</h3></div>${keywordCloudHtml}` : ''}
       </div>`;
   }
 

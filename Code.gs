@@ -21,8 +21,16 @@
  *
  * 성장일지 시트 준비:
  * 스프레드시트에 "성장일지"라는 이름의 시트 탭을 만들고,
- * 첫 줄(헤더)에 다음 10개를 순서대로 넣어주세요:
- * 이름 | 전화번호뒷4자리 | 학기 | 월 | 작품제목 | 사진1URL | 사진2URL | 메인컬러 | 사용재료 | 관찰노트
+ * 첫 줄(헤더)에 다음 19개를 순서대로 넣어주세요:
+ * 이름 | 전화번호뒷4자리 | 학기 | 월 | 작품제목 | 사진1URL | 사진2URL |
+ * 자신을 나타내는 색 | 선택색상1 | 선택색상2 | 선택색상3 | 색상톤 |
+ * 감정,성장키워드 | 몰입도 | 사용재료 | 재료선택의 경향 | 성장하고 있는 능력 |
+ * 재료의 효과 | 관찰노트
+ *
+ * 색상/색상톤/재료의 효과 열은 드롭다운으로 선택할 수 있게 만들어두는 걸
+ * 추천해요 — 이 파일 안의 setupJournalDropdowns() 함수를 Apps Script
+ * 편집기에서 한 번만 실행하면 자동으로 걸립니다. (자세한 설명은 해당
+ * 함수 위 주석 참고)
  *
  * (선택) 종합 요약 시트 준비 — 6개월 마지막에 한 번만 작성:
  * "성장요약"이라는 이름의 시트 탭을 만들고, 첫 줄에 다음 14개를 순서대로 넣어주세요:
@@ -140,6 +148,34 @@ function getOrCreateVisitSheet() {
   return sheet;
 }
 
+/* ---------- 성장일지 드롭다운 설정 (최초 1회만 직접 실행) ----------
+ * Apps Script 편집기 상단에서 함수 목록을 "setupJournalDropdowns"로 바꾼 뒤
+ * ▶ 실행 버튼을 한 번만 눌러주세요. 그러면 성장일지 시트의
+ * H(자신을 나타내는 색), I~K(선택색상1~3), L(색상톤), R(재료의 효과) 열
+ * 2~500행에 드롭다운 선택 목록이 자동으로 걸립니다.
+ * (나중에 500행을 넘어서면 이 함수를 다시 한 번 실행해주시면 돼요.)
+ */
+function setupJournalDropdowns() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(JOURNAL_SHEET_NAME);
+  if (!sheet) { throw new Error('"성장일지" 시트를 먼저 만들어주세요.'); }
+
+  const LAST_ROW = 500;
+  const colorList = ['검정', '빨강', '주황', '노랑', '연두', '초록', '파랑', '보라', '핑크'];
+  const toneList = ['deep', 'vivid', 'pastel'];
+  const effectList = ['감정활동(발산효과)', '뉴트럴(중립)', '사고활동(집중효과)'];
+
+  const colorRule = SpreadsheetApp.newDataValidation().requireValueInList(colorList, true).setAllowInvalid(false).build();
+  const toneRule = SpreadsheetApp.newDataValidation().requireValueInList(toneList, true).setAllowInvalid(false).build();
+  const effectRule = SpreadsheetApp.newDataValidation().requireValueInList(effectList, true).setAllowInvalid(false).build();
+
+  // H, I, J, K = 자신을 나타내는 색 / 선택색상1 / 선택색상2 / 선택색상3
+  sheet.getRange(2, 8, LAST_ROW - 1, 4).setDataValidation(colorRule);
+  // L = 색상톤
+  sheet.getRange(2, 12, LAST_ROW - 1, 1).setDataValidation(toneRule);
+  // R = 재료의 효과
+  sheet.getRange(2, 18, LAST_ROW - 1, 1).setDataValidation(effectRule);
+}
+
 /* ---------- 성장일지 (개인정보 보호용 필터링 조회) ---------- */
 function getJournal(name, phone4) {
   if (!name || !phone4) {
@@ -166,7 +202,23 @@ function getJournal(name, phone4) {
 
   const term = matched[0][2];
   const entries = matched.map(r => ({
-    month: r[3], title: r[4], photo1: r[5], photo2: r[6], mainColor: r[7], materials: r[8], note: r[9]
+    month: r[3],
+    title: r[4],
+    photo1: r[5],
+    photo2: r[6],
+    selfColor: r[7],
+    color1: r[8],
+    color2: r[9],
+    color3: r[10],
+    tone: String(r[11] || '').trim().toLowerCase(),
+    mainColor: r[8], // 색채 바퀴/타임라인은 선택색상1을 대표색으로 사용
+    emotionKeywords: String(r[12] || '').split(/[,、\n]/).map(s => s.trim()).filter(Boolean),
+    engagement: r[13],
+    materials: r[14],
+    materialTendency: r[15],
+    growingAbility: r[16],
+    materialEffect: r[17],
+    note: r[18]
   }));
 
   const summary = getSummary(nameTrim, phoneTrim);
