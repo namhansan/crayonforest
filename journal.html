@@ -161,6 +161,16 @@
   .keyword-group:last-child{margin-bottom:0;}
   .keyword-group-label{font-size:11.5px; font-weight:700; color:var(--clay); margin-bottom:8px; display:block;}
 
+  .ability-board{display:flex; flex-wrap:wrap; gap:10px;}
+  .ability-badge{background:var(--ivory-deep); border-radius:12px; padding:10px 14px; min-width:100px;}
+  .ability-badge.standout{background:#FCEFD8; border:1px solid #E8CE95;}
+  .ability-name{display:block; font-weight:700; color:var(--forest); font-size:12.5px; margin-bottom:2px;}
+  .ability-count{color:#9a9285; font-size:11px;}
+  .growth-narrative{
+    background:#F7EFE4; border:1px solid #EAD9BE; border-radius:var(--radius-md); padding:20px 24px;
+    font-size:14px; color:var(--forest); font-family:'Noto Serif KR',serif; line-height:1.8; margin-bottom:16px;
+  }
+
   .split{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
   @media(max-width:560px){ .split{grid-template-columns:1fr;} }
   .split-card{border-radius:var(--radius-md); padding:22px 24px; font-size:13.5px; color:#4b463f;}
@@ -274,6 +284,53 @@ function categorizeKeyword(k){
     if(roots.some(root => k.includes(root) || root.includes(k))) return cat;
   }
   return '기타';
+}
+
+// 성장하고 있는 능력을 14개 표준 카테고리로 묶어서 보여주기 위한 사전.
+// 항목 이름은 일반적인 아동미술교육 용어이고, 설명 문구는 전부 새로 쓴
+// 것이라 참고 교재의 문장을 그대로 옮긴 게 아니에요.
+const ABILITY_CATEGORIES = [
+  ['성취력', ['성취','뿌듯','해냄','성공','완성']],
+  ['응용력·전개력', ['응용','전개력','확장']],
+  ['이야기전개성', ['이야기','서사','스토리']],
+  ['발상력', ['발상','상상력','아이디어','창의']],
+  ['촉감·탐구심', ['촉감','탐구','탐색','호기심']],
+  ['조화감각', ['조화','배색','어울림']],
+  ['색채감각', ['색채감각','색감','컬러감각']],
+  ['관찰력', ['관찰']],
+  ['사회성', ['사회성','또래','협동','공감']],
+  ['자립심', ['자립','주도성']],
+  ['집중력', ['집중']],
+  ['계획성', ['계획']],
+  ['조형력', ['조형','입체감','형태구현']],
+  ['언어표현', ['언어표현','말로 표현','설명력']]
+];
+const ABILITY_DEFS = {
+  '성취력':'스스로 해냈다는 뿌듯함과 성공 경험을 쌓아가는 힘',
+  '응용력·전개력':'배운 것을 다른 상황에 적용하고 새로운 시도로 넓혀가는 힘',
+  '이야기전개성':'그림 속에 이야기와 서사를 담아 풀어내는 힘',
+  '발상력':'틀에 얽매이지 않고 자기만의 이미지를 떠올리는 상상력',
+  '촉감·탐구심':'재료를 만지고 탐색하며 성질을 알아가는 호기심',
+  '조화감각':'색과 형태를 서로 어울리게 배치하는 감각',
+  '색채감각':'색을 고르고 조합하는 감수성',
+  '관찰력':'대상을 자세히 보고 특징을 알아채는 힘',
+  '사회성':'또래나 어른과 어울리며 관계를 맺는 힘',
+  '자립심':'스스로 판단하고 해내려는 마음',
+  '집중력':'하나의 활동에 몰입하는 힘',
+  '계획성':'순서를 생각하고 미리 그려보는 힘',
+  '조형력':'형태를 구체적으로 만들어내는 힘',
+  '언어표현':'생각과 감정을 말로 풀어내는 힘'
+};
+function categorizeAbility(text){
+  for(const [cat, roots] of ABILITY_CATEGORIES){
+    if(roots.some(root => text.includes(root) || root.includes(text))) return cat;
+  }
+  return null;
+}
+function hasJongseong(str){
+  const c = str.charCodeAt(str.length-1) - 0xAC00;
+  if(c < 0 || c > 11171) return false;
+  return (c % 28) !== 0;
 }
 const HUE_ANGLE = {
   "빨강":0,"다홍":18,"주황":42,"노랑":80,"연두":110,"초록":140,"청록":175,"민트":190,
@@ -501,6 +558,124 @@ function buildAutoInsights(entries){
   });
 }
 
+// 성장하고 있는 능력을 14개 카테고리로 집계해서 배지로 보여주고, 가장 많이
+// 언급된 상위 3개에 ⭐ 표시로 "특히 눈에 띄는 성장"을 자동으로 골라줘요.
+function renderAbilityBoard(entries){
+  const counts = {};
+  entries.forEach(e => {
+    String(e.growingAbility||'').split(/[,、\n·]/).map(s=>s.trim()).filter(Boolean).forEach(token=>{
+      const cat = categorizeAbility(token);
+      if(cat) counts[cat] = (counts[cat]||0) + 1;
+    });
+  });
+  const cats = Object.keys(counts);
+  if(!cats.length) return '';
+  const sorted = cats.sort((a,b)=>counts[b]-counts[a]);
+  const top = new Set(sorted.slice(0, Math.min(3, sorted.length)));
+  const badges = sorted.map(c => `
+    <div class="ability-badge${top.has(c) ? ' standout' : ''}" title="${ABILITY_DEFS[c]||''}">
+      <span class="ability-name">${c}${top.has(c) ? ' ⭐' : ''}</span>
+      <span class="ability-count">${counts[c]}회 언급</span>
+    </div>`).join('');
+  return `<div class="freq-card"><div class="ability-board">${badges}</div><div class="wheel-caption" style="margin-top:10px;">⭐ 표시는 이번 학기 중 특히 자주 관찰된 성장 영역이에요 (언급 빈도 기준) · 각 항목에 마우스를 올리면 설명이 보여요</div></div>`;
+}
+
+// 색상×톤을 하나의 원형 차트에: 각도 = 색상, 반지름 = 톤(바깥 pastel → 안쪽 deep),
+// 회차 순서를 화살표로 이어서 6개월 색채 여정을 한눈에 보여줘요.
+function renderColorToneWheel(entries){
+  const usable = entries.filter(e => e.color1);
+  if(usable.length < 2) return '';
+  const size=280, cx=140, cy=140;
+  const RADIUS = {pastel:112, vivid:78, deep:44};
+  const ringsHtml = Object.values(RADIUS).map(r=>`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#E4DBC9" stroke-width="1"/>`).join('');
+  const hueLabels = [["빨강",0],["주황",42],["노랑",80],["초록",140],["파랑",210],["보라",270],["핑크",330]];
+  const labels = hueLabels.map(([name,ang])=>{
+    const a=ang*Math.PI/180, x=cx+(RADIUS.pastel+18)*Math.sin(a), y=cy-(RADIUS.pastel+18)*Math.cos(a);
+    return `<text x="${x}" y="${y}" font-size="10" fill="#9a9285" text-anchor="middle" dominant-baseline="middle">${name}</text>`;
+  }).join('');
+  const toneLabels = `
+    <text x="${cx}" y="${cy-RADIUS.pastel+12}" font-size="9" fill="#b7ae9e" text-anchor="middle">pastel</text>
+    <text x="${cx}" y="${cy-RADIUS.vivid+12}" font-size="9" fill="#b7ae9e" text-anchor="middle">vivid</text>
+    <text x="${cx}" y="${cy-RADIUS.deep+12}" font-size="9" fill="#b7ae9e" text-anchor="middle">deep</text>`;
+
+  let dots='', path='';
+  usable.forEach((e,i)=>{
+    const ang = getHueAngle(e.color1);
+    const r = ang===null ? 14 : (RADIUS[e.tone] || RADIUS.vivid);
+    const a = (ang===null?0:ang)*Math.PI/180;
+    const x = cx + r*Math.sin(a), y = cy - r*Math.cos(a);
+    dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="${toneHex(e.color1,e.tone)}" stroke="#fff" stroke-width="2"/>`;
+    path += (i===0?'M':'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+  });
+
+  return `
+    <div class="wheel-card">
+      <svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="arrow3" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--clay)"/></marker></defs>
+        ${ringsHtml}
+        <circle cx="${cx}" cy="${cy}" r="14" fill="#3A362F" opacity="0.15"/>
+        ${labels}
+        ${toneLabels}
+        <path d="${path}" fill="none" stroke="var(--clay)" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrow3)"/>
+        ${dots}
+      </svg>
+      <div class="wheel-caption">바깥쪽(pastel)일수록 편안하고 부드럽게, 안쪽(deep)일수록 강하고 짙게 · 화살표는 회차 순서를 보여줘요</div>
+    </div>`;
+}
+
+const STYLE_PHRASES = {
+  'deep|사고활동':'힘있게 몰입하며 파고드는', 'deep|감정활동':'강렬하게 감정을 쏟아내는', 'deep|뉴트럴':'단단하게 자기 세계를 다지는',
+  'vivid|사고활동':'또렷하게 생각을 펼쳐내는', 'vivid|감정활동':'생생하게 감정을 표현하는', 'vivid|뉴트럴':'활기차게 탐색하는',
+  'pastel|사고활동':'차분히 정리해나가는', 'pastel|감정활동':'부드럽게 마음을 여는', 'pastel|뉴트럴':'편안하게 자기 속도로 나아가는'
+};
+function styleFor(e){
+  const zone = normalizeZone(e.materialEffect);
+  return STYLE_PHRASES[`${e.tone}|${zone}`] || null;
+}
+// 첫 회차와 최근 회차의 톤·재료효과를 비교해서 한 줄 성장 요약 문장을 자동으로 지어요.
+function renderGrowthNarrative(entries, childName){
+  const withData = entries.filter(e => e.tone && normalizeZone(e.materialEffect));
+  if(withData.length < 2) return '';
+  const startPhrase = styleFor(withData[0]);
+  const endPhrase = styleFor(withData[withData.length-1]);
+  if(!startPhrase || !endPhrase || startPhrase === endPhrase) return '';
+  const particle = hasJongseong(childName) ? '은' : '는';
+  return `<div class="growth-narrative">✨ ${childName}${particle} "${startPhrase}" 모습에서 시작해서, 지금은 "${endPhrase}" 모습을 보여주고 있어요.</div>`;
+}
+
+// 데이터 패턴을 바탕으로 양육 힌트 초안을 자동 제안해요 (선생님 확인·첨삭 필요).
+function renderParentingHints(entries){
+  if(entries.length < 2) return '';
+  const hints = [];
+
+  const zoneCounts = {};
+  entries.map(e=>normalizeZone(e.materialEffect)).filter(Boolean).forEach(z=>zoneCounts[z]=(zoneCounts[z]||0)+1);
+  const topZone = Object.keys(zoneCounts).sort((a,b)=>zoneCounts[b]-zoneCounts[a])[0];
+  if(topZone === '감정활동') hints.push('감정을 마음껏 쏟아낼 때는 판단하지 않고 스킨십이나 공감으로 반응해주면 좋아요.');
+  if(topZone === '사고활동') hints.push('무언가에 몰입해서 파고들 때는 시간을 충분히 확보해주면 집중력이 더 자라요.');
+  if(topZone === '뉴트럴') hints.push('차분하게 자기 속도로 해나갈 때는 다그치지 않고 지켜봐주는 게 좋아요.');
+
+  const tones = entries.map(e=>e.tone).filter(t=>TONE_COLS.includes(t));
+  if(tones.length >= 2){
+    const rank = {pastel:0, vivid:1, deep:2};
+    if(rank[tones[tones.length-1]] > rank[tones[0]]) hints.push('요즘 에너지가 강해지는 시기예요 — 왕성한 도전과 호기심을 뒷받침해주면 좋아요.');
+    else if(rank[tones[tones.length-1]] < rank[tones[0]]) hints.push('요즘 마음이 편안해지는 시기예요 — 급하게 재촉하지 않고 여유를 주면 좋아요.');
+  }
+
+  const abilityCounts = {};
+  entries.forEach(e => String(e.growingAbility||'').split(/[,、\n·]/).map(s=>s.trim()).filter(Boolean).forEach(t=>{
+    const cat = categorizeAbility(t);
+    if(cat) abilityCounts[cat] = (abilityCounts[cat]||0)+1;
+  }));
+  if(abilityCounts['자립심']) hints.push('스스로 해보려는 순간에는 먼저 나서지 말고 맡기고 지켜봐주면 자립심이 더 자라요.');
+  if(abilityCounts['사회성']) hints.push('또래나 가족과의 대화 시간이 요즘 특히 도움이 되는 시기예요.');
+  if(abilityCounts['집중력']) hints.push('집중력이 높아지는 활동을 발견하면, 그 활동을 충분히 더 할 수 있게 해주면 좋아요.');
+
+  if(!hints.length) return '';
+  const items = hints.slice(0,4).map(h=>`<div><span class="check">✔</span>${h}</div>`).join('');
+  return `<div class="highlight-list">${items}<div class="wheel-caption" style="margin-top:10px;">* 성장일지 데이터를 기준으로 자동 제안된 초안이에요 — 선생님의 관찰로 다듬어서 사용해주세요.</div></div>`;
+}
+
 function checkJournal(){
   const name = document.getElementById('jName').value.trim();
   const phone4 = document.getElementById('jPhone4').value.trim();
@@ -635,10 +810,10 @@ function renderJournal(data){
     </div>
   `).join('');
 
-  renderSummarySection(entries, data.summary);
+  renderSummarySection(entries, data.summary, data.name);
 }
 
-function renderSummarySection(entries, summary){
+function renderSummarySection(entries, summary, childName){
   const box = document.getElementById('jSummary');
   const colored = entries.filter(e => e.mainColor);
 
@@ -676,20 +851,28 @@ function renderSummarySection(entries, summary){
   let autoSection = '';
   if(timelineHtml || freqHtml){
     const wheelHtml = renderColorWheel(entries);
+    const colorToneWheelHtml = renderColorToneWheel(entries);
     const materialWheelHtml = renderMaterialWheel(entries);
     const toneGridHtml = renderToneGrid(entries);
     const effectBalanceHtml = renderEffectBalance(entries);
     const keywordCloudHtml = renderKeywordCloud(entries);
+    const abilityBoardHtml = renderAbilityBoard(entries);
+    const narrativeHtml = renderGrowthNarrative(entries, childName);
+    const hintsHtml = renderParentingHints(entries);
     autoSection = `
       <div class="summary-section">
         <div class="sec-label"><span class="tag tag-auto">자동 생성</span><h3>회차별 색채 변화</h3></div>
+        ${narrativeHtml}
         ${wheelHtml}
         ${timelineHtml}
         ${freqHtml}
+        ${colorToneWheelHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>6개월 색채 여정 (색상 · 톤)</h3></div>${colorToneWheelHtml}` : ''}
         ${toneGridHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>색상 · 톤 체크판</h3></div>${toneGridHtml}` : ''}
+        ${abilityBoardHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>싹트고 있는 능력</h3></div>${abilityBoardHtml}` : ''}
         ${materialWheelHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>재료 효과 바퀴 (사고·감정·뉴트럴)</h3></div>${materialWheelHtml}` : ''}
         ${effectBalanceHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>재료 효과 비율</h3></div>${effectBalanceHtml}` : ''}
         ${keywordCloudHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 생성</span><h3>자주 나온 감정 · 성장 키워드</h3></div>${keywordCloudHtml}` : ''}
+        ${hintsHtml ? `<div class="sec-label" style="margin-top:24px;"><span class="tag tag-auto">자동 제안</span><h3>양육 힌트 (초안)</h3></div>${hintsHtml}` : ''}
       </div>`;
   }
 
