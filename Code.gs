@@ -21,11 +21,15 @@
  *
  * 성장일지 시트 준비:
  * 스프레드시트에 "성장일지"라는 이름의 시트 탭을 만들고,
- * 첫 줄(헤더)에 다음 19개를 순서대로 넣어주세요:
+ * 첫 줄(헤더)에 다음 22개를 순서대로 넣어주세요:
  * 이름 | 전화번호뒷4자리 | 학기 | 월 | 작품제목 | 사진1URL | 사진2URL |
  * 자신을 나타내는 색 | 선택색상1 | 선택색상2 | 선택색상3 | 색상톤 |
  * 감정,성장키워드 | 몰입도 | 사용재료 | 재료선택의 경향 | 성장하고 있는 능력 |
- * 재료의 효과 | 관찰노트
+ * 재료의 효과 | 관찰노트 | 이번 회차 목표/주제 | 그림 스타일 특징 | 목표행동 태그
+ *
+ * 마지막 3개(회차목표/스타일특징/목표행동태그)는 선택 입력이에요 — 안 적어도
+ * 카드에 그냥 안 보일 뿐 문제없이 동작합니다. "목표행동 태그"는 감정키워드처럼
+ * 쉼표로 여러 개 적으면 돼요 (예: 집중력, 협동, 자기표현).
  *
  * 색상/색상톤/재료의 효과 열은 드롭다운으로 선택할 수 있게 만들어두는 걸
  * 추천해요 — 이 파일 안의 setupJournalDropdowns() 함수를 Apps Script
@@ -218,7 +222,10 @@ function getJournal(name, phone4) {
     materialTendency: r[15],
     growingAbility: r[16],
     materialEffect: r[17],
-    note: r[18]
+    note: r[18],
+    sessionTheme: r[19],
+    styleNotes: r[20],
+    goalTags: String(r[21] || '').split(/[,、\n]/).map(s => s.trim()).filter(Boolean)
   }));
 
   const summary = getSummary(nameTrim, phoneTrim);

@@ -77,6 +77,7 @@
   .month-title-row{margin-bottom:20px;}
   .month-badge{display:inline-block; background:var(--forest); color:#fff; font-size:12px; font-weight:700; padding:4px 14px; border-radius:8px;}
   .artwork-title{font-family:'Noto Serif KR',serif; font-size:17px; color:var(--forest); margin-top:10px;}
+  .session-theme{font-size:12.5px; color:var(--clay); font-weight:600; margin-top:6px;}
 
   .carte-grid{display:grid; grid-template-columns:1.2fr 1fr; gap:26px;}
   @media(max-width:640px){ .carte-grid{grid-template-columns:1fr;} }
@@ -87,6 +88,10 @@
   }
   .observation-label{font-size:11.5px; font-weight:700; color:var(--clay); margin-bottom:6px; display:block;}
   .observation::before{content:"“ "; color:var(--clay);}
+  .auto-insight{
+    background:#EFF4EC; border:1px dashed #C9DCC0; border-radius:14px; padding:14px 18px; margin-top:12px;
+    font-size:13px; color:#3f4f3a; line-height:1.8;
+  }
 
   .photo-sub{width:100%; aspect-ratio:4/3; border-radius:18px; object-fit:cover; background:var(--ivory-deep); margin-bottom:16px;}
   .info-block{margin-bottom:14px;}
@@ -414,6 +419,48 @@ function renderKeywordCloud(entries){
   return `<div class="freq-card"><div class="material-pills">${pills}</div></div>`;
 }
 
+// 지난 회차와 비교해서 달라진 점을 문장으로 자동 생성 (색, 톤, 재료 효과 영역,
+// 새로 등장한 감정 키워드). 첫 회차는 비교 대상이 없어서 건너뜁니다.
+function buildAutoInsights(entries){
+  const seenKeywords = new Set();
+  let colorStreak = 1;
+  const RANK = {pastel:0, vivid:1, deep:2};
+  return entries.map((e, i) => {
+    const lines = [];
+    const prev = i > 0 ? entries[i-1] : null;
+
+    if(prev){
+      if(e.color1 && prev.color1){
+        if(e.color1 === prev.color1){
+          colorStreak++;
+          if(colorStreak >= 2) lines.push(`"${e.color1}" 색을 ${colorStreak}회 연속으로 선택했어요.`);
+        } else {
+          colorStreak = 1;
+          lines.push(`대표 색이 "${prev.color1}"에서 "${e.color1}"(으)로 바뀌었어요.`);
+        }
+      }
+      if(e.tone && prev.tone && e.tone !== prev.tone && (e.tone in RANK) && (prev.tone in RANK)){
+        lines.push(RANK[e.tone] > RANK[prev.tone]
+          ? `색의 톤이 더 진하고 또렷해졌어요 (${prev.tone} → ${e.tone}).`
+          : `색의 톤이 더 맑고 부드러워졌어요 (${prev.tone} → ${e.tone}).`);
+      }
+      const curZone = normalizeZone(e.materialEffect), prevZone = normalizeZone(prev.materialEffect);
+      if(curZone && prevZone && curZone !== prevZone){
+        lines.push(`활동 영역이 "${prevZone}"에서 "${curZone}"(으)로 옮겨갔어요.`);
+      }
+    }
+
+    const newKeywords = (e.emotionKeywords||[]).filter(k => k && !seenKeywords.has(k));
+    (e.emotionKeywords||[]).forEach(k => k && seenKeywords.add(k));
+    if(prev && newKeywords.length){
+      lines.push(`이번에 처음 "${newKeywords.join(', ')}" 감정이 나타났어요.`);
+    }
+
+    e.autoInsight = lines.join('<br>');
+    return e;
+  });
+}
+
 function checkJournal(){
   const name = document.getElementById('jName').value.trim();
   const phone4 = document.getElementById('jPhone4').value.trim();
@@ -451,7 +498,7 @@ function renderJournal(data){
   document.getElementById('jChildName').textContent = `${data.name} 어린이`;
   document.getElementById('jTerm').textContent = data.term || '';
 
-  const entries = data.entries || [];
+  const entries = buildAutoInsights(data.entries || []);
 
   // 표지 대표 사진: 첫 기록의 사진1 사용
   const coverImg = entries.find(e => e.photo1)?.photo1;
@@ -476,6 +523,7 @@ function renderJournal(data){
       <div class="month-title-row">
         <span class="month-badge">${e.month}</span>
         ${e.title ? `<div class="artwork-title">「${e.title}」</div>` : ''}
+        ${e.sessionTheme ? `<div class="session-theme">이번 회차 목표 · ${e.sessionTheme}</div>` : ''}
       </div>
       <div class="carte-grid">
         <div>
@@ -484,6 +532,11 @@ function renderJournal(data){
             <span class="observation-label">꽃밭샘 관찰</span>
             ${e.note || '이 달의 관찰 기록이 아직 입력되지 않았어요.'}
           </div>
+          ${e.autoInsight ? `
+          <div class="auto-insight">
+            <span class="observation-label" style="color:var(--sage);">✨ 지난 회차와 비교</span>
+            ${e.autoInsight}
+          </div>` : ''}
         </div>
         <div>
           ${e.photo2 ? `<img class="photo-sub" src="${e.photo2}" alt="${e.month} 활동 사진" onerror="this.style.display='none'">` : ''}
@@ -526,6 +579,16 @@ function renderJournal(data){
           <div class="info-block">
             <span class="info-label">성장하고 있는 능력</span>
             <p class="info-note">${e.growingAbility}</p>
+          </div>` : ''}
+          ${e.styleNotes ? `
+          <div class="info-block">
+            <span class="info-label">그림 스타일 특징</span>
+            <p class="info-note">${e.styleNotes}</p>
+          </div>` : ''}
+          ${(e.goalTags && e.goalTags.length) ? `
+          <div class="info-block">
+            <span class="info-label">이번 회차 목표행동</span>
+            <div class="material-pills">${e.goalTags.map(t=>`<span class="pill" style="background:#EFF4EC; border-color:#D7E3CF; color:var(--forest);">${t}</span>`).join('')}</div>
           </div>` : ''}
         </div>
       </div>
