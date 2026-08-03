@@ -189,15 +189,17 @@ function getOrCreateVisitSheet() {
 
 /* ---------- 성장일지 드롭다운 설정 (최초 1회만 직접 실행) ----------
  * Apps Script 편집기 상단에서 함수 목록을 "setupJournalDropdowns"로 바꾼 뒤
- * ▶ 실행 버튼을 한 번만 눌러주세요. 그러면 성장일지 시트의
- * H(자신을 나타내는 색), I~K(선택색상1~3), L(색상톤), R(재료의 효과) 열
- * 2~500행에 드롭다운 선택 목록이 자동으로 걸립니다.
+ * ▶ 실행 버튼을 한 번만 눌러주세요. 그러면 성장일지 시트의 "자신을 나타내는 색",
+ * "선택색상1~3", "색상톤", "재료의 효과" 열(헤더 이름으로 자동으로 찾음)
+ * 2~500행에 드롭다운 선택 목록이 자동으로 걸립니다. 열 순서가 바뀌어 있어도
+ * 헤더 이름만 같으면 정확한 열을 찾아서 적용해요.
  * (나중에 500행을 넘어서면 이 함수를 다시 한 번 실행해주시면 돼요.)
  */
 function setupJournalDropdowns() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(JOURNAL_SHEET_NAME);
   if (!sheet) { throw new Error('"성장일지" 시트를 먼저 만들어주세요.'); }
 
+  const col = getHeaderIndexMap(sheet);
   const LAST_ROW = 500;
   const colorList = ['검정', '빨강', '주황', '노랑', '연두', '초록', '파랑', '보라', '핑크'];
   const toneList = ['deep', 'vivid', 'pastel'];
@@ -207,15 +209,32 @@ function setupJournalDropdowns() {
   const toneRule = SpreadsheetApp.newDataValidation().requireValueInList(toneList, true).setAllowInvalid(false).build();
   const effectRule = SpreadsheetApp.newDataValidation().requireValueInList(effectList, true).setAllowInvalid(false).build();
 
-  // H, I, J, K = 자신을 나타내는 색 / 선택색상1 / 선택색상2 / 선택색상3
-  sheet.getRange(2, 8, LAST_ROW - 1, 4).setDataValidation(colorRule);
-  // L = 색상톤
-  sheet.getRange(2, 12, LAST_ROW - 1, 1).setDataValidation(toneRule);
-  // R = 재료의 효과
-  sheet.getRange(2, 18, LAST_ROW - 1, 1).setDataValidation(effectRule);
+  const missing = [];
+  ['자신을 나타내는 색', '선택색상1', '선택색상2', '선택색상3'].forEach(h => {
+    if (h in col) sheet.getRange(2, col[h] + 1, LAST_ROW - 1, 1).setDataValidation(colorRule);
+    else missing.push(h);
+  });
+  if ('색상톤' in col) sheet.getRange(2, col['색상톤'] + 1, LAST_ROW - 1, 1).setDataValidation(toneRule);
+  else missing.push('색상톤');
+  if ('재료의 효과' in col) sheet.getRange(2, col['재료의 효과'] + 1, LAST_ROW - 1, 1).setDataValidation(effectRule);
+  else missing.push('재료의 효과');
+
+  if (missing.length) {
+    throw new Error('다음 헤더 열을 찾을 수 없어서 드롭다운을 걸지 못했어요: ' + missing.join(', ') + ' — 헤더 이름 철자를 확인해주세요.');
+  }
 }
 
 /* ---------- 성장일지 (개인정보 보호용 필터링 조회) ---------- */
+// 열 위치가 아니라 "헤더 이름"으로 데이터를 찾기 위한 도우미. 시트 중간에
+// 열이 하나 삽입되어 순서가 밀리더라도, 헤더 텍스트만 그대로면 코드가 알아서
+// 올바른 열을 다시 찾아가기 때문에 데이터가 어긋나지 않습니다.
+function getHeaderIndexMap(sheet) {
+  const header = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const map = {};
+  header.forEach((h, i) => { map[String(h).trim()] = i; });
+  return map;
+}
+
 function getJournal(name, phone4) {
   if (!name || !phone4) {
     return { found: false, message: '이름과 전화번호 뒷자리를 모두 입력해주세요.' };
@@ -225,6 +244,15 @@ function getJournal(name, phone4) {
   if (!sheet) {
     return { found: false, message: '아직 등록된 성장일지 데이터가 없어요.' };
   }
+  const col = getHeaderIndexMap(sheet);
+  // 필수 열(이름/전화번호)이 없어졌거나 헤더 텍스트가 바뀌었을 때를 대비한 안전장치
+  const need = ['이름', '전화번호뒷4자리'];
+  const missing = need.filter(h => !(h in col));
+  if (missing.length) {
+    return { found: false, message: `시트 헤더에서 "${missing.join(', ')}" 열을 찾을 수 없어요. 첫 줄(헤더) 이름이 바뀌었는지 확인해주세요.` };
+  }
+  const get = (row, headerName, fallback) => (headerName in col) ? row[col[headerName]] : fallback;
+
   const rows = sheet.getDataRange().getValues();
   rows.shift(); // 헤더 제거
 
@@ -232,36 +260,39 @@ function getJournal(name, phone4) {
   const phoneTrim = String(phone4).trim();
 
   const matched = rows.filter(r =>
-    String(r[0]).trim() === nameTrim && String(r[1]).trim() === phoneTrim
+    String(get(r, '이름', '')).trim() === nameTrim && String(get(r, '전화번호뒷4자리', '')).trim() === phoneTrim
   );
 
   if (matched.length === 0) {
     return { found: false, message: '이름 또는 전화번호 뒷자리가 일치하는 기록이 없어요. 다시 확인해주세요.' };
   }
 
-  const term = matched[0][2];
-  const entries = matched.map(r => ({
-    month: r[3],
-    title: r[4],
-    photo1: r[5],
-    photo2: r[6],
-    selfColor: r[7],
-    color1: r[8],
-    color2: r[9],
-    color3: r[10],
-    tone: String(r[11] || '').trim().toLowerCase(),
-    mainColor: r[8], // 색채 바퀴/타임라인은 선택색상1을 대표색으로 사용
-    emotionKeywords: String(r[12] || '').split(/[,、\n]/).map(s => s.trim()).filter(Boolean),
-    engagement: r[13],
-    materials: r[14],
-    materialTendency: r[15],
-    growingAbility: r[16],
-    materialEffect: r[17],
-    note: r[18],
-    sessionTheme: r[19],
-    styleNotes: r[20],
-    goalTags: String(r[21] || '').split(/[,、\n]/).map(s => s.trim()).filter(Boolean)
-  }));
+  const term = get(matched[0], '학기', '');
+  const entries = matched.map(r => {
+    const color1 = get(r, '선택색상1', '');
+    return {
+      month: get(r, '월', ''),
+      title: get(r, '작품제목', ''),
+      photo1: get(r, '사진1URL', ''),
+      photo2: get(r, '사진2URL', ''),
+      selfColor: get(r, '자신을 나타내는 색', ''),
+      color1: color1,
+      color2: get(r, '선택색상2', ''),
+      color3: get(r, '선택색상3', ''),
+      tone: String(get(r, '색상톤', '') || '').trim().toLowerCase(),
+      mainColor: color1, // 색채 바퀴/타임라인은 선택색상1을 대표색으로 사용
+      emotionKeywords: String(get(r, '감정,성장키워드', '') || '').split(/[,、\n]/).map(s => s.trim()).filter(Boolean),
+      engagement: get(r, '몰입도', ''),
+      materials: get(r, '사용재료', ''),
+      materialTendency: get(r, '재료선택의 경향', ''),
+      growingAbility: get(r, '성장하고 있는 능력', ''),
+      materialEffect: get(r, '재료의 효과', ''),
+      note: get(r, '관찰노트', ''),
+      sessionTheme: get(r, '이번 회차 목표/주제', ''),
+      styleNotes: get(r, '그림 스타일 특징', ''),
+      goalTags: String(get(r, '목표행동 태그', '') || '').split(/[,、\n]/).map(s => s.trim()).filter(Boolean)
+    };
+  });
 
   const summary = getSummary(nameTrim, phoneTrim);
   const publishedSummary = (summary && summary.published === true) ? summary : null;
