@@ -55,6 +55,9 @@
   .submit-msg.ok{color:var(--sage); font-weight:700;}
   .submit-msg.err{color:#c0554f;}
   .reset-link{display:block; text-align:center; margin-top:8px; font-size:12.5px; color:#9a9285; text-decoration:underline; cursor:pointer;}
+  .tab-row{display:flex; gap:8px; margin-bottom:20px;}
+  .tab-btn{flex:1; padding:12px; border-radius:12px; border:1.5px solid var(--line); background:var(--paper); color:#9a9285; font-size:13.5px; font-weight:700; cursor:pointer;}
+  .tab-btn.active{background:var(--forest); border-color:var(--forest); color:#fff;}
 </style>
 </head>
 <body>
@@ -82,6 +85,12 @@
   </div>
 
   <div id="formView">
+    <div class="tab-row">
+      <button class="tab-btn active" id="tabEntryBtn" onclick="switchTab('entry')">회차 기록 입력</button>
+      <button class="tab-btn" id="tabSummaryBtn" onclick="switchTab('summary')">6개월 종합요약 입력</button>
+    </div>
+
+    <div id="entryTab">
     <div class="form-card">
       <div class="form-section-title">기본 정보</div>
       <div class="form-row">
@@ -162,6 +171,77 @@
     <button class="submit-btn" id="submitBtn" onclick="submitEntry()">이 회차 저장하기</button>
     <div class="submit-msg" id="submitMsg"></div>
     <a class="reset-link" onclick="resetFormKeepChild()">다음 회차 이어서 입력하기 (이름·전화번호만 유지)</a>
+    </div>
+
+    <div id="summaryTab" style="display:none;">
+      <div class="form-card">
+        <div class="form-section-title">아이 찾기</div>
+        <div class="form-row">
+          <div class="f-field"><label>이름 *</label><input type="text" id="s_name" placeholder="예: 국다온"></div>
+          <div class="f-field"><label>전화번호 뒷 4자리 *</label><input type="text" id="s_phone4" maxlength="4" placeholder="예: 9713"></div>
+        </div>
+        <button class="submit-btn" style="background:var(--forest);" onclick="loadSummary()">기존 내용 불러오기</button>
+        <div class="submit-msg" id="loadMsg"></div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-section-title">강점 · 방향</div>
+        <div class="form-row single">
+          <div class="f-field"><label>강점</label><textarea id="s_strength" placeholder="아이의 강점을 자유롭게 적어주세요."></textarea></div>
+        </div>
+        <div class="form-row single">
+          <div class="f-field"><label>앞으로의 방향</label><textarea id="s_direction" placeholder="앞으로 어떤 방향으로 성장시켜주면 좋을지 적어주세요."></textarea></div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-section-title">카테고리별 전 · 후 비교 <span class="hint">(비워두면 그 항목은 안 나와요)</span></div>
+        <div class="form-row">
+          <div class="f-field"><label>🔵 표현 · 전</label><input type="text" id="s_expressionBefore"></div>
+          <div class="f-field"><label>🔵 표현 · 후</label><input type="text" id="s_expressionAfter"></div>
+        </div>
+        <div class="form-row">
+          <div class="f-field"><label>🟢 색채 · 전</label><input type="text" id="s_colorBefore"></div>
+          <div class="f-field"><label>🟢 색채 · 후</label><input type="text" id="s_colorAfter"></div>
+        </div>
+        <div class="form-row">
+          <div class="f-field"><label>🟡 심리 · 전</label><input type="text" id="s_psychologyBefore"></div>
+          <div class="f-field"><label>🟡 심리 · 후</label><input type="text" id="s_psychologyAfter"></div>
+        </div>
+        <div class="form-row">
+          <div class="f-field"><label>🔴 사고 · 전</label><input type="text" id="s_thinkingBefore"></div>
+          <div class="f-field"><label>🔴 사고 · 후</label><input type="text" id="s_thinkingAfter"></div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-section-title">눈에 띄는 성장</div>
+        <div class="form-row single">
+          <div class="f-field"><label>눈에 띄는 성장 포인트 <span class="hint">(한 줄에 하나씩 적어주세요)</span></label><textarea id="s_highlights" placeholder="예&#10;조형력이 부쩍 늘었어요&#10;친구들과의 관계를 스스로 조율해요"></textarea></div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-section-title">자동 생성 문구 덮어쓰기 <span class="hint">(선택, 비워두면 자동 생성된 문장이 계속 나와요)</span></div>
+        <div class="form-row single">
+          <div class="f-field"><label>성장 한 줄 요약 직접 쓰기</label><input type="text" id="s_narrativeOverride"></div>
+        </div>
+        <div class="form-row single">
+          <div class="f-field"><label>양육 힌트 직접 쓰기 <span class="hint">(한 줄에 하나씩)</span></label><textarea id="s_hintsOverride"></textarea></div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-section-title">공개 설정</div>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:#4b463f; cursor:pointer;">
+          <input type="checkbox" id="s_published" style="width:auto;"> 학부모 화면에 이 종합 요약(강점/방향/전후비교/하이라이트) 공개하기
+        </label>
+        <div class="hint" style="margin-top:8px; display:block;">체크 안 하면 이 카드의 내용은 학부모에게 안 보이고, 성장일지 기반 자동 생성 부분만 보여요.</div>
+      </div>
+
+      <button class="submit-btn" id="summarySubmitBtn" onclick="saveSummaryForm()">성장요약 저장하기</button>
+      <div class="submit-msg" id="summaryMsg"></div>
+    </div>
   </div>
 </div>
 
@@ -172,6 +252,104 @@ const ADMIN_PASSWORD = "crayon2026"; // journal.html / index.html 관리자 로�
 const COLORS = ['검정','빨강','주황','노랑','연두','초록','파랑','보라','핑크'];
 const TONES = ['deep','vivid','pastel'];
 const EFFECTS = ['감정활동(발산효과)','뉴트럴(중립)','사고활동(집중효과)'];
+
+function switchTab(tab){
+  document.getElementById('entryTab').style.display = (tab==='entry') ? 'block' : 'none';
+  document.getElementById('summaryTab').style.display = (tab==='summary') ? 'block' : 'none';
+  document.getElementById('tabEntryBtn').classList.toggle('active', tab==='entry');
+  document.getElementById('tabSummaryBtn').classList.toggle('active', tab==='summary');
+}
+
+function loadSummary(){
+  const name = document.getElementById('s_name').value.trim();
+  const phone4 = document.getElementById('s_phone4').value.trim();
+  const msg = document.getElementById('loadMsg');
+  msg.className = 'submit-msg';
+  if(!name || phone4.length !== 4){
+    msg.className = 'submit-msg err';
+    msg.textContent = '이름과 전화번호 뒷자리 4자리를 입력해주세요.';
+    return;
+  }
+  msg.textContent = '불러오는 중...';
+  const params = new URLSearchParams({ action:'summaryForEdit', name, phone4 });
+  fetch(GAS_URL + '?' + params.toString())
+    .then(r => r.json())
+    .then(data => {
+      if(!data || Object.keys(data).length === 0){
+        msg.className = 'submit-msg';
+        msg.textContent = '기존 기록이 없어요 — 새로 작성하시면 저장돼요.';
+        return;
+      }
+      document.getElementById('s_strength').value = data.strength || '';
+      document.getElementById('s_direction').value = data.direction || '';
+      document.getElementById('s_expressionBefore').value = data.expression?.before || '';
+      document.getElementById('s_expressionAfter').value = data.expression?.after || '';
+      document.getElementById('s_colorBefore').value = data.color?.before || '';
+      document.getElementById('s_colorAfter').value = data.color?.after || '';
+      document.getElementById('s_psychologyBefore').value = data.psychology?.before || '';
+      document.getElementById('s_psychologyAfter').value = data.psychology?.after || '';
+      document.getElementById('s_thinkingBefore').value = data.thinking?.before || '';
+      document.getElementById('s_thinkingAfter').value = data.thinking?.after || '';
+      document.getElementById('s_highlights').value = (data.highlights || []).join('\n');
+      document.getElementById('s_narrativeOverride').value = data.narrativeOverride || '';
+      document.getElementById('s_hintsOverride').value = (data.hintsOverride || []).join('\n');
+      document.getElementById('s_published').checked = !!data.published;
+      msg.className = 'submit-msg ok';
+      msg.textContent = '✔ 기존 내용을 불러왔어요. 수정하고 저장하시면 돼요.';
+    })
+    .catch(() => {
+      msg.className = 'submit-msg err';
+      msg.textContent = '불러오는 중 문제가 발생했어요.';
+    });
+}
+
+function saveSummaryForm(){
+  const name = document.getElementById('s_name').value.trim();
+  const phone4 = document.getElementById('s_phone4').value.trim();
+  const msg = document.getElementById('summaryMsg');
+  msg.className = 'submit-msg';
+  if(!name || phone4.length !== 4){
+    msg.className = 'submit-msg err';
+    msg.textContent = '이름과 전화번호 뒷자리 4자리를 입력해주세요.';
+    return;
+  }
+  const params = new URLSearchParams({
+    action: 'saveSummary', name, phone4,
+    strength: document.getElementById('s_strength').value.trim(),
+    direction: document.getElementById('s_direction').value.trim(),
+    expressionBefore: document.getElementById('s_expressionBefore').value.trim(),
+    expressionAfter: document.getElementById('s_expressionAfter').value.trim(),
+    colorBefore: document.getElementById('s_colorBefore').value.trim(),
+    colorAfter: document.getElementById('s_colorAfter').value.trim(),
+    psychologyBefore: document.getElementById('s_psychologyBefore').value.trim(),
+    psychologyAfter: document.getElementById('s_psychologyAfter').value.trim(),
+    thinkingBefore: document.getElementById('s_thinkingBefore').value.trim(),
+    thinkingAfter: document.getElementById('s_thinkingAfter').value.trim(),
+    highlights: document.getElementById('s_highlights').value.trim(),
+    narrativeOverride: document.getElementById('s_narrativeOverride').value.trim(),
+    hintsOverride: document.getElementById('s_hintsOverride').value.trim(),
+    published: document.getElementById('s_published').checked ? 'true' : 'false'
+  });
+  const btn = document.getElementById('summarySubmitBtn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+  fetch(GAS_URL + '?' + params.toString())
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false; btn.textContent = '성장요약 저장하기';
+      if(data && data.ok){
+        msg.className = 'submit-msg ok';
+        msg.textContent = '✔ 저장했어요!' + (document.getElementById('s_published').checked ? ' 학부모 화면에도 바로 반영돼요.' : ' (공개 체크를 안 하셔서 학부모 화면엔 아직 안 보여요.)');
+      } else {
+        msg.className = 'submit-msg err';
+        msg.textContent = data && data.message ? data.message : '저장에 실패했어요.';
+      }
+    })
+    .catch(() => {
+      btn.disabled = false; btn.textContent = '성장요약 저장하기';
+      msg.className = 'submit-msg err';
+      msg.textContent = '저장 중 문제가 발생했어요.';
+    });
+}
 
 function fillSelect(id, options, withBlank){
   const el = document.getElementById(id);

@@ -80,6 +80,8 @@ function doGet(e) {
   if (action === 'journal') return jsonOutput(getJournal(e.parameter.name, e.parameter.phone4));
   if (action === 'saveSummaryRange') return jsonOutput(saveSummaryRange(e.parameter.name, e.parameter.phone4, e.parameter.from, e.parameter.to));
   if (action === 'addJournalEntry') return jsonOutput(addJournalEntry(e.parameter));
+  if (action === 'summaryForEdit') return jsonOutput(getSummary(e.parameter.name, e.parameter.phone4) || {});
+  if (action === 'saveSummary') return jsonOutput(saveSummary(e.parameter));
 
   return jsonOutput({ ok: true });
 }
@@ -420,6 +422,42 @@ function addJournalEntry(p) {
   set('목표행동 태그', p.goalTags);
 
   sheet.appendRow(newRow);
+  return { ok: true };
+}
+
+/* ---------- 성장요약 저장 (teacher-entry.html '성장요약 입력' 탭에서 사용) ----------
+ * 요약범위시작/끝(17,18번째 열)은 journal.html 선생님 모드에서 따로 관리하기
+ * 때문에, 여기서는 건드리지 않고 그대로 둡니다.
+ */
+function saveSummary(p) {
+  if (!p.name || !p.phone4) throw new Error('이름과 전화번호 뒷자리가 필요해요.');
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SUMMARY_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SUMMARY_SHEET_NAME);
+    sheet.appendRow(['이름','전화번호뒷4자리','강점','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝']);
+  }
+  const data = sheet.getDataRange().getValues();
+  let rowIdx = -1;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === String(p.name).trim() && String(data[i][1]).trim() === String(p.phone4).trim()) { rowIdx = i + 1; break; }
+  }
+  const published = (p.published === 'true' || p.published === true);
+  const values = [
+    p.name, p.phone4,
+    p.strength || '', p.direction || '',
+    p.expressionBefore || '', p.expressionAfter || '',
+    p.colorBefore || '', p.colorAfter || '',
+    p.psychologyBefore || '', p.psychologyAfter || '',
+    p.thinkingBefore || '', p.thinkingAfter || '',
+    p.highlights || '', published,
+    p.narrativeOverride || '', p.hintsOverride || ''
+  ];
+  if (rowIdx === -1) {
+    sheet.appendRow(values); // 새 줄이라 요약범위 칸은 비워서 시작 (필요하면 나중에 journal.html에서 지정)
+  } else {
+    sheet.getRange(rowIdx, 1, 1, 16).setValues([values]); // 17,18열(요약범위)은 그대로 둠
+  }
   return { ok: true };
 }
 
