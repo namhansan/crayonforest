@@ -82,6 +82,22 @@
   .carte-grid{display:grid; grid-template-columns:1.2fr 1fr; gap:26px;}
   @media(max-width:640px){ .carte-grid{grid-template-columns:1fr;} }
   .photo-main{width:100%; aspect-ratio:4/3; border-radius:18px; object-fit:cover; background:var(--ivory-deep);}
+  .photo-empty{display:flex; align-items:center; justify-content:center; color:#b7ae9e; font-size:12.5px;}
+  .photo-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:0;}
+  .photo-grid img{width:100%; aspect-ratio:1/1; border-radius:14px; object-fit:cover; background:var(--ivory-deep);}
+  .mood-flow{display:flex; align-items:center; gap:14px;}
+  .mood-swatch-wrap{display:flex; flex-direction:column; align-items:center; gap:5px; font-size:11.5px; color:#7a7468;}
+  .swatch-lg{width:36px; height:36px; border-radius:50%; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.14);}
+  .mood-arrow{font-size:16px; color:var(--clay);}
+  .mood-note{font-size:12.5px; color:#7a7468; font-style:italic; margin-left:4px;}
+  .color-chip-row{display:flex; gap:18px; flex-wrap:wrap;}
+  .color-chip{display:flex; flex-direction:column; align-items:center; gap:6px; font-size:11.5px; color:#7a7468;}
+  .summary-filter{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0 0 22px; font-size:13px; color:#7a7468;
+  }
+  .summary-filter select{padding:6px 10px; border-radius:8px; border:1px solid var(--line); background:var(--paper); font-size:13px; color:#3f3b34;}
+  .filter-reset{padding:6px 14px; border-radius:999px; border:1px solid var(--line); background:var(--paper); font-size:12px; cursor:pointer; color:var(--forest);}
+  .filter-reset:hover{background:var(--ivory-deep);}
   .observation{
     background:var(--ivory-deep); border-radius:14px; padding:16px 18px; margin-top:14px; font-size:13.5px;
     color:#4b463f; line-height:1.8; white-space:pre-line;
@@ -107,11 +123,16 @@
 
   /* ---------- 종합 요약 (색채 차트 + 원장님 해석) ---------- */
   .summary-section{margin-top:30px;}
-  .sec-label{display:flex; align-items:center; gap:8px; margin-bottom:16px;}
+  .sec-label{display:flex; align-items:center; gap:10px; margin-bottom:16px;}
   .sec-label h3{font-family:'Noto Serif KR',serif; font-size:17px; color:var(--forest);}
   .sec-label .tag{font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;}
   .tag-auto{background:#E4F0E0; color:#5C7A56;}
   .tag-manual{background:#F3E3E8; color:var(--berry);}
+  .sec-letter{
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+    width:26px; height:26px; border-radius:50%; background:var(--forest); color:#fff;
+    font-size:13px; font-weight:800; font-family:'Noto Serif KR',serif;
+  }
 
   .timeline-card, .freq-card, .wheel-card{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:28px 26px; margin-bottom:16px;}
   .wheel-card{text-align:center;}
@@ -173,7 +194,14 @@
   }
 
   .gallery-heading{font-size:12.5px; font-weight:700; color:var(--clay); margin:0 0 12px 4px; letter-spacing:.2px;}
-  .gallery-strip{display:flex; gap:14px; overflow-x:auto; padding:4px 4px 20px; margin-bottom:8px; -webkit-overflow-scrolling:touch;}
+  .gallery-wrap{position:relative; display:flex; align-items:center; gap:6px;}
+  .gallery-nav{
+    flex:0 0 auto; width:34px; height:34px; border-radius:50%; border:1px solid var(--line);
+    background:var(--paper); color:var(--forest); font-size:18px; cursor:pointer; line-height:1;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.06);
+  }
+  .gallery-nav:hover{background:var(--ivory-deep);}
+  .gallery-strip{display:flex; gap:14px; overflow-x:auto; padding:4px 4px 20px; margin-bottom:8px; -webkit-overflow-scrolling:touch; scroll-behavior:smooth;}
   .gallery-item{flex:0 0 auto; width:96px; text-align:center; cursor:pointer;}
   .gallery-item:hover .gallery-thumb, .gallery-item:hover .gallery-thumb-empty{transform:translateY(-3px); box-shadow:0 8px 16px rgba(0,0,0,.12);}
   .gallery-thumb{width:96px; height:96px; border-radius:14px; object-fit:cover; border:2px solid var(--paper); box-shadow:0 4px 10px rgba(0,0,0,.08); transition:transform .2s, box-shadow .2s;}
@@ -246,6 +274,7 @@
     </div>
     <div id="jGallery"></div>
     <div id="jEntries"></div>
+    <div id="jSummaryFilter"></div>
     <div id="jSummary"></div>
     <a href="#" class="logout-link" onclick="logoutJournal(event)">다른 아이 이름으로 다시 확인하기</a>
   </div>
@@ -705,7 +734,25 @@ function renderGallery(entries){
       ${e.photo1 ? `<img class="gallery-thumb" src="${e.photo1}" alt="${e.month}" onerror="this.style.display='none'">` : `<div class="gallery-thumb-empty">사진 없음</div>`}
       <div class="gallery-caption"><b>${e.month}</b>${e.title ? `「${e.title}」` : ''}</div>
     </div>`).join('');
-  el.innerHTML = `<div class="gallery-heading">전체 기록 한눈에 보기 (총 ${entries.length}회) · 클릭하면 해당 회차로 이동해요</div><div class="gallery-strip">${items}</div>`;
+  el.innerHTML = `
+    <div class="gallery-heading">전체 기록 한눈에 보기 (총 ${entries.length}회) · 클릭하면 해당 회차로 이동해요</div>
+    <div class="gallery-wrap">
+      ${entries.length > 4 ? `<button class="gallery-nav prev" onclick="scrollGallery(-1)" aria-label="이전">‹</button>` : ''}
+      <div class="gallery-strip" id="galleryStrip">${items}</div>
+      ${entries.length > 4 ? `<button class="gallery-nav next" onclick="scrollGallery(1)" aria-label="다음">›</button>` : ''}
+    </div>`;
+}
+function scrollGallery(dir){
+  const strip = document.getElementById('galleryStrip');
+  if(strip) strip.scrollBy({ left: dir * 340, behavior: 'smooth' });
+}
+
+// 한 회차에 사진이 1~4장 들어올 수 있어서, 장수에 맞게 배치를 바꿔줘요.
+function photoGridHtml(e){
+  const photos = [e.photo1, e.photo2, e.photo3, e.photo4].filter(Boolean);
+  if(!photos.length) return `<div class="photo-main photo-empty">사진 없음</div>`;
+  if(photos.length === 1) return `<img class="photo-main" src="${photos[0]}" alt="${e.month} 사진" onerror="this.style.display='none'">`;
+  return `<div class="photo-grid">${photos.map(p=>`<img src="${p}" alt="${e.month} 사진" onerror="this.style.display='none'">`).join('')}</div>`;
 }
 
 function checkJournal(){
@@ -746,6 +793,7 @@ function renderJournal(data){
   document.getElementById('jTerm').textContent = data.term || '';
 
   const entries = buildAutoInsights(data.entries || []);
+  _journalState = { entries, summary: data.summary, name: data.name, narrativeOverride: data.narrativeOverride, hintsOverride: data.hintsOverride };
 
   // 표지 대표 사진: 첫 기록의 사진1 사용
   const coverImg = entries.find(e => e.photo1)?.photo1;
@@ -776,7 +824,7 @@ function renderJournal(data){
       </div>
       <div class="carte-grid">
         <div>
-          <img class="photo-main" src="${e.photo1 || ''}" alt="${e.month} 작품 사진" onerror="this.style.display='none'">
+          ${photoGridHtml(e)}
           <div class="observation">
             <span class="observation-label">꽃밭샘 관찰</span>
             ${e.note || '이 달의 관찰 기록이 아직 입력되지 않았어요.'}
@@ -788,7 +836,16 @@ function renderJournal(data){
           </div>` : ''}
         </div>
         <div>
-          ${e.photo2 ? `<img class="photo-sub" src="${e.photo2}" alt="${e.month} 활동 사진" onerror="this.style.display='none'">` : ''}
+          ${(e.beforeColor || e.afterColor) ? `
+          <div class="info-block">
+            <span class="info-label">수업 전 → 수업 후 마음</span>
+            <div class="mood-flow">
+              <div class="mood-swatch-wrap"><span class="swatch-lg" style="background:${toneHex(e.beforeColor, e.tone)}"></span><span>${e.beforeColor || '-'}</span></div>
+              <span class="mood-arrow">→</span>
+              <div class="mood-swatch-wrap"><span class="swatch-lg" style="background:${toneHex(e.afterColor, e.tone)}"></span><span>${e.afterColor || '-'}</span></div>
+              ${e.moodNote ? `<span class="mood-note">"${e.moodNote}"</span>` : ''}
+            </div>
+          </div>` : ''}
           ${e.selfColor ? `
           <div class="info-block">
             <span class="info-label">자신을 나타내는 색</span>
@@ -800,8 +857,9 @@ function renderJournal(data){
           ${(e.color1 || e.color2 || e.color3) ? `
           <div class="info-block">
             <span class="info-label">이 달 선택한 색${e.tone ? ` · ${e.tone}` : ''}</span>
-            <div class="material-pills">
-              ${[e.color1,e.color2,e.color3].filter(Boolean).map(c=>`<span class="pill" style="border-color:${toneHex(c,e.tone)}; box-shadow:inset 0 0 0 1.5px ${toneHex(c,e.tone)};">${c}</span>`).join('')}
+            <div class="color-chip-row">
+              ${[e.color1,e.color2,e.color3].filter(Boolean).map(c=>`
+              <div class="color-chip"><span class="swatch" style="background:${toneHex(c,e.tone)}"></span><span>${c}</span></div>`).join('')}
             </div>
           </div>` : ''}
           ${e.materials ? `
@@ -844,7 +902,41 @@ function renderJournal(data){
     </div>
   `).join('');
 
+  renderSummaryFilter(entries.length);
   renderSummarySection(entries, data.summary, data.name, data.narrativeOverride, data.hintsOverride);
+}
+
+// 종합요약(자동 생성 부분)만 원하는 회차 범위로 좁혀볼 수 있는 필터.
+// 회차별 카드 자체는 항상 전체가 다 보이고, 이 필터는 아래 종합요약에만 영향을 줘요.
+let _journalState = null;
+function renderSummaryFilter(total){
+  const el = document.getElementById('jSummaryFilter');
+  if(!el) return;
+  if(total < 2){ el.innerHTML = ''; return; }
+  const opts = selected => Array.from({length: total}, (_,i) => `<option value="${i+1}"${i+1===selected?' selected':''}>${i+1}회차</option>`).join('');
+  el.innerHTML = `
+    <div class="summary-filter">
+      <span>종합요약으로 볼 범위</span>
+      <select id="jFromSel" onchange="applySummaryFilter()">${opts(1)}</select>
+      <span>~</span>
+      <select id="jToSel" onchange="applySummaryFilter()">${opts(total)}</select>
+      <button type="button" class="filter-reset" onclick="resetSummaryFilter()">전체보기</button>
+    </div>`;
+}
+function applySummaryFilter(){
+  if(!_journalState) return;
+  const from = parseInt(document.getElementById('jFromSel').value, 10);
+  const to = parseInt(document.getElementById('jToSel').value, 10);
+  const lo = Math.min(from, to) - 1, hi = Math.max(from, to);
+  const subset = _journalState.entries.slice(lo, hi);
+  renderSummarySection(subset, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride);
+}
+function resetSummaryFilter(){
+  if(!_journalState) return;
+  const fromSel = document.getElementById('jFromSel'), toSel = document.getElementById('jToSel');
+  if(fromSel) fromSel.value = 1;
+  if(toSel) toSel.value = _journalState.entries.length;
+  applySummaryFilter();
 }
 
 function renderSummarySection(entries, summary, childName, narrativeOverride, hintsOverride){
@@ -883,7 +975,7 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
   }
 
   let autoSection = '';
-  if(timelineHtml || freqHtml){
+  {
     const wheelHtml = renderColorWheel(entries);
     const colorToneWheelHtml = renderColorToneWheel(entries);
     const materialWheelHtml = renderMaterialWheel(entries);
@@ -897,21 +989,30 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const hintsHtml = (hintsOverride && hintsOverride.length)
       ? `<div class="highlight-list">${hintsOverride.map(h=>`<div><span class="check">✔</span>${h}</div>`).join('')}</div>`
       : renderParentingHints(entries);
-    autoSection = `
-      <div class="summary-section">
-        <div class="sec-label"><h3>회차별 색채 변화</h3></div>
-        ${narrativeHtml}
-        ${wheelHtml}
-        ${timelineHtml}
-        ${freqHtml}
-        ${colorToneWheelHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>6개월 색채 여정 (색상 · 톤)</h3></div>${colorToneWheelHtml}` : ''}
-        ${toneGridHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>색으로 보는 마음의 결</h3></div>${toneGridHtml}` : ''}
-        ${abilityBoardHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>싹트고 있는 능력</h3></div>${abilityBoardHtml}` : ''}
-        ${materialWheelHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>재료 효과 바퀴 (사고·감정·뉴트럴)</h3></div>${materialWheelHtml}` : ''}
-        ${effectBalanceHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>재료 효과 비율</h3></div>${effectBalanceHtml}` : ''}
-        ${keywordCloudHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>자주 나온 감정 · 성장 키워드</h3></div>${keywordCloudHtml}` : ''}
-        ${hintsHtml ? `<div class="sec-label" style="margin-top:24px;"><h3>양육 힌트</h3></div>${hintsHtml}` : ''}
-      </div>`;
+
+    const colorFlowHtml = (wheelHtml || timelineHtml || freqHtml) ? `${wheelHtml}${timelineHtml}${freqHtml}` : '';
+
+    const sections = [
+      { title:'성장 한 문장', html: narrativeHtml },
+      { title:'회차별 색채 변화', html: colorFlowHtml },
+      { title:'6개월 색채 여정 (색상 · 톤)', html: colorToneWheelHtml },
+      { title:'색으로 보는 마음의 결', html: toneGridHtml },
+      { title:'싹트고 있는 능력', html: abilityBoardHtml },
+      { title:'재료 효과 바퀴 (사고·감정·뉴트럴)', html: materialWheelHtml },
+      { title:'재료 효과 비율', html: effectBalanceHtml },
+      { title:'자주 나온 감정 · 성장 키워드', html: keywordCloudHtml },
+      { title:'양육 힌트', html: hintsHtml }
+    ].filter(s => s.html);
+
+    const LETTERS = 'ABCDEFGHIJ';
+    if(sections.length){
+      autoSection = `
+        <div class="summary-section">
+          ${sections.map((s,i) => `
+            <div class="sec-label" style="${i>0?'margin-top:24px;':''}"><span class="sec-letter">${LETTERS[i] || '•'}</span><h3>${s.title}</h3></div>
+            ${s.html}`).join('')}
+        </div>`;
+    }
   }
 
   // 원장님 작성: 카테고리 요약 + 강점/방향

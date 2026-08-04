@@ -21,15 +21,23 @@
  *
  * 성장일지 시트 준비:
  * 스프레드시트에 "성장일지"라는 이름의 시트 탭을 만들고,
- * 첫 줄(헤더)에 다음 22개를 순서대로 넣어주세요:
- * 이름 | 전화번호뒷4자리 | 학기 | 월 | 작품제목 | 사진1URL | 사진2URL |
- * 자신을 나타내는 색 | 선택색상1 | 선택색상2 | 선택색상3 | 색상톤 |
+ * 첫 줄(헤더)에 다음 열들을 순서대로 넣어주세요 (순서는 상관없어요, 코드가
+ * 이름으로 찾아가요 — 아래는 참고용 나열입니다):
+ * 이름 | 전화번호뒷4자리 | 학기 | 월 | 작품제목 | 사진1URL | 사진2URL | 사진3URL | 사진4URL |
+ * 수업전마음색 | 수업후마음색 | 마음 한 줄 |
+ * 자신을 나타내는 색 | 선택색상1순위 | 선택색상2순위 | 선택색상3순위 | 색상톤 |
  * 감정,성장키워드 | 몰입도 | 사용재료 | 재료선택의 경향 | 성장하고 있는 능력 |
  * 재료의 효과 | 관찰노트 | 이번 회차 목표/주제 | 그림 스타일 특징 | 목표행동 태그
  *
- * 마지막 3개(회차목표/스타일특징/목표행동태그)는 선택 입력이에요 — 안 적어도
- * 카드에 그냥 안 보일 뿐 문제없이 동작합니다. "목표행동 태그"는 감정키워드처럼
- * 쉼표로 여러 개 적으면 돼요 (예: 집중력, 협동, 자기표현).
+ * 사진3URL/사진4URL, 수업전마음색/수업후마음색/마음 한 줄, 회차목표/스타일특징/목표행동태그는
+ * 전부 선택 입력이에요 — 안 적어도 카드에 그냥 안 보일 뿐 문제없이 동작합니다.
+ * "목표행동 태그"는 감정키워드처럼 쉼표로 여러 개 적으면 돼요 (예: 집중력, 협동, 자기표현).
+ * "수업전마음색"/"수업후마음색"은 "선택색상1순위"와 같은 9개 색상 이름을 그대로 적으면 돼요.
+ *
+ * 헤더 이름은 띄어쓰기 차이(예: "감정,성장키워드" vs "감정, 성장키워드")는 자동으로
+ * 무시하고 찾아가지만, 단어 자체가 바뀌면(예: "선택색상1" ↔ "선택색상1순위") 코드가
+ * 그 열을 못 찾게 되니, 아래 코드 안의 이름과 실제 시트 헤더가 정확히 같은 단어인지
+ * 한 번 확인해주세요.
  *
  * 색상/색상톤/재료의 효과 열은 드롭다운으로 선택할 수 있게 만들어두는 걸
  * 추천해요 — 이 파일 안의 setupJournalDropdowns() 함수를 Apps Script
@@ -210,13 +218,16 @@ function setupJournalDropdowns() {
   const effectRule = SpreadsheetApp.newDataValidation().requireValueInList(effectList, true).setAllowInvalid(false).build();
 
   const missing = [];
-  ['자신을 나타내는 색', '선택색상1', '선택색상2', '선택색상3'].forEach(h => {
-    if (h in col) sheet.getRange(2, col[h] + 1, LAST_ROW - 1, 1).setDataValidation(colorRule);
+  ['자신을 나타내는 색', '선택색상1순위', '선택색상2순위', '선택색상3순위'].forEach(h => {
+    const key = normalizeHeader(h);
+    if (key in col) sheet.getRange(2, col[key] + 1, LAST_ROW - 1, 1).setDataValidation(colorRule);
     else missing.push(h);
   });
-  if ('색상톤' in col) sheet.getRange(2, col['색상톤'] + 1, LAST_ROW - 1, 1).setDataValidation(toneRule);
+  const toneKey = normalizeHeader('색상톤');
+  if (toneKey in col) sheet.getRange(2, col[toneKey] + 1, LAST_ROW - 1, 1).setDataValidation(toneRule);
   else missing.push('색상톤');
-  if ('재료의 효과' in col) sheet.getRange(2, col['재료의 효과'] + 1, LAST_ROW - 1, 1).setDataValidation(effectRule);
+  const effectKey = normalizeHeader('재료의 효과');
+  if (effectKey in col) sheet.getRange(2, col[effectKey] + 1, LAST_ROW - 1, 1).setDataValidation(effectRule);
   else missing.push('재료의 효과');
 
   if (missing.length) {
@@ -228,10 +239,14 @@ function setupJournalDropdowns() {
 // 열 위치가 아니라 "헤더 이름"으로 데이터를 찾기 위한 도우미. 시트 중간에
 // 열이 하나 삽입되어 순서가 밀리더라도, 헤더 텍스트만 그대로면 코드가 알아서
 // 올바른 열을 다시 찾아가기 때문에 데이터가 어긋나지 않습니다.
+// 공백 차이("감정,성장키워드" vs "감정, 성장키워드")는 무시하도록 정규화합니다.
+function normalizeHeader(s) {
+  return String(s).trim().replace(/\s+/g, '');
+}
 function getHeaderIndexMap(sheet) {
   const header = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const map = {};
-  header.forEach((h, i) => { map[String(h).trim()] = i; });
+  header.forEach((h, i) => { map[normalizeHeader(h)] = i; });
   return map;
 }
 
@@ -247,11 +262,14 @@ function getJournal(name, phone4) {
   const col = getHeaderIndexMap(sheet);
   // 필수 열(이름/전화번호)이 없어졌거나 헤더 텍스트가 바뀌었을 때를 대비한 안전장치
   const need = ['이름', '전화번호뒷4자리'];
-  const missing = need.filter(h => !(h in col));
+  const missing = need.filter(h => !(normalizeHeader(h) in col));
   if (missing.length) {
     return { found: false, message: `시트 헤더에서 "${missing.join(', ')}" 열을 찾을 수 없어요. 첫 줄(헤더) 이름이 바뀌었는지 확인해주세요.` };
   }
-  const get = (row, headerName, fallback) => (headerName in col) ? row[col[headerName]] : fallback;
+  const get = (row, headerName, fallback) => {
+    const key = normalizeHeader(headerName);
+    return (key in col) ? row[col[key]] : fallback;
+  };
 
   const rows = sheet.getDataRange().getValues();
   rows.shift(); // 헤더 제거
@@ -269,18 +287,23 @@ function getJournal(name, phone4) {
 
   const term = get(matched[0], '학기', '');
   const entries = matched.map(r => {
-    const color1 = get(r, '선택색상1', '');
+    const color1 = get(r, '선택색상1순위', '');
     return {
       month: get(r, '월', ''),
       title: get(r, '작품제목', ''),
       photo1: get(r, '사진1URL', ''),
       photo2: get(r, '사진2URL', ''),
+      photo3: get(r, '사진3URL', ''),
+      photo4: get(r, '사진4URL', ''),
+      beforeColor: get(r, '수업전마음색', ''),
+      afterColor: get(r, '수업후마음색', ''),
+      moodNote: get(r, '마음 한 줄', ''),
       selfColor: get(r, '자신을 나타내는 색', ''),
       color1: color1,
-      color2: get(r, '선택색상2', ''),
-      color3: get(r, '선택색상3', ''),
+      color2: get(r, '선택색상2순위', ''),
+      color3: get(r, '선택색상3순위', ''),
       tone: String(get(r, '색상톤', '') || '').trim().toLowerCase(),
-      mainColor: color1, // 색채 바퀴/타임라인은 선택색상1을 대표색으로 사용
+      mainColor: color1, // 색채 바퀴/타임라인은 선택색상1순위를 대표색으로 사용
       emotionKeywords: String(get(r, '감정,성장키워드', '') || '').split(/[,、\n]/).map(s => s.trim()).filter(Boolean),
       engagement: get(r, '몰입도', ''),
       materials: get(r, '사용재료', ''),
