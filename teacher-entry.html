@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>성장일지 입력 | 크레용숲 (선생님용)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500;1,600&family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#FBF6EE; --ivory-deep:#F3EBDC; --forest:#2C4A3B; --clay:#BE6A42;
+    --gold:#D3A24C; --berry:#8B4B5C; --sage:#93AC8C; --ink:#2A2622; --paper:#FFFFFF; --line:#E4DBC9;
+    --radius-lg:32px; --radius-md:20px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Noto Sans KR',sans-serif; background:var(--ivory); color:var(--ink); line-height:1.7;}
+  .logotype{font-family:'Playfair Display',serif; font-style:italic; font-weight:500;}
+  a{color:inherit; text-decoration:none;}
+  .wrap{max-width:720px; margin:0 auto; padding:0 24px 80px;}
+  header{padding:18px 0; border-bottom:1px solid var(--line);}
+  .header-inner{max-width:720px; margin:0 auto; padding:0 24px; display:flex; justify-content:space-between; align-items:center;}
+  .brand{font-size:19px; color:var(--forest);}
+  .cta-btn{background:var(--clay); color:#fff; padding:9px 16px; border-radius:999px; font-size:13px; font-weight:600; border:none; cursor:pointer;}
+
+  .hero{padding:44px 0 20px; text-align:center;}
+  .eyebrow{font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:600; color:var(--clay);}
+  .hero h1{font-family:'Noto Serif KR',serif; font-size:clamp(22px,3vw,28px); color:var(--forest); margin-top:10px;}
+  .hero p{color:#6b6459; font-size:14px; margin-top:10px;}
+
+  .login-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md);
+    max-width:380px; margin:30px auto; padding:34px; text-align:center;
+  }
+  .login-card input{width:100%; border:1.5px solid var(--line); border-radius:10px; padding:12px 14px; font-size:14px; background:var(--ivory); margin-bottom:14px;}
+  .login-btn{width:100%; background:var(--forest); color:#fff; padding:13px; border-radius:12px; font-size:14.5px; font-weight:700; border:none; cursor:pointer;}
+  .login-err{color:#c0554f; font-size:13px; margin-top:10px; min-height:18px;}
+
+  #formView{display:none;}
+  .form-card{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:30px; margin-bottom:20px;}
+  .form-section-title{font-family:'Noto Serif KR',serif; font-size:15px; color:var(--forest); margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--line);}
+  .form-row{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;}
+  .form-row.single{grid-template-columns:1fr;}
+  .form-row.triple{grid-template-columns:1fr 1fr 1fr;}
+  @media(max-width:600px){ .form-row, .form-row.triple{grid-template-columns:1fr;} }
+  .f-field label{display:block; font-size:12.5px; font-weight:700; color:var(--forest); margin-bottom:6px;}
+  .f-field .hint{font-size:11px; color:#9a9285; font-weight:400; margin-left:4px;}
+  .f-field input, .f-field select, .f-field textarea{
+    width:100%; border:1.5px solid var(--line); border-radius:10px; padding:10px 12px; font-size:13.5px;
+    background:var(--ivory); font-family:inherit;
+  }
+  .f-field textarea{resize:vertical; min-height:64px;}
+  .submit-btn{width:100%; background:var(--clay); color:#fff; padding:15px; border-radius:14px; font-size:15px; font-weight:700; border:none; cursor:pointer; margin-top:6px;}
+  .submit-btn:disabled{opacity:.6; cursor:default;}
+  .submit-msg{text-align:center; font-size:13.5px; margin-top:14px; min-height:18px;}
+  .submit-msg.ok{color:var(--sage); font-weight:700;}
+  .submit-msg.err{color:#c0554f;}
+  .reset-link{display:block; text-align:center; margin-top:8px; font-size:12.5px; color:#9a9285; text-decoration:underline; cursor:pointer;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="brand logotype">Forêt des Crayons</a>
+    <a href="index.html" class="cta-btn">홈으로</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">Teacher Only</div>
+    <h1>성장일지 회차 입력</h1>
+    <p>구글시트를 열지 않고도 여기서 바로 한 회차 기록을 저장할 수 있어요.</p>
+  </div>
+
+  <div id="loginView">
+    <div class="login-card">
+      <input type="password" id="pwInput" placeholder="선생님 비밀번호" onkeydown="if(event.key==='Enter') checkPw()">
+      <button class="login-btn" onclick="checkPw()">입장하기</button>
+      <div class="login-err" id="pwErr"></div>
+    </div>
+  </div>
+
+  <div id="formView">
+    <div class="form-card">
+      <div class="form-section-title">기본 정보</div>
+      <div class="form-row">
+        <div class="f-field"><label>이름 *</label><input type="text" id="f_name" placeholder="예: 국다온"></div>
+        <div class="f-field"><label>전화번호 뒷 4자리 *</label><input type="text" id="f_phone4" maxlength="4" placeholder="예: 9713"></div>
+      </div>
+      <div class="form-row">
+        <div class="f-field"><label>학기/반</label><input type="text" id="f_term" placeholder="예: 26년 3월 정규반"></div>
+        <div class="f-field"><label>회차(월)</label><input type="text" id="f_month" placeholder="예: 21회차(8.5)"></div>
+      </div>
+      <div class="form-row single">
+        <div class="f-field"><label>작품 제목</label><input type="text" id="f_title" placeholder="예: 나만의 바다"></div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-title">사진 <span class="hint">(URL, 최대 4장, 다 비워도 됨)</span></div>
+      <div class="form-row">
+        <div class="f-field"><label>사진1</label><input type="text" id="f_photo1" placeholder="https://..."></div>
+        <div class="f-field"><label>사진2</label><input type="text" id="f_photo2" placeholder="https://..."></div>
+      </div>
+      <div class="form-row">
+        <div class="f-field"><label>사진3</label><input type="text" id="f_photo3" placeholder="https://..."></div>
+        <div class="f-field"><label>사진4</label><input type="text" id="f_photo4" placeholder="https://..."></div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-title">색과 마음</div>
+      <div class="form-row triple">
+        <div class="f-field"><label>수업 전 마음색</label><select id="f_beforeColor"></select></div>
+        <div class="f-field"><label>수업 후 마음색</label><select id="f_afterColor"></select></div>
+        <div class="f-field"><label>마음 한 줄</label><input type="text" id="f_moodNote" placeholder="예: 기대돼요"></div>
+      </div>
+      <div class="form-row">
+        <div class="f-field"><label>자신을 나타내는 색</label><select id="f_selfColor"></select></div>
+        <div class="f-field"><label>색상 톤</label><select id="f_tone"></select></div>
+      </div>
+      <div class="form-row triple">
+        <div class="f-field"><label>선택색상 1순위</label><select id="f_color1"></select></div>
+        <div class="f-field"><label>선택색상 2순위</label><select id="f_color2"></select></div>
+        <div class="f-field"><label>선택색상 3순위</label><select id="f_color3"></select></div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-title">재료와 활동</div>
+      <div class="form-row">
+        <div class="f-field"><label>사용 재료 <span class="hint">(쉼표로 여러 개)</span></label><input type="text" id="f_materials" placeholder="예: 물감, 색연필"></div>
+        <div class="f-field"><label>재료의 효과</label><select id="f_materialEffect"></select></div>
+      </div>
+      <div class="form-row">
+        <div class="f-field"><label>몰입도</label><select id="f_engagement"><option value="">선택 안 함</option><option>낮음</option><option>보통</option><option>높음</option></select></div>
+        <div class="f-field"><label>재료 선택의 경향</label><input type="text" id="f_materialTendency" placeholder="예: 채우기, 꼼꼼히"></div>
+      </div>
+      <div class="form-row single">
+        <div class="f-field"><label>감정, 성장 키워드 <span class="hint">(쉼표로 여러 개)</span></label><input type="text" id="f_keywords" placeholder="예: 자기표현, 자신감"></div>
+      </div>
+      <div class="form-row single">
+        <div class="f-field"><label>성장하고 있는 능력 <span class="hint">(쉼표로 여러 개)</span></label><input type="text" id="f_growingAbility" placeholder="예: 색, 형태, 상상력"></div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-section-title">기록</div>
+      <div class="form-row single">
+        <div class="f-field"><label>관찰노트</label><textarea id="f_note" placeholder="이 회차에 대한 관찰을 자유롭게 적어주세요."></textarea></div>
+      </div>
+      <div class="form-row">
+        <div class="f-field"><label>이번 회차 목표/주제</label><input type="text" id="f_sessionTheme"></div>
+        <div class="f-field"><label>그림 스타일 특징</label><input type="text" id="f_styleNotes"></div>
+      </div>
+      <div class="form-row single">
+        <div class="f-field"><label>목표행동 태그 <span class="hint">(쉼표로 여러 개)</span></label><input type="text" id="f_goalTags" placeholder="예: 집중력, 협동"></div>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="submitEntry()">이 회차 저장하기</button>
+    <div class="submit-msg" id="submitMsg"></div>
+    <a class="reset-link" onclick="resetFormKeepChild()">다음 회차 이어서 입력하기 (이름·전화번호만 유지)</a>
+  </div>
+</div>
+
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyahvBkqM7NVzHde2vdtpWTGdOhaUs8i-ewGe9WBpuyyetVIv1VEPJrhhCNy3fgrmad/exec";
+const ADMIN_PASSWORD = "crayon2026"; // journal.html / index.html 관리자 로그인과 같은 비밀번호예요
+
+const COLORS = ['검정','빨강','주황','노랑','연두','초록','파랑','보라','핑크'];
+const TONES = ['deep','vivid','pastel'];
+const EFFECTS = ['감정활동(발산효과)','뉴트럴(중립)','사고활동(집중효과)'];
+
+function fillSelect(id, options, withBlank){
+  const el = document.getElementById(id);
+  el.innerHTML = (withBlank ? '<option value="">선택 안 함</option>' : '') + options.map(o=>`<option value="${o}">${o}</option>`).join('');
+}
+fillSelect('f_beforeColor', COLORS, true);
+fillSelect('f_afterColor', COLORS, true);
+fillSelect('f_selfColor', COLORS, true);
+fillSelect('f_color1', COLORS, true);
+fillSelect('f_color2', COLORS, true);
+fillSelect('f_color3', COLORS, true);
+fillSelect('f_tone', TONES, true);
+fillSelect('f_materialEffect', EFFECTS, true);
+
+function checkPw(){
+  const pw = document.getElementById('pwInput').value;
+  if(pw === ADMIN_PASSWORD){
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('formView').style.display = 'block';
+  } else {
+    document.getElementById('pwErr').textContent = '비밀번호가 올바르지 않아요.';
+  }
+}
+
+function submitEntry(){
+  const name = document.getElementById('f_name').value.trim();
+  const phone4 = document.getElementById('f_phone4').value.trim();
+  const msg = document.getElementById('submitMsg');
+  msg.className = 'submit-msg';
+
+  if(!name || phone4.length !== 4){
+    msg.className = 'submit-msg err';
+    msg.textContent = '이름과 전화번호 뒷자리 4자리는 꼭 입력해주세요.';
+    return;
+  }
+
+  const params = new URLSearchParams({
+    action: 'addJournalEntry',
+    name, phone4,
+    term: document.getElementById('f_term').value.trim(),
+    month: document.getElementById('f_month').value.trim(),
+    title: document.getElementById('f_title').value.trim(),
+    photo1: document.getElementById('f_photo1').value.trim(),
+    photo2: document.getElementById('f_photo2').value.trim(),
+    photo3: document.getElementById('f_photo3').value.trim(),
+    photo4: document.getElementById('f_photo4').value.trim(),
+    beforeColor: document.getElementById('f_beforeColor').value,
+    afterColor: document.getElementById('f_afterColor').value,
+    moodNote: document.getElementById('f_moodNote').value.trim(),
+    selfColor: document.getElementById('f_selfColor').value,
+    color1: document.getElementById('f_color1').value,
+    color2: document.getElementById('f_color2').value,
+    color3: document.getElementById('f_color3').value,
+    tone: document.getElementById('f_tone').value,
+    keywords: document.getElementById('f_keywords').value.trim(),
+    engagement: document.getElementById('f_engagement').value,
+    materials: document.getElementById('f_materials').value.trim(),
+    materialTendency: document.getElementById('f_materialTendency').value.trim(),
+    growingAbility: document.getElementById('f_growingAbility').value.trim(),
+    materialEffect: document.getElementById('f_materialEffect').value,
+    note: document.getElementById('f_note').value.trim(),
+    sessionTheme: document.getElementById('f_sessionTheme').value.trim(),
+    styleNotes: document.getElementById('f_styleNotes').value.trim(),
+    goalTags: document.getElementById('f_goalTags').value.trim()
+  });
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+
+  fetch(GAS_URL + '?' + params.toString())
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false; btn.textContent = '이 회차 저장하기';
+      if(data && data.ok){
+        msg.className = 'submit-msg ok';
+        msg.textContent = '✔ 저장했어요! 성장카르테에 바로 반영돼요.';
+      } else {
+        msg.className = 'submit-msg err';
+        msg.textContent = data && data.message ? data.message : '저장에 실패했어요. 다시 시도해주세요.';
+      }
+    })
+    .catch(() => {
+      btn.disabled = false; btn.textContent = '이 회차 저장하기';
+      msg.className = 'submit-msg err';
+      msg.textContent = '저장 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.';
+    });
+}
+
+// 같은 아이를 여러 회차 연달아 입력할 때, 이름/전화번호만 남기고 나머지는 비워줘요.
+function resetFormKeepChild(){
+  ['f_term','f_title','f_photo1','f_photo2','f_photo3','f_photo4','f_moodNote',
+   'f_materials','f_materialTendency','f_growingAbility','f_note','f_sessionTheme',
+   'f_styleNotes','f_goalTags','f_keywords'].forEach(id => document.getElementById(id).value = '');
+  ['f_beforeColor','f_afterColor','f_selfColor','f_color1','f_color2','f_color3','f_tone','f_materialEffect','f_engagement']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f_month').value = '';
+  document.getElementById('submitMsg').textContent = '';
+  document.getElementById('f_month').focus();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+</script>
+
+</body>
+</html>

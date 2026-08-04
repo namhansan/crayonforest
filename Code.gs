@@ -45,9 +45,12 @@
  * 함수 위 주석 참고)
  *
  * (선택) 종합 요약 시트 준비 — 6개월 마지막에 한 번만 작성:
- * "성장요약"이라는 이름의 시트 탭을 만들고, 첫 줄에 다음 16개를 순서대로 넣어주세요:
+ * "성장요약"이라는 이름의 시트 탭을 만들고, 첫 줄에 다음 18개를 순서대로 넣어주세요:
  * 이름 | 전화번호뒷4자리 | 강점 | 성장방향 | 표현_전 | 표현_후 | 색채_전 | 색채_후 | 심리_전 | 심리_후 | 사고_전 | 사고_후 | 눈에띄는성장 | 공개여부 |
- * 한줄요약(직접입력) | 양육힌트(직접입력)
+ * 한줄요약(직접입력) | 양육힌트(직접입력) | 요약범위시작 | 요약범위끝
+ *
+ * "요약범위시작"/"요약범위끝"은 teacher-entry.html(선생님 화면)에서 종합요약에 반영할
+ * 회차 범위를 지정하면 자동으로 채워져요 — 손으로 직접 안 쓰셔도 됩니다.
  *
  * 마지막 2개(한줄요약/양육힌트 직접입력)는 선택 입력이에요. 성장카르테 화면의
  * "성장 한 줄 요약"과 "양육 힌트"는 원래 성장일지 데이터로 자동 생성되는데,
@@ -75,6 +78,8 @@ function doGet(e) {
   if (action === 'registrations') return jsonOutput(getRegistrations());
   if (action === 'visitCount') return jsonOutput(getVisitCounts());
   if (action === 'journal') return jsonOutput(getJournal(e.parameter.name, e.parameter.phone4));
+  if (action === 'saveSummaryRange') return jsonOutput(saveSummaryRange(e.parameter.name, e.parameter.phone4, e.parameter.from, e.parameter.to));
+  if (action === 'addJournalEntry') return jsonOutput(addJournalEntry(e.parameter));
 
   return jsonOutput({ ok: true });
 }
@@ -319,12 +324,103 @@ function getJournal(name, phone4) {
 
   const summary = getSummary(nameTrim, phoneTrim);
   const publishedSummary = (summary && summary.published === true) ? summary : null;
+  const range = getSummaryRange(nameTrim, phoneTrim);
 
   return {
     found: true, name: nameTrim, term: term, entries: entries, summary: publishedSummary,
     narrativeOverride: summary ? summary.narrativeOverride : '',
-    hintsOverride: summary ? summary.hintsOverride : []
+    hintsOverride: summary ? summary.hintsOverride : [],
+    range: range
   };
+}
+
+/* ---------- 종합요약 회차 범위 (선생님이 지정하면 학부모 화면에도 동일하게 반영) ----------
+ * "성장요약" 시트의 17, 18번째 열(요약범위시작 / 요약범위끝)에 회차 번호(1부터 시작하는
+ * 숫자)를 저장해둡니다. "공개여부"와 무관하게 항상 적용돼요 — 범위는 자동 생성 종합요약
+ * 부분에만 영향을 주고, 원장님이 직접 쓰신 강점/방향 같은 수동 요약과는 별개예요.
+ */
+function getSummaryRange(name, phone4) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SUMMARY_SHEET_NAME);
+  if (!sheet) return null;
+  const rows = sheet.getDataRange().getValues();
+  rows.shift();
+  const row = rows.find(r => String(r[0]).trim() === name && String(r[1]).trim() === phone4);
+  if (!row) return null;
+  const from = row[16], to = row[17];
+  if (!from && !to) return null;
+  return { from: Number(from) || null, to: Number(to) || null };
+}
+
+function saveSummaryRange(name, phone4, from, to) {
+  if (!name || !phone4) throw new Error('이름과 전화번호 뒷자리가 필요해요.');
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SUMMARY_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SUMMARY_SHEET_NAME);
+    sheet.appendRow(['이름','전화번호뒷4자리','강점','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝']);
+  }
+  const data = sheet.getDataRange().getValues();
+  let rowIdx = -1;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === String(name).trim() && String(data[i][1]).trim() === String(phone4).trim()) { rowIdx = i + 1; break; }
+  }
+  if (rowIdx === -1) {
+    sheet.appendRow([name, phone4, '', '', '', '', '', '', '', '', '', '', '', false, '', '', from, to]);
+  } else {
+    sheet.getRange(rowIdx, 17, 1, 2).setValues([[from, to]]);
+  }
+  return { ok: true };
+}
+
+/* ---------- 선생님용 성장일지 입력 (teacher-entry.html에서 사용) ----------
+ * 구글시트를 직접 열지 않고도 웹 폼에서 회차 기록을 저장할 수 있게 해줍니다.
+ * 열 위치가 아니라 헤더 "이름"으로 값을 채워 넣기 때문에, 시트의 열 순서가
+ * 달라져 있어도 정확한 칸에 들어갑니다.
+ */
+function addJournalEntry(p) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(JOURNAL_SHEET_NAME);
+  if (!sheet) throw new Error('"성장일지" 시트를 먼저 만들어주세요.');
+  if (!p.name || !p.phone4) throw new Error('이름과 전화번호 뒷자리는 꼭 입력해주세요.');
+
+  const col = getHeaderIndexMap(sheet);
+  const lastCol = Math.max(sheet.getLastColumn(), 1);
+  const newRow = new Array(lastCol).fill('');
+  const set = (headerName, value) => {
+    const key = normalizeHeader(headerName);
+    if (key in col && value !== undefined && value !== null && value !== '') newRow[col[key]] = value;
+  };
+
+  set('이름', p.name);
+  set('전화번호뒷4자리', p.phone4);
+  set('학기', p.term);
+  set('월', p.month);
+  set('작품제목', p.title);
+  set('사진1URL', p.photo1);
+  set('사진2URL', p.photo2);
+  set('사진3URL', p.photo3);
+  set('사진4URL', p.photo4);
+  set('수업전마음색', p.beforeColor);
+  set('수업후마음색', p.afterColor);
+  set('마음 한 줄', p.moodNote);
+  set('자신을 나타내는 색', p.selfColor);
+  set('선택색상1순위', p.color1);
+  set('선택색상2순위', p.color2);
+  set('선택색상3순위', p.color3);
+  set('색상톤', p.tone);
+  set('감정,성장키워드', p.keywords);
+  set('몰입도', p.engagement);
+  set('사용재료', p.materials);
+  set('재료선택의 경향', p.materialTendency);
+  set('성장하고 있는 능력', p.growingAbility);
+  set('재료의 효과', p.materialEffect);
+  set('관찰노트', p.note);
+  set('이번 회차 목표/주제', p.sessionTheme);
+  set('그림 스타일 특징', p.styleNotes);
+  set('목표행동 태그', p.goalTags);
+
+  sheet.appendRow(newRow);
+  return { ok: true };
 }
 
 function getSummary(name, phone4) {

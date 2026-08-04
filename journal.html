@@ -98,6 +98,15 @@
   .summary-filter select{padding:6px 10px; border-radius:8px; border:1px solid var(--line); background:var(--paper); font-size:13px; color:#3f3b34;}
   .filter-reset{padding:6px 14px; border-radius:999px; border:1px solid var(--line); background:var(--paper); font-size:12px; cursor:pointer; color:var(--forest);}
   .filter-reset:hover{background:var(--ivory-deep);}
+  .filter-save{padding:6px 14px; border-radius:999px; border:none; background:var(--forest); color:#fff; font-size:12px; cursor:pointer;}
+  .filter-save:hover{opacity:.9;}
+  .filter-saved-msg{font-size:12px; color:var(--sage); font-weight:700;}
+  .teacher-login-link{margin-top:16px; text-align:center;}
+  .teacher-login-link a{font-size:12.5px; color:#9a9285; text-decoration:underline;}
+  .teacher-badge{
+    display:inline-block; margin-top:10px; padding:4px 12px; border-radius:999px;
+    background:#3A362F; color:#fff; font-size:11.5px; font-weight:700;
+  }
   .observation{
     background:var(--ivory-deep); border-radius:14px; padding:16px 18px; margin-top:14px; font-size:13.5px;
     color:#4b463f; line-height:1.8; white-space:pre-line;
@@ -258,6 +267,7 @@
       <button class="login-btn" onclick="checkJournal()">성장카르테 확인하기</button>
       <div class="login-err" id="jErr"></div>
       <div class="privacy-note">등록하신 이름과 전화번호 뒷자리로 우리 아이의 기록만 확인할 수 있어요.<br>다른 친구들의 기록은 보이지 않습니다.</div>
+      <div class="teacher-login-link"><a href="#" onclick="teacherLogin(event)">선생님이신가요? 여기서 로그인</a></div>
     </div>
   </div>
 
@@ -268,6 +278,7 @@
       <p class="sub">그림을 통해 본 어린이 마음의 성장 이야기</p>
       <div class="cover-photo-ring" id="coverPhotoRing"><div style="width:100%;height:100%;"></div></div>
       <div class="child-name" id="jChildName"></div>
+      <div class="teacher-badge" id="jTeacherBadge" style="display:none;">🔑 선생님 화면 (학부모에게는 안 보여요) · <a href="teacher-entry.html" style="text-decoration:underline;">회차 입력하러 가기</a></div>
       <div class="term" id="jTerm"></div>
       <div class="stat-row" id="jStatRow"></div>
       <div><button class="print-btn" onclick="window.print()">🖨️ 개인 책자로 인쇄 / PDF 저장</button></div>
@@ -755,6 +766,21 @@ function photoGridHtml(e){
   return `<div class="photo-grid">${photos.map(p=>`<img src="${p}" alt="${e.month} 사진" onerror="this.style.display='none'">`).join('')}</div>`;
 }
 
+let isTeacher = false;
+const ADMIN_PASSWORD = "crayon2026"; // index.html 관리자 로그인과 같은 비밀번호예요
+function teacherLogin(e){
+  e.preventDefault();
+  const pw = prompt('선생님 비밀번호를 입력해주세요.');
+  if(pw === null) return;
+  if(pw === ADMIN_PASSWORD){
+    isTeacher = true;
+    alert('선생님 모드로 전환됐어요. 확인하실 아이의 이름과 전화번호 뒷자리를 입력해주세요.');
+  } else {
+    alert('비밀번호가 올바르지 않아요.');
+  }
+}
+
+let _lastName = '', _lastPhone4 = '';
 function checkJournal(){
   const name = document.getElementById('jName').value.trim();
   const phone4 = document.getElementById('jPhone4').value.trim();
@@ -765,6 +791,7 @@ function checkJournal(){
     errEl.textContent = '이름과 전화번호 뒷자리 4자리를 정확히 입력해주세요.';
     return;
   }
+  _lastName = name; _lastPhone4 = phone4;
 
   const btn = document.querySelector('.login-btn');
   btn.disabled = true; btn.textContent = '확인 중...';
@@ -902,25 +929,35 @@ function renderJournal(data){
     </div>
   `).join('');
 
-  renderSummaryFilter(entries.length);
-  renderSummarySection(entries, data.summary, data.name, data.narrativeOverride, data.hintsOverride);
+  renderSummaryFilter(entries.length, data.range);
+  const total = entries.length;
+  const savedFrom = (data.range && data.range.from) ? Math.max(1, Math.min(data.range.from, total)) : 1;
+  const savedTo = (data.range && data.range.to) ? Math.max(1, Math.min(data.range.to, total)) : total;
+  const initialSlice = entries.slice(savedFrom - 1, savedTo);
+  renderSummarySection(initialSlice, data.summary, data.name, data.narrativeOverride, data.hintsOverride);
 }
 
 // 종합요약(자동 생성 부분)만 원하는 회차 범위로 좁혀볼 수 있는 필터.
 // 회차별 카드 자체는 항상 전체가 다 보이고, 이 필터는 아래 종합요약에만 영향을 줘요.
+// 선생님 모드에서만 UI가 보이고, 저장하면 학부모 화면에도 그 범위가 그대로 반영돼요.
 let _journalState = null;
-function renderSummaryFilter(total){
+function renderSummaryFilter(total, savedRange){
+  document.getElementById('jTeacherBadge').style.display = isTeacher ? 'inline-block' : 'none';
   const el = document.getElementById('jSummaryFilter');
   if(!el) return;
-  if(total < 2){ el.innerHTML = ''; return; }
+  if(!isTeacher || total < 2){ el.innerHTML = ''; return; }
+  const from = (savedRange && savedRange.from) ? Math.max(1, Math.min(savedRange.from, total)) : 1;
+  const to = (savedRange && savedRange.to) ? Math.max(1, Math.min(savedRange.to, total)) : total;
   const opts = selected => Array.from({length: total}, (_,i) => `<option value="${i+1}"${i+1===selected?' selected':''}>${i+1}회차</option>`).join('');
   el.innerHTML = `
     <div class="summary-filter">
-      <span>종합요약으로 볼 범위</span>
-      <select id="jFromSel" onchange="applySummaryFilter()">${opts(1)}</select>
+      <span>🔑 종합요약으로 볼 범위</span>
+      <select id="jFromSel" onchange="applySummaryFilter()">${opts(from)}</select>
       <span>~</span>
-      <select id="jToSel" onchange="applySummaryFilter()">${opts(total)}</select>
+      <select id="jToSel" onchange="applySummaryFilter()">${opts(to)}</select>
       <button type="button" class="filter-reset" onclick="resetSummaryFilter()">전체보기</button>
+      <button type="button" class="filter-save" onclick="saveSummaryFilter()">이 범위로 학부모 화면에도 저장</button>
+      <span class="filter-saved-msg" id="jFilterSavedMsg"></span>
     </div>`;
 }
 function applySummaryFilter(){
@@ -937,6 +974,17 @@ function resetSummaryFilter(){
   if(fromSel) fromSel.value = 1;
   if(toSel) toSel.value = _journalState.entries.length;
   applySummaryFilter();
+}
+function saveSummaryFilter(){
+  const from = document.getElementById('jFromSel').value;
+  const to = document.getElementById('jToSel').value;
+  const msg = document.getElementById('jFilterSavedMsg');
+  msg.textContent = '저장 중...';
+  const params = new URLSearchParams({ action:'saveSummaryRange', name:_lastName, phone4:_lastPhone4, from, to });
+  fetch(GAS_URL + '?' + params.toString())
+    .then(r => r.json())
+    .then(() => { msg.textContent = '✔ 저장했어요 — 학부모 화면에도 이 범위로 보여요'; })
+    .catch(() => { msg.textContent = '저장에 실패했어요. 다시 시도해주세요.'; });
 }
 
 function renderSummarySection(entries, summary, childName, narrativeOverride, hintsOverride){
