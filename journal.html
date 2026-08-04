@@ -172,6 +172,15 @@
     font-size:14px; color:var(--forest); font-family:'Noto Serif KR',serif; line-height:1.8; margin-bottom:16px;
   }
 
+  .gallery-heading{font-size:12.5px; font-weight:700; color:var(--clay); margin:0 0 12px 4px; letter-spacing:.2px;}
+  .gallery-strip{display:flex; gap:14px; overflow-x:auto; padding:4px 4px 20px; margin-bottom:8px; -webkit-overflow-scrolling:touch;}
+  .gallery-item{flex:0 0 auto; width:96px; text-align:center; cursor:pointer;}
+  .gallery-item:hover .gallery-thumb, .gallery-item:hover .gallery-thumb-empty{transform:translateY(-3px); box-shadow:0 8px 16px rgba(0,0,0,.12);}
+  .gallery-thumb{width:96px; height:96px; border-radius:14px; object-fit:cover; border:2px solid var(--paper); box-shadow:0 4px 10px rgba(0,0,0,.08); transition:transform .2s, box-shadow .2s;}
+  .gallery-thumb-empty{width:96px; height:96px; border-radius:14px; background:var(--ivory-deep); display:flex; align-items:center; justify-content:center; font-size:10.5px; color:#b7ae9e; transition:transform .2s, box-shadow .2s;}
+  .gallery-caption{margin-top:7px; font-size:10.5px; color:#7a7468; line-height:1.4;}
+  .gallery-caption b{display:block; color:var(--forest); font-size:12px; font-weight:700;}
+
   .split{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
   @media(max-width:560px){ .split{grid-template-columns:1fr;} }
   .split-card{border-radius:var(--radius-md); padding:22px 24px; font-size:13.5px; color:#4b463f;}
@@ -235,6 +244,7 @@
       <div class="stat-row" id="jStatRow"></div>
       <div><button class="print-btn" onclick="window.print()">🖨️ 개인 책자로 인쇄 / PDF 저장</button></div>
     </div>
+    <div id="jGallery"></div>
     <div id="jEntries"></div>
     <div id="jSummary"></div>
     <a href="#" class="logout-link" onclick="logoutJournal(event)">다른 아이 이름으로 다시 확인하기</a>
@@ -685,6 +695,19 @@ function renderParentingHints(entries){
   return `<div class="highlight-list">${items}</div>`;
 }
 
+// 전체 회차를 작은 썸네일 줄로 훑어볼 수 있는 미리보기 갤러리.
+// 클릭하면 해당 회차의 자세한 카드로 스크롤 이동해요.
+function renderGallery(entries){
+  const el = document.getElementById('jGallery');
+  if(!entries.length){ el.innerHTML = ''; return; }
+  const items = entries.map((e,i) => `
+    <div class="gallery-item" onclick="document.getElementById('month-${i}').scrollIntoView({behavior:'smooth', block:'start'})">
+      ${e.photo1 ? `<img class="gallery-thumb" src="${e.photo1}" alt="${e.month}" onerror="this.style.display='none'">` : `<div class="gallery-thumb-empty">사진 없음</div>`}
+      <div class="gallery-caption"><b>${e.month}</b>${e.title ? `「${e.title}」` : ''}</div>
+    </div>`).join('');
+  el.innerHTML = `<div class="gallery-heading">전체 기록 한눈에 보기 (총 ${entries.length}회) · 클릭하면 해당 회차로 이동해요</div><div class="gallery-strip">${items}</div>`;
+}
+
 function checkJournal(){
   const name = document.getElementById('jName').value.trim();
   const phone4 = document.getElementById('jPhone4').value.trim();
@@ -741,8 +764,10 @@ function renderJournal(data){
     return;
   }
 
+  renderGallery(entries);
+
   wrap.innerHTML = entries.map((e, i) => `
-    <div class="month-card">
+    <div class="month-card" id="month-${i}">
       <div class="month-num">${String(i+1).padStart(2,'0')}</div>
       <div class="month-title-row">
         <span class="month-badge">${e.month}</span>
