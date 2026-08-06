@@ -89,7 +89,7 @@
   .mood-swatch-wrap{display:flex; flex-direction:column; align-items:center; gap:5px; font-size:11.5px; color:#7a7468;}
   .swatch-lg{width:36px; height:36px; border-radius:50%; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.14);}
   .mood-arrow{font-size:16px; color:var(--clay);}
-  .mood-note{font-size:12.5px; color:#7a7468; font-style:italic; margin-left:4px;}
+  .mood-note{font-size:11.5px; color:#7a7468; font-style:italic; text-align:center; max-width:110px;}
   .color-chip-row{display:flex; gap:18px; flex-wrap:wrap;}
   .color-chip{display:flex; flex-direction:column; align-items:center; gap:6px; font-size:11.5px; color:#7a7468;}
   .summary-filter{
@@ -192,6 +192,9 @@
   .keyword-group-label{font-size:11.5px; font-weight:700; color:var(--clay); margin-bottom:8px; display:block;}
 
   .ability-board{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px;}
+  .ability-group{margin-bottom:20px;}
+  .ability-group:last-of-type{margin-bottom:0;}
+  .ability-group-label{font-size:12.5px; font-weight:700; color:var(--forest); margin-bottom:10px; display:block;}
   .ability-badge{background:var(--ivory-deep); border-radius:14px; padding:12px 14px;}
   .ability-badge.standout{background:#FCEFD8; border:1px solid #E8CE95;}
   .ability-name{display:block; font-weight:700; color:var(--forest); font-size:12.5px; margin-bottom:2px;}
@@ -378,6 +381,13 @@ function categorizeAbility(text){
   }
   return null;
 }
+// 미술능력(조형·색채 등 표현 기술) / 마음의 능력(사회성·집중력 등 내면의 힘)으로 구분
+const ABILITY_GROUP = {
+  '조형력':'미술능력', '색채감각':'미술능력', '조화감각':'미술능력', '발상력':'미술능력',
+  '촉감·탐구심':'미술능력', '이야기전개성':'미술능력', '응용력·전개력':'미술능력', '관찰력':'미술능력',
+  '성취력':'마음의 능력', '사회성':'마음의 능력', '자립심':'마음의 능력',
+  '집중력':'마음의 능력', '계획성':'마음의 능력', '언어표현':'마음의 능력'
+};
 function hasJongseong(str){
   const c = str.charCodeAt(str.length-1) - 0xAC00;
   if(c < 0 || c > 11171) return false;
@@ -616,8 +626,8 @@ function buildAutoInsights(entries){
   });
 }
 
-// 성장하고 있는 능력을 14개 카테고리로 집계해서 배지로 보여주고, 가장 많이
-// 언급된 상위 3개에 ⭐ 표시로 "특히 눈에 띄는 성장"을 자동으로 골라줘요.
+// 성장하고 있는 능력을 14개 카테고리로 집계해서 "미술능력"과 "마음의 능력" 두
+// 갈래로 나눠 배지로 보여주고, 가장 많이 언급된 상위 3개(전체 기준)에 ⭐ 표시해요.
 function renderAbilityBoard(entries){
   const counts = {};
   entries.forEach(e => {
@@ -628,15 +638,26 @@ function renderAbilityBoard(entries){
   });
   const cats = Object.keys(counts);
   if(!cats.length) return '';
-  const sorted = cats.sort((a,b)=>counts[b]-counts[a]);
-  const top = new Set(sorted.slice(0, Math.min(3, sorted.length)));
-  const badges = sorted.map(c => `
+  const sortedAll = cats.sort((a,b)=>counts[b]-counts[a]);
+  const top = new Set(sortedAll.slice(0, Math.min(3, sortedAll.length)));
+
+  const badge = c => `
     <div class="ability-badge${top.has(c) ? ' standout' : ''}">
       <span class="ability-name">${c}${top.has(c) ? ' ⭐' : ''}</span>
       <span class="ability-count">${counts[c]}회 언급</span>
       ${ABILITY_DEFS[c] ? `<span class="ability-desc">${ABILITY_DEFS[c]}</span>` : ''}
-    </div>`).join('');
-  return `<div class="freq-card"><div class="ability-board">${badges}</div><div class="wheel-caption" style="margin-top:10px;">⭐ 표시는 이번 학기 중 특히 자주 관찰된 성장 영역이에요 (언급 빈도 기준)</div></div>`;
+    </div>`;
+
+  const artCats = sortedAll.filter(c => ABILITY_GROUP[c] === '미술능력');
+  const mindCats = sortedAll.filter(c => ABILITY_GROUP[c] === '마음의 능력');
+
+  const group = (title, list) => list.length ? `
+    <div class="ability-group">
+      <span class="ability-group-label">${title}</span>
+      <div class="ability-board">${list.map(badge).join('')}</div>
+    </div>` : '';
+
+  return `<div class="freq-card">${group('미술능력', artCats)}${group('마음의 능력', mindCats)}<div class="wheel-caption" style="margin-top:10px;">⭐ 표시는 이번 학기 중 특히 자주 관찰된 성장 영역이에요 (언급 빈도 기준)</div></div>`;
 }
 
 // 색상×톤을 하나의 원형 차트에: 각도 = 색상, 반지름 = 톤(바깥 pastel → 안쪽 deep),
@@ -867,10 +888,9 @@ function renderJournal(data){
           <div class="info-block">
             <span class="info-label">수업 전 → 수업 후 마음</span>
             <div class="mood-flow">
-              <div class="mood-swatch-wrap"><span class="swatch-lg" style="background:${toneHex(e.beforeColor, e.tone)}"></span><span>${e.beforeColor || '-'}</span></div>
+              <div class="mood-swatch-wrap"><span class="swatch-lg" style="background:${toneHex(e.beforeColor, e.tone)}"></span><span>${e.beforeColor || '-'}</span>${e.beforeMoodNote ? `<span class="mood-note">"${e.beforeMoodNote}"</span>` : ''}</div>
               <span class="mood-arrow">→</span>
-              <div class="mood-swatch-wrap"><span class="swatch-lg" style="background:${toneHex(e.afterColor, e.tone)}"></span><span>${e.afterColor || '-'}</span></div>
-              ${e.moodNote ? `<span class="mood-note">"${e.moodNote}"</span>` : ''}
+              <div class="mood-swatch-wrap"><span class="swatch-lg" style="background:${toneHex(e.afterColor, e.tone)}"></span><span>${e.afterColor || '-'}</span>${e.afterMoodNote ? `<span class="mood-note">"${e.afterMoodNote}"</span>` : ''}</div>
             </div>
           </div>` : ''}
           ${e.selfColor ? `
@@ -883,7 +903,7 @@ function renderJournal(data){
           </div>` : ''}
           ${(e.color1 || e.color2 || e.color3) ? `
           <div class="info-block">
-            <span class="info-label">이 달 선택한 색${e.tone ? ` · ${e.tone}` : ''}</span>
+            <span class="info-label">작품색${e.tone ? ` · ${e.tone}` : ''}</span>
             <div class="color-chip-row">
               ${[e.color1,e.color2,e.color3].filter(Boolean).map(c=>`
               <div class="color-chip"><span class="swatch" style="background:${toneHex(c,e.tone)}"></span><span>${c}</span></div>`).join('')}

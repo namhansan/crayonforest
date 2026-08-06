@@ -58,6 +58,10 @@
   .tab-row{display:flex; gap:8px; margin-bottom:20px;}
   .tab-btn{flex:1; padding:12px; border-radius:12px; border:1.5px solid var(--line); background:var(--paper); color:#9a9285; font-size:13.5px; font-weight:700; cursor:pointer;}
   .tab-btn.active{background:var(--forest); border-color:var(--forest); color:#fff;}
+  .confirm-box{background:#EFF4EC; border:1px solid #D7E3CF; border-radius:14px; padding:18px 20px; margin-top:14px; font-size:13px; color:#3f4f3a;}
+  .confirm-title{font-weight:700; color:var(--forest); margin-bottom:8px; font-size:13px;}
+  .confirm-row{margin-bottom:4px; line-height:1.6;}
+  .confirm-row:last-child{margin-bottom:0;}
 </style>
 </head>
 <body>
@@ -120,10 +124,13 @@
 
     <div class="form-card">
       <div class="form-section-title">색과 마음</div>
-      <div class="form-row triple">
+      <div class="form-row">
         <div class="f-field"><label>수업 전 마음색</label><select id="f_beforeColor"></select></div>
+        <div class="f-field"><label>수업 전 마음 한 줄</label><input type="text" id="f_beforeMoodNote" placeholder="예: 기대돼요"></div>
+      </div>
+      <div class="form-row">
         <div class="f-field"><label>수업 후 마음색</label><select id="f_afterColor"></select></div>
-        <div class="f-field"><label>마음 한 줄</label><input type="text" id="f_moodNote" placeholder="예: 기대돼요"></div>
+        <div class="f-field"><label>수업 후 마음 한 줄</label><input type="text" id="f_afterMoodNote" placeholder="예: 뿌듯해요"></div>
       </div>
       <div class="form-row">
         <div class="f-field"><label>자신을 나타내는 색</label><select id="f_selfColor"></select></div>
@@ -170,6 +177,7 @@
 
     <button class="submit-btn" id="submitBtn" onclick="submitEntry()">이 회차 저장하기</button>
     <div class="submit-msg" id="submitMsg"></div>
+    <div id="confirmCard" style="display:none;"></div>
     <a class="reset-link" onclick="resetFormKeepChild()">다음 회차 이어서 입력하기 (이름·전화번호만 유지)</a>
     </div>
 
@@ -397,8 +405,9 @@ function submitEntry(){
     photo3: document.getElementById('f_photo3').value.trim(),
     photo4: document.getElementById('f_photo4').value.trim(),
     beforeColor: document.getElementById('f_beforeColor').value,
+    beforeMoodNote: document.getElementById('f_beforeMoodNote').value.trim(),
     afterColor: document.getElementById('f_afterColor').value,
-    moodNote: document.getElementById('f_moodNote').value.trim(),
+    afterMoodNote: document.getElementById('f_afterMoodNote').value.trim(),
     selfColor: document.getElementById('f_selfColor').value,
     color1: document.getElementById('f_color1').value,
     color2: document.getElementById('f_color2').value,
@@ -425,7 +434,8 @@ function submitEntry(){
       btn.disabled = false; btn.textContent = '이 회차 저장하기';
       if(data && data.ok){
         msg.className = 'submit-msg ok';
-        msg.textContent = '✔ 저장했어요! 성장카르테에 바로 반영돼요.';
+        msg.textContent = '✔ 저장했어요! 시트에서 방금 저장된 내용을 다시 불러오는 중...';
+        confirmSavedEntry(name, phone4);
       } else {
         msg.className = 'submit-msg err';
         msg.textContent = data && data.message ? data.message : '저장에 실패했어요. 다시 시도해주세요.';
@@ -438,15 +448,48 @@ function submitEntry(){
     });
 }
 
+// 저장 직후, 시트에서 이 아이의 기록을 다시 불러와서 방금 저장된 마지막 회차를
+// 화면에 그대로 보여줘요. 페이지를 나가서 다시 확인할 필요가 없게 하기 위함이에요.
+function confirmSavedEntry(name, phone4){
+  const box = document.getElementById('confirmCard');
+  const params = new URLSearchParams({ action:'journal', name, phone4 });
+  fetch(GAS_URL + '?' + params.toString())
+    .then(r => r.json())
+    .then(data => {
+      const msg = document.getElementById('submitMsg');
+      if(!data.found || !data.entries || !data.entries.length){
+        msg.textContent = '저장은 됐는데, 확인용으로 다시 불러오지 못했어요. 새로고침 후 확인해주세요.';
+        return;
+      }
+      const e = data.entries[data.entries.length - 1];
+      msg.textContent = '✔ 저장하고 시트에서 다시 확인했어요.';
+      const colors = [e.color1, e.color2, e.color3].filter(Boolean);
+      box.style.display = 'block';
+      box.innerHTML = `
+        <div class="confirm-box">
+          <div class="confirm-title">📋 방금 저장된 내용 (시트에서 다시 불러옴)</div>
+          <div class="confirm-row"><b>${e.month || '(회차 없음)'}</b> ${e.title ? `「${e.title}」` : ''}</div>
+          ${colors.length ? `<div class="confirm-row">작품색: ${colors.join(', ')}${e.tone ? ` · ${e.tone}` : ''}</div>` : ''}
+          ${(e.beforeColor || e.afterColor) ? `<div class="confirm-row">마음: ${e.beforeColor||'-'} → ${e.afterColor||'-'}</div>` : ''}
+          ${e.materials ? `<div class="confirm-row">재료: ${e.materials}</div>` : ''}
+          ${e.note ? `<div class="confirm-row">관찰노트: ${e.note}</div>` : ''}
+        </div>`;
+    })
+    .catch(() => {
+      document.getElementById('submitMsg').textContent = '저장은 됐는데, 확인용 재조회에 실패했어요.';
+    });
+}
+
 // 같은 아이를 여러 회차 연달아 입력할 때, 이름/전화번호만 남기고 나머지는 비워줘요.
 function resetFormKeepChild(){
-  ['f_term','f_title','f_photo1','f_photo2','f_photo3','f_photo4','f_moodNote',
+  ['f_term','f_title','f_photo1','f_photo2','f_photo3','f_photo4','f_beforeMoodNote','f_afterMoodNote',
    'f_materials','f_materialTendency','f_growingAbility','f_note','f_sessionTheme',
    'f_styleNotes','f_goalTags','f_keywords'].forEach(id => document.getElementById(id).value = '');
   ['f_beforeColor','f_afterColor','f_selfColor','f_color1','f_color2','f_color3','f_tone','f_materialEffect','f_engagement']
     .forEach(id => document.getElementById(id).value = '');
   document.getElementById('f_month').value = '';
   document.getElementById('submitMsg').textContent = '';
+  document.getElementById('confirmCard').style.display = 'none';
   document.getElementById('f_month').focus();
   window.scrollTo({top:0, behavior:'smooth'});
 }
