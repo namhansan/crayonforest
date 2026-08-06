@@ -87,6 +87,7 @@ function doGet(e) {
   if (action === 'journal') return jsonOutput(getJournal(e.parameter.name, e.parameter.phone4));
   if (action === 'saveSummaryRange') return jsonOutput(saveSummaryRange(e.parameter.name, e.parameter.phone4, e.parameter.from, e.parameter.to));
   if (action === 'addJournalEntry') return jsonOutput(addJournalEntry(e.parameter));
+  if (action === 'updateJournalEntry') return jsonOutput(updateJournalEntry(e.parameter));
   if (action === 'summaryForEdit') return jsonOutput(getSummary(e.parameter.name, e.parameter.phone4) || {});
   if (action === 'saveSummary') return jsonOutput(saveSummary(e.parameter));
 
@@ -303,6 +304,7 @@ function getJournal(name, phone4) {
   const entries = matched.map(r => {
     const color1 = get(r, '선택색상1순위', '');
     return {
+      classLabel: get(r, '학기', ''),
       month: get(r, '월', ''),
       title: get(r, '작품제목', ''),
       photo1: get(r, '사진1URL', ''),
@@ -436,6 +438,76 @@ function addJournalEntry(p) {
   set('목표행동 태그', p.goalTags);
 
   sheet.appendRow(newRow);
+  return { ok: true };
+}
+
+/* ---------- 성장일지 회차 수정 (teacher-entry.html '기존 회차 수정하기'에서 사용) ----------
+ * 이름+전화번호뒷4자리+원래 회차(월) 값으로 정확한 줄을 찾아서 그 줄을 통째로
+ * 덮어씁니다(appendRow로 새 줄을 추가하지 않음). "월" 값 자체를 수정해도, 찾는
+ * 기준은 저장 당시의 originalMonth이기 때문에 정확한 줄을 계속 찾아갑니다.
+ */
+function updateJournalEntry(p) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(JOURNAL_SHEET_NAME);
+  if (!sheet) throw new Error('"성장일지" 시트를 먼저 만들어주세요.');
+  if (!p.name || !p.phone4 || !p.originalMonth) throw new Error('수정할 회차를 찾을 정보(이름/전화번호/원래 회차)가 부족해요.');
+
+  const col = getHeaderIndexMap(sheet);
+  const need = ['이름', '전화번호뒷4자리', '월'];
+  const missingHeaders = need.filter(h => !(normalizeHeader(h) in col));
+  if (missingHeaders.length) throw new Error('시트 헤더에서 "' + missingHeaders.join(', ') + '" 열을 찾을 수 없어요.');
+
+  const data = sheet.getDataRange().getValues();
+  const nameCol = col[normalizeHeader('이름')], phoneCol = col[normalizeHeader('전화번호뒷4자리')], monthCol = col[normalizeHeader('월')];
+  let rowIdx = -1;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][nameCol]).trim() === String(p.name).trim() &&
+        String(data[i][phoneCol]).trim() === String(p.phone4).trim() &&
+        String(data[i][monthCol]).trim() === String(p.originalMonth).trim()) {
+      rowIdx = i + 1;
+      break;
+    }
+  }
+  if (rowIdx === -1) throw new Error('수정할 회차를 찾지 못했어요. 이름/전화번호/회차가 맞는지 확인해주세요.');
+
+  const lastCol = sheet.getLastColumn();
+  const rowValues = sheet.getRange(rowIdx, 1, 1, lastCol).getValues()[0];
+  const set = (headerName, value) => {
+    const key = normalizeHeader(headerName);
+    if (key in col) rowValues[col[key]] = (value !== undefined && value !== null) ? value : '';
+  };
+
+  set('이름', p.name);
+  set('전화번호뒷4자리', p.phone4);
+  set('학기', p.term);
+  set('월', p.month);
+  set('작품제목', p.title);
+  set('사진1URL', p.photo1);
+  set('사진2URL', p.photo2);
+  set('사진3URL', p.photo3);
+  set('사진4URL', p.photo4);
+  set('수업전마음색', p.beforeColor);
+  set('수업전 마음 한 줄', p.beforeMoodNote);
+  set('수업후마음색', p.afterColor);
+  set('수업후 마음 한 줄', p.afterMoodNote);
+  set('자신을 나타내는 색', p.selfColor);
+  set('선택색상1순위', p.color1);
+  set('선택색상2순위', p.color2);
+  set('선택색상3순위', p.color3);
+  set('색상톤', p.tone);
+  set('감정,성장키워드', p.keywords);
+  set('몰입도', p.engagement);
+  set('사용재료', p.materials);
+  set('재료선택의 경향', p.materialTendency);
+  set('미술능력', p.artAbility);
+  set('마음의 능력', p.mindAbility);
+  set('신체능력', p.bodyAbility);
+  set('재료의 효과', p.materialEffect);
+  set('관찰노트', p.note);
+  set('이번 회차 목표/주제', p.sessionTheme);
+  set('그림 스타일 특징', p.styleNotes);
+  set('목표행동 태그', p.goalTags);
+
+  sheet.getRange(rowIdx, 1, 1, lastCol).setValues([rowValues]);
   return { ok: true };
 }
 

@@ -75,6 +75,17 @@
     position:absolute; top:14px; right:28px; line-height:1; -webkit-text-stroke:1px var(--line);
   }
   .month-title-row{margin-bottom:20px;}
+  .class-group-heading{
+    font-family:'Noto Serif KR',serif; font-size:18px; color:var(--forest);
+    margin:36px 0 18px; padding-bottom:10px; border-bottom:2px solid var(--line);
+    display:flex; align-items:baseline; gap:10px;
+  }
+  .class-group-heading:first-child{margin-top:0;}
+  .class-group-count{font-family:'Noto Sans KR',sans-serif; font-size:12.5px; font-weight:600; color:#9a9285;}
+  .class-note{
+    background:var(--ivory-deep); border-radius:14px; padding:14px 18px; margin-top:8px;
+    font-size:12.5px; color:#7a7468; line-height:1.7;
+  }
   .month-badge{display:inline-block; background:var(--forest); color:#fff; font-size:12px; font-weight:700; padding:4px 14px; border-radius:8px;}
   .artwork-title{font-family:'Noto Serif KR',serif; font-size:17px; color:var(--forest); margin-top:10px;}
   .session-theme{font-size:12.5px; color:var(--clay); font-weight:600; margin-top:6px;}
@@ -890,7 +901,6 @@ function renderJournal(data){
   document.getElementById('jTerm').textContent = data.term || '';
 
   const entries = buildAutoInsights(data.entries || []);
-  _journalState = { entries, summary: data.summary, name: data.name, narrativeOverride: data.narrativeOverride, hintsOverride: data.hintsOverride };
 
   // 표지 대표 사진: 첫 기록의 사진1 사용
   const coverImg = entries.find(e => e.photo1)?.photo1;
@@ -911,7 +921,7 @@ function renderJournal(data){
 
   renderGallery(entries);
 
-  wrap.innerHTML = entries.map((e, i) => `
+  const buildCard = (e, i) => `
     <div class="month-card" id="month-${i}">
       <div class="month-num">${String(i+1).padStart(2,'0')}</div>
       <div class="month-title-row">
@@ -996,13 +1006,37 @@ function renderJournal(data){
         </div>
       </div>
     </div>
-  `).join('');
+  `;
 
-  renderSummaryFilter(entries.length, data.range);
-  const total = entries.length;
+  // 특강 기록이 하나도 없으면 지금까지와 완전히 동일하게 동작해요(추가 계산도,
+  // 화면 변화도 없음). 특강이 섞여 있을 때만 정규반/특강으로 나눠 보여줘요.
+  const isIntensive = e => String(e.classLabel || '').includes('특강');
+  const hasIntensive = entries.some(isIntensive);
+
+  if(hasIntensive){
+    const regular = [], intensive = [];
+    entries.forEach((e, i) => (isIntensive(e) ? intensive : regular).push([e, i]));
+    const section = (title, list) => list.length ? `
+      <div class="class-group-heading">${title} <span class="class-group-count">${list.length}회</span></div>
+      ${list.map(([e, i]) => buildCard(e, i)).join('')}` : '';
+    wrap.innerHTML = section('정규반', regular) + section('특강', intensive);
+  } else {
+    wrap.innerHTML = entries.map((e, i) => buildCard(e, i)).join('');
+  }
+
+  // 종합요약(색채 여정 등)은 흐름이 이어지는 정규반 기록만으로 계산해요 — 특강은
+  // 기간이 짧고 별개 활동이라 성장 흐름 계산에 섞이면 오히려 왜곡될 수 있어서예요.
+  const summaryEntries = hasIntensive ? entries.filter(e => !isIntensive(e)) : entries;
+  _journalState = { entries: summaryEntries, summary: data.summary, name: data.name, narrativeOverride: data.narrativeOverride, hintsOverride: data.hintsOverride };
+  if(hasIntensive){
+    wrap.insertAdjacentHTML('beforeend', `<div class="class-note">ℹ️ 특강 ${entries.length - summaryEntries.length}회는 별도 활동이라 아래 종합요약(색채 여정 등) 계산에는 포함하지 않았어요. 위 기록에서는 그대로 확인할 수 있어요.</div>`);
+  }
+
+  renderSummaryFilter(summaryEntries.length, data.range);
+  const total = summaryEntries.length;
   const savedFrom = (data.range && data.range.from) ? Math.max(1, Math.min(data.range.from, total)) : 1;
   const savedTo = (data.range && data.range.to) ? Math.max(1, Math.min(data.range.to, total)) : total;
-  const initialSlice = entries.slice(savedFrom - 1, savedTo);
+  const initialSlice = summaryEntries.slice(savedFrom - 1, savedTo);
   renderSummarySection(initialSlice, data.summary, data.name, data.narrativeOverride, data.hintsOverride);
 }
 

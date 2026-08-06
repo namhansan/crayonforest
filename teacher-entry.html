@@ -62,6 +62,13 @@
   .confirm-title{font-weight:700; color:var(--forest); margin-bottom:8px; font-size:13px;}
   .confirm-row{margin-bottom:4px; line-height:1.6;}
   .confirm-row:last-child{margin-bottom:0;}
+  .edit-notice{
+    background:#FCEFD8; border:1px solid #E8CE95; border-radius:14px; padding:14px 18px;
+    font-size:13px; color:#8a6a2f; margin-bottom:20px; line-height:1.7;
+  }
+  .edit-notice a{color:var(--forest); text-decoration:underline; margin-left:8px; white-space:nowrap;}
+  .picker-preview{font-size:12px; color:#9a9285; margin:-6px 0 14px; padding-left:2px;}
+  .picker-preview b{color:var(--forest);}
 </style>
 </head>
 <body>
@@ -96,15 +103,42 @@
 
     <div id="entryTab">
     <div class="form-card">
+      <div class="form-section-title">기존 회차 수정하기 <span class="hint">(새 회차를 입력하실 거면 이 부분은 그냥 두세요)</span></div>
+      <div class="form-row">
+        <div class="f-field"><label>이름</label><input type="text" id="e_name" placeholder="예: 국다온"></div>
+        <div class="f-field"><label>전화번호 뒷 4자리</label><input type="text" id="e_phone4" maxlength="4" placeholder="예: 9713"></div>
+      </div>
+      <button class="submit-btn" style="background:var(--forest);" onclick="loadChildSessions()">이 아이 회차 목록 불러오기</button>
+      <div class="submit-msg" id="loadEditMsg"></div>
+      <div id="sessionPicker" style="display:none; margin-top:14px;">
+        <div class="f-field"><label>수정할 회차 선택</label><select id="e_monthSelect" onchange="loadSessionIntoForm()"></select></div>
+      </div>
+    </div>
+    <div id="editModeNotice" class="edit-notice" style="display:none;">
+      ✏️ 지금 <b id="editModeMonth"></b> 회차를 불러와서 수정하는 중이에요. 아래 내용을 고치고 "수정 내용 저장하기"를 누르면 이 회차가 그대로 덮어써져요.
+      <a href="#" onclick="cancelEditMode(event)">새 회차 입력으로 전환</a>
+    </div>
+    <div class="form-card">
       <div class="form-section-title">기본 정보</div>
       <div class="form-row">
         <div class="f-field"><label>이름 *</label><input type="text" id="f_name" placeholder="예: 국다온"></div>
         <div class="f-field"><label>전화번호 뒷 4자리 *</label><input type="text" id="f_phone4" maxlength="4" placeholder="예: 9713"></div>
       </div>
       <div class="form-row">
-        <div class="f-field"><label>학기/반</label><input type="text" id="f_term" placeholder="예: 26년 3월 정규반"></div>
-        <div class="f-field"><label>회차(월)</label><input type="text" id="f_month" placeholder="예: 21회차(8.5)"></div>
+        <div class="f-field"><label>연도</label><select id="p_year" onchange="updateTermFromPickers()"></select></div>
+        <div class="f-field"><label>개강월</label><select id="p_month" onchange="updateTermFromPickers()"></select></div>
       </div>
+      <div class="form-row">
+        <div class="f-field"><label>반 종류</label><select id="p_type" onchange="updateTermFromPickers()"><option value="정규반">정규반</option><option value="특강">특강</option></select></div>
+        <div class="f-field"></div>
+      </div>
+      <div class="form-row">
+        <div class="f-field"><label>회차 번호</label><input type="number" id="p_round" min="1" placeholder="예: 21" oninput="updateMonthFromPickers()"></div>
+        <div class="f-field"><label>수업 날짜</label><input type="date" id="p_date" onchange="updateMonthFromPickers()"></div>
+      </div>
+      <input type="hidden" id="f_term">
+      <input type="hidden" id="f_month">
+      <div class="picker-preview">시트에 저장될 값 → 학기: <b id="previewTerm">-</b> · 회차: <b id="previewMonth">-</b></div>
       <div class="form-row single">
         <div class="f-field"><label>작품 제목</label><input type="text" id="f_title" placeholder="예: 나만의 바다"></div>
       </div>
@@ -184,6 +218,7 @@
     <button class="submit-btn" id="submitBtn" onclick="submitEntry()">이 회차 저장하기</button>
     <div class="submit-msg" id="submitMsg"></div>
     <div id="confirmCard" style="display:none;"></div>
+    <a class="reset-link" id="editAgainLink" style="display:none;" onclick="unlockForEdit(event)">방금 내용 수정하고 다시 저장하기</a>
     <a class="reset-link" onclick="resetFormKeepChild()">다음 회차 이어서 입력하기 (이름·전화번호만 유지)</a>
     </div>
 
@@ -378,6 +413,59 @@ fillSelect('f_color3', COLORS, true);
 fillSelect('f_tone', TONES, true);
 fillSelect('f_materialEffect', EFFECTS, true);
 
+// 학기(연도·월·반종류)와 회차(번호·날짜)를 클릭으로 고르면, 시트에 저장되는
+// 형식("26년 3월 정규반", "21회차(7.29)")으로 자동 조합해줘요.
+(function initPickers(){
+  const nowY = new Date().getFullYear() % 100;
+  const ySel = document.getElementById('p_year');
+  ySel.innerHTML = Array.from({length:5}, (_,i)=> nowY - 1 + i).map(y=>`<option value="${y}">${y}년</option>`).join('');
+  ySel.value = nowY;
+  const mSel = document.getElementById('p_month');
+  mSel.innerHTML = Array.from({length:12}, (_,i)=> i+1).map(m=>`<option value="${m}">${m}월</option>`).join('');
+  mSel.value = new Date().getMonth() + 1;
+  updateTermFromPickers();
+})();
+
+function updateTermFromPickers(){
+  const term = `${document.getElementById('p_year').value}년 ${document.getElementById('p_month').value}월 ${document.getElementById('p_type').value}`;
+  document.getElementById('f_term').value = term;
+  document.getElementById('previewTerm').textContent = term;
+}
+function updateMonthFromPickers(){
+  const round = document.getElementById('p_round').value.trim();
+  const dateVal = document.getElementById('p_date').value;
+  if(!round || !dateVal){
+    document.getElementById('f_month').value = '';
+    document.getElementById('previewMonth').textContent = '-';
+    return;
+  }
+  const [, mm, dd] = dateVal.split('-').map(Number);
+  const month = `${round}회차(${mm}.${dd})`;
+  document.getElementById('f_month').value = month;
+  document.getElementById('previewMonth').textContent = month;
+}
+
+// 기존 회차를 불러올 때, "26년 3월 정규반" / "21회차(7.29)" 형식이면 픽커에도
+// 값을 채워줘요. 형식이 안 맞는 옛날 기록이어도 실제 저장 값(hidden input)은
+// 그대로 유지되니 데이터가 깨지지는 않아요.
+function tryParseTermIntoPickers(str){
+  const m = String(str||'').match(/(\d{2,4})\s*년\s*(\d{1,2})\s*월\s*(정규반|특강)/);
+  if(m){
+    document.getElementById('p_year').value = m[1].length > 2 ? m[1].slice(-2) : m[1];
+    document.getElementById('p_month').value = String(parseInt(m[2], 10));
+    document.getElementById('p_type').value = m[3];
+  }
+}
+function tryParseMonthIntoPickers(str){
+  const m = String(str||'').match(/(\d+)\s*회차\((\d{1,2})\.(\d{1,2})\)/);
+  if(m){
+    document.getElementById('p_round').value = m[1];
+    const yy = document.getElementById('p_year').value || '25';
+    const yyyy = String(yy).length === 2 ? '20' + yy : yy;
+    document.getElementById('p_date').value = `${yyyy}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+  }
+}
+
 function checkPw(){
   const pw = document.getElementById('pwInput').value;
   if(pw === ADMIN_PASSWORD){
@@ -387,6 +475,8 @@ function checkPw(){
     document.getElementById('pwErr').textContent = '비밀번호가 올바르지 않아요.';
   }
 }
+
+let editingOriginalMonth = null; // null이면 새 회차 추가, 값이 있으면 그 회차를 찾아서 덮어씀
 
 function submitEntry(){
   const name = document.getElementById('f_name').value.trim();
@@ -401,7 +491,7 @@ function submitEntry(){
   }
 
   const params = new URLSearchParams({
-    action: 'addJournalEntry',
+    action: editingOriginalMonth !== null ? 'updateJournalEntry' : 'addJournalEntry',
     name, phone4,
     term: document.getElementById('f_term').value.trim(),
     month: document.getElementById('f_month').value.trim(),
@@ -432,6 +522,7 @@ function submitEntry(){
     styleNotes: document.getElementById('f_styleNotes').value.trim(),
     goalTags: document.getElementById('f_goalTags').value.trim()
   });
+  if(editingOriginalMonth !== null) params.set('originalMonth', editingOriginalMonth);
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.textContent = '저장 중...';
@@ -439,21 +530,137 @@ function submitEntry(){
   fetch(GAS_URL + '?' + params.toString())
     .then(r => r.json())
     .then(data => {
-      btn.disabled = false; btn.textContent = '이 회차 저장하기';
       if(data && data.ok){
+        const wasEdit = editingOriginalMonth !== null;
+        // 성공하면 이 회차를 계속 "수정 대상"으로 기억해서, 다시 저장 버튼을 눌러도
+        // 새 줄이 또 생기지 않고 같은 줄이 계속 업데이트되도록 해요.
+        editingOriginalMonth = document.getElementById('f_month').value.trim();
+        btn.disabled = true; btn.textContent = wasEdit ? '✔ 수정 완료' : '✔ 저장 완료';
+        document.getElementById('editAgainLink').style.display = 'block';
         msg.className = 'submit-msg ok';
-        msg.textContent = '✔ 저장했어요! 시트에서 방금 저장된 내용을 다시 불러오는 중...';
+        msg.textContent = (wasEdit ? '✔ 수정했어요! ' : '✔ 저장했어요! ') + '시트에서 방금 저장된 내용을 다시 불러오는 중...';
         confirmSavedEntry(name, phone4);
       } else {
+        btn.disabled = false; btn.textContent = editingOriginalMonth !== null ? '수정 내용 저장하기' : '이 회차 저장하기';
         msg.className = 'submit-msg err';
         msg.textContent = data && data.message ? data.message : '저장에 실패했어요. 다시 시도해주세요.';
       }
     })
     .catch(() => {
-      btn.disabled = false; btn.textContent = '이 회차 저장하기';
+      btn.disabled = false; btn.textContent = editingOriginalMonth !== null ? '수정 내용 저장하기' : '이 회차 저장하기';
       msg.className = 'submit-msg err';
       msg.textContent = '저장 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.';
     });
+}
+
+// 저장 버튼은 성공 후 잠기고, 아래 둘 중 하나를 눌러야만 다시 저장할 수 있어요.
+// (같은 내용을 실수로 여러 번 저장하는 것을 막기 위함이에요.)
+function unlockForEdit(e){
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = false; btn.textContent = editingOriginalMonth !== null ? '수정 내용 저장하기' : '이 회차 저장하기';
+  document.getElementById('editAgainLink').style.display = 'none';
+}
+
+// 이름+전화번호로 이 아이의 전체 회차 목록을 불러와서 드롭다운으로 보여줘요.
+let _sessionsCache = [];
+let _cachedTerm = '';
+function loadChildSessions(){
+  const name = document.getElementById('e_name').value.trim();
+  const phone4 = document.getElementById('e_phone4').value.trim();
+  const msg = document.getElementById('loadEditMsg');
+  msg.className = 'submit-msg';
+  if(!name || phone4.length !== 4){
+    msg.className = 'submit-msg err';
+    msg.textContent = '이름과 전화번호 뒷자리 4자리를 입력해주세요.';
+    return;
+  }
+  msg.textContent = '불러오는 중...';
+  const params = new URLSearchParams({ action:'journal', name, phone4 });
+  fetch(GAS_URL + '?' + params.toString())
+    .then(r => r.json())
+    .then(data => {
+      if(!data.found || !data.entries || !data.entries.length){
+        msg.className = 'submit-msg err';
+        msg.textContent = data.message || '기록을 찾지 못했어요.';
+        document.getElementById('sessionPicker').style.display = 'none';
+        return;
+      }
+      _sessionsCache = data.entries;
+      _cachedTerm = data.term || '';
+      const sel = document.getElementById('e_monthSelect');
+      sel.innerHTML = data.entries.map((e,i) => `<option value="${i}">${e.month || ('(회차명 없음 ' + (i+1) + ')')}${e.title ? ` - ${e.title}` : ''}</option>`).join('');
+      document.getElementById('sessionPicker').style.display = 'block';
+      msg.className = 'submit-msg ok';
+      msg.textContent = `✔ ${data.entries.length}개 회차를 불러왔어요. 아래에서 수정할 회차를 골라주세요.`;
+    })
+    .catch(() => {
+      msg.className = 'submit-msg err';
+      msg.textContent = '불러오는 중 문제가 발생했어요.';
+    });
+}
+
+// 선택한 회차의 데이터를 입력 폼에 그대로 채워넣고, 저장 버튼을 "수정" 모드로 바꿔요.
+function loadSessionIntoForm(){
+  const idx = parseInt(document.getElementById('e_monthSelect').value, 10);
+  const e = _sessionsCache[idx];
+  if(!e) return;
+  editingOriginalMonth = e.month || '';
+
+  document.getElementById('f_name').value = document.getElementById('e_name').value.trim();
+  document.getElementById('f_phone4').value = document.getElementById('e_phone4').value.trim();
+  const termForThis = e.classLabel || _cachedTerm || '';
+  document.getElementById('f_term').value = termForThis;
+  document.getElementById('f_month').value = e.month || '';
+  tryParseTermIntoPickers(termForThis);
+  tryParseMonthIntoPickers(e.month);
+  document.getElementById('previewTerm').textContent = termForThis || '-';
+  document.getElementById('previewMonth').textContent = e.month || '-';
+  document.getElementById('f_title').value = e.title || '';
+  document.getElementById('f_photo1').value = e.photo1 || '';
+  document.getElementById('f_photo2').value = e.photo2 || '';
+  document.getElementById('f_photo3').value = e.photo3 || '';
+  document.getElementById('f_photo4').value = e.photo4 || '';
+  document.getElementById('f_beforeColor').value = e.beforeColor || '';
+  document.getElementById('f_beforeMoodNote').value = e.beforeMoodNote || '';
+  document.getElementById('f_afterColor').value = e.afterColor || '';
+  document.getElementById('f_afterMoodNote').value = e.afterMoodNote || '';
+  document.getElementById('f_selfColor').value = e.selfColor || '';
+  document.getElementById('f_color1').value = e.color1 || '';
+  document.getElementById('f_color2').value = e.color2 || '';
+  document.getElementById('f_color3').value = e.color3 || '';
+  document.getElementById('f_tone').value = e.tone || '';
+  document.getElementById('f_keywords').value = (e.emotionKeywords || []).join(', ');
+  document.getElementById('f_engagement').value = e.engagement || '';
+  document.getElementById('f_materials').value = e.materials || '';
+  document.getElementById('f_materialTendency').value = e.materialTendency || '';
+  document.getElementById('f_artAbility').value = e.artAbility || '';
+  document.getElementById('f_mindAbility').value = e.mindAbility || '';
+  document.getElementById('f_bodyAbility').value = e.bodyAbility || '';
+  document.getElementById('f_materialEffect').value = e.materialEffect || '';
+  document.getElementById('f_note').value = e.note || '';
+  document.getElementById('f_sessionTheme').value = e.sessionTheme || '';
+  document.getElementById('f_styleNotes').value = e.styleNotes || '';
+  document.getElementById('f_goalTags').value = (e.goalTags || []).join(', ');
+
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('submitBtn').textContent = '수정 내용 저장하기';
+  document.getElementById('submitMsg').textContent = '';
+  document.getElementById('confirmCard').style.display = 'none';
+  document.getElementById('editAgainLink').style.display = 'none';
+  document.getElementById('editModeMonth').textContent = e.month || '';
+  document.getElementById('editModeNotice').style.display = 'block';
+  window.scrollTo({top: document.querySelector('.tab-row').offsetTop, behavior:'smooth'});
+}
+
+// 수정 모드를 취소하고 새 회차 입력 상태로 돌아가요.
+function cancelEditMode(ev){
+  ev.preventDefault();
+  editingOriginalMonth = null;
+  document.getElementById('editModeNotice').style.display = 'none';
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('submitBtn').textContent = '이 회차 저장하기';
+  resetFormKeepChild();
 }
 
 // 저장 직후, 시트에서 이 아이의 기록을 다시 불러와서 방금 저장된 마지막 회차를
@@ -472,18 +679,29 @@ function confirmSavedEntry(name, phone4){
       const e = data.entries[data.entries.length - 1];
       msg.textContent = '✔ 저장하고 시트에서 다시 확인했어요.';
       const colors = [e.color1, e.color2, e.color3].filter(Boolean);
+      const row = (label, val) => val ? `<div class="confirm-row">${label}: ${val}</div>` : '';
       box.style.display = 'block';
       box.innerHTML = `
         <div class="confirm-box">
           <div class="confirm-title">📋 방금 저장된 내용 (시트에서 다시 불러옴)</div>
           <div class="confirm-row"><b>${e.month || '(회차 없음)'}</b> ${e.title ? `「${e.title}」` : ''}</div>
+          ${row('학기', e.term)}
+          ${row('사진', [e.photo1,e.photo2,e.photo3,e.photo4].filter(Boolean).length ? [e.photo1,e.photo2,e.photo3,e.photo4].filter(Boolean).length + '장' : '')}
+          ${(e.beforeColor || e.afterColor) ? `<div class="confirm-row">수업 전 → 후 마음: ${e.beforeColor||'-'}${e.beforeMoodNote?` "${e.beforeMoodNote}"`:''} → ${e.afterColor||'-'}${e.afterMoodNote?` "${e.afterMoodNote}"`:''}</div>` : ''}
+          ${row('자신을 나타내는 색', e.selfColor)}
           ${colors.length ? `<div class="confirm-row">작품색: ${colors.join(', ')}${e.tone ? ` · ${e.tone}` : ''}</div>` : ''}
-          ${(e.beforeColor || e.afterColor) ? `<div class="confirm-row">마음: ${e.beforeColor||'-'} → ${e.afterColor||'-'}</div>` : ''}
-          ${e.materials ? `<div class="confirm-row">재료: ${e.materials}</div>` : ''}
-          ${e.artAbility ? `<div class="confirm-row">미술능력: ${e.artAbility}</div>` : ''}
-          ${e.mindAbility ? `<div class="confirm-row">마음의 능력: ${e.mindAbility}</div>` : ''}
-          ${e.bodyAbility ? `<div class="confirm-row">신체능력: ${e.bodyAbility}</div>` : ''}
-          ${e.note ? `<div class="confirm-row">관찰노트: ${e.note}</div>` : ''}
+          ${row('사용 재료', e.materials)}
+          ${row('재료의 효과', e.materialEffect)}
+          ${row('몰입도', e.engagement)}
+          ${row('재료 선택의 경향', e.materialTendency)}
+          ${row('감정, 성장 키워드', (e.emotionKeywords||[]).join(', '))}
+          ${row('미술능력', e.artAbility)}
+          ${row('마음의 능력', e.mindAbility)}
+          ${row('신체능력', e.bodyAbility)}
+          ${row('관찰노트', e.note)}
+          ${row('이번 회차 목표/주제', e.sessionTheme)}
+          ${row('그림 스타일 특징', e.styleNotes)}
+          ${row('목표행동 태그', (e.goalTags||[]).join(', '))}
         </div>`;
     })
     .catch(() => {
@@ -493,18 +711,29 @@ function confirmSavedEntry(name, phone4){
 
 // 같은 아이를 여러 회차 연달아 입력할 때, 이름/전화번호만 남기고 나머지는 비워줘요.
 function resetFormKeepChild(){
-  ['f_term','f_title','f_photo1','f_photo2','f_photo3','f_photo4','f_beforeMoodNote','f_afterMoodNote',
+  ['f_title','f_photo1','f_photo2','f_photo3','f_photo4','f_beforeMoodNote','f_afterMoodNote',
    'f_materials','f_materialTendency','f_artAbility','f_mindAbility','f_bodyAbility','f_note','f_sessionTheme',
    'f_styleNotes','f_goalTags','f_keywords'].forEach(id => document.getElementById(id).value = '');
   ['f_beforeColor','f_afterColor','f_selfColor','f_color1','f_color2','f_color3','f_tone','f_materialEffect','f_engagement']
     .forEach(id => document.getElementById(id).value = '');
-  document.getElementById('f_month').value = '';
+  // 학기(연도/월/반종류)는 같은 반이 이어지는 경우가 많아서 그대로 두고,
+  // 회차 번호와 날짜만 비워서 다음 회차를 바로 입력할 수 있게 해요.
+  document.getElementById('p_round').value = '';
+  document.getElementById('p_date').value = '';
+  updateMonthFromPickers();
   document.getElementById('submitMsg').textContent = '';
   document.getElementById('confirmCard').style.display = 'none';
-  document.getElementById('f_month').focus();
+  document.getElementById('editAgainLink').style.display = 'none';
+  document.getElementById('editModeNotice').style.display = 'none';
+  document.getElementById('sessionPicker').style.display = 'none';
+  editingOriginalMonth = null;
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = false; btn.textContent = '이 회차 저장하기';
+  document.getElementById('p_round').focus();
   window.scrollTo({top:0, behavior:'smooth'});
 }
 </script>
+
 
 </body>
 </html>
