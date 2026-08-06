@@ -157,7 +157,13 @@
         <div class="f-field"><label>감정, 성장 키워드 <span class="hint">(쉼표로 여러 개)</span></label><input type="text" id="f_keywords" placeholder="예: 자기표현, 자신감"></div>
       </div>
       <div class="form-row single">
-        <div class="f-field"><label>성장하고 있는 능력 <span class="hint">(쉼표로 여러 개)</span></label><input type="text" id="f_growingAbility" placeholder="예: 색, 형태, 상상력"></div>
+        <div class="f-field"><label>미술능력 <span class="hint">(쉼표로 여러 개, 해당 없으면 비워두세요)</span></label><input type="text" id="f_artAbility" placeholder="예: 색채감각, 조형력"></div>
+      </div>
+      <div class="form-row single">
+        <div class="f-field"><label>마음의 능력 <span class="hint">(쉼표로 여러 개)</span></label><input type="text" id="f_mindAbility" placeholder="예: 자립심, 집중력"></div>
+      </div>
+      <div class="form-row single">
+        <div class="f-field"><label>신체능력 <span class="hint">(쉼표로 여러 개)</span></label><input type="text" id="f_bodyAbility" placeholder="예: 손가락 운동력, 대근육"></div>
       </div>
     </div>
 
@@ -417,7 +423,9 @@ function submitEntry(){
     engagement: document.getElementById('f_engagement').value,
     materials: document.getElementById('f_materials').value.trim(),
     materialTendency: document.getElementById('f_materialTendency').value.trim(),
-    growingAbility: document.getElementById('f_growingAbility').value.trim(),
+    artAbility: document.getElementById('f_artAbility').value.trim(),
+    mindAbility: document.getElementById('f_mindAbility').value.trim(),
+    bodyAbility: document.getElementById('f_bodyAbility').value.trim(),
     materialEffect: document.getElementById('f_materialEffect').value,
     note: document.getElementById('f_note').value.trim(),
     sessionTheme: document.getElementById('f_sessionTheme').value.trim(),
@@ -472,6 +480,9 @@ function confirmSavedEntry(name, phone4){
           ${colors.length ? `<div class="confirm-row">작품색: ${colors.join(', ')}${e.tone ? ` · ${e.tone}` : ''}</div>` : ''}
           ${(e.beforeColor || e.afterColor) ? `<div class="confirm-row">마음: ${e.beforeColor||'-'} → ${e.afterColor||'-'}</div>` : ''}
           ${e.materials ? `<div class="confirm-row">재료: ${e.materials}</div>` : ''}
+          ${e.artAbility ? `<div class="confirm-row">미술능력: ${e.artAbility}</div>` : ''}
+          ${e.mindAbility ? `<div class="confirm-row">마음의 능력: ${e.mindAbility}</div>` : ''}
+          ${e.bodyAbility ? `<div class="confirm-row">신체능력: ${e.bodyAbility}</div>` : ''}
           ${e.note ? `<div class="confirm-row">관찰노트: ${e.note}</div>` : ''}
         </div>`;
     })
@@ -483,7 +494,7 @@ function confirmSavedEntry(name, phone4){
 // 같은 아이를 여러 회차 연달아 입력할 때, 이름/전화번호만 남기고 나머지는 비워줘요.
 function resetFormKeepChild(){
   ['f_term','f_title','f_photo1','f_photo2','f_photo3','f_photo4','f_beforeMoodNote','f_afterMoodNote',
-   'f_materials','f_materialTendency','f_growingAbility','f_note','f_sessionTheme',
+   'f_materials','f_materialTendency','f_artAbility','f_mindAbility','f_bodyAbility','f_note','f_sessionTheme',
    'f_styleNotes','f_goalTags','f_keywords'].forEach(id => document.getElementById(id).value = '');
   ['f_beforeColor','f_afterColor','f_selfColor','f_color1','f_color2','f_color3','f_tone','f_materialEffect','f_engagement']
     .forEach(id => document.getElementById(id).value = '');

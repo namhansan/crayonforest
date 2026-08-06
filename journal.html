@@ -629,38 +629,53 @@ function buildAutoInsights(entries){
   });
 }
 
-// 성장하고 있는 능력을 14개 카테고리로 집계해서 "미술능력"과 "마음의 능력" 두
-// 갈래로 나눠 배지로 보여주고, 가장 많이 언급된 상위 3개(전체 기준)에 ⭐ 표시해요.
+// 성장 능력을 미술능력/마음의 능력/신체능력 세 갈래로 나눠 배지로 보여주고,
+// 가장 많이 언급된 상위 3개(전체 기준)에 ⭐ 표시해요. "미술능력/마음의 능력/신체능력"
+// 칸에 직접 적힌 데이터를 우선 쓰고, 옛 방식(자유 텍스트 한 칸)으로만 적힌 회차는
+// 자동 분류해서 같이 집계해요.
 function renderAbilityBoard(entries){
-  const counts = {};
-  entries.forEach(e => {
-    String(e.growingAbility||'').split(/[,、\n·]/).map(s=>s.trim()).filter(Boolean).forEach(token=>{
-      const cat = categorizeAbility(token);
-      if(cat) counts[cat] = (counts[cat]||0) + 1;
-    });
+  const counts = { '미술능력':{}, '마음의 능력':{}, '신체능력':{} };
+  const bump = (group, text) => String(text||'').split(/[,、\n·]/).map(s=>s.trim()).filter(Boolean).forEach(t=>{
+    counts[group][t] = (counts[group][t]||0) + 1;
   });
-  const cats = Object.keys(counts);
-  if(!cats.length) return '';
-  const sortedAll = cats.sort((a,b)=>counts[b]-counts[a]);
-  const top = new Set(sortedAll.slice(0, Math.min(3, sortedAll.length)));
+  entries.forEach(e => {
+    if(e.artAbility || e.mindAbility || e.bodyAbility){
+      bump('미술능력', e.artAbility);
+      bump('마음의 능력', e.mindAbility);
+      bump('신체능력', e.bodyAbility);
+    } else if(e.growingAbility){
+      String(e.growingAbility).split(/[,、\n·]/).map(s=>s.trim()).filter(Boolean).forEach(t=>{
+        const cat = categorizeAbility(t);
+        const group = cat ? ABILITY_GROUP[cat] : null;
+        if(group) counts[group][t] = (counts[group][t]||0) + 1;
+      });
+    }
+  });
 
-  const badge = c => `
-    <div class="ability-badge${top.has(c) ? ' standout' : ''}">
-      <span class="ability-name">${c}${top.has(c) ? ' ⭐' : ''}</span>
-      <span class="ability-count">${counts[c]}회 언급</span>
-      ${ABILITY_DEFS[c] ? `<span class="ability-desc">${ABILITY_DEFS[c]}</span>` : ''}
+  const allCounts = {};
+  Object.values(counts).forEach(g => Object.entries(g).forEach(([k,v]) => { allCounts[k] = (allCounts[k]||0) + v; }));
+  const allTags = Object.keys(allCounts);
+  if(!allTags.length) return '';
+  const top = new Set(allTags.sort((a,b)=>allCounts[b]-allCounts[a]).slice(0, Math.min(3, allTags.length)));
+
+  const badge = (tag, n) => `
+    <div class="ability-badge${top.has(tag) ? ' standout' : ''}">
+      <span class="ability-name">${tag}${top.has(tag) ? ' ⭐' : ''}</span>
+      <span class="ability-count">${n}회 언급</span>
+      ${ABILITY_DEFS[tag] ? `<span class="ability-desc">${ABILITY_DEFS[tag]}</span>` : ''}
     </div>`;
 
-  const artCats = sortedAll.filter(c => ABILITY_GROUP[c] === '미술능력');
-  const mindCats = sortedAll.filter(c => ABILITY_GROUP[c] === '마음의 능력');
-
-  const group = (title, list) => list.length ? `
+  const group = (title, groupCounts) => {
+    const keys = Object.keys(groupCounts).sort((a,b)=>groupCounts[b]-groupCounts[a]);
+    if(!keys.length) return '';
+    return `
     <div class="ability-group">
       <span class="ability-group-label">${title}</span>
-      <div class="ability-board">${list.map(badge).join('')}</div>
-    </div>` : '';
+      <div class="ability-board">${keys.map(k=>badge(k, groupCounts[k])).join('')}</div>
+    </div>`;
+  };
 
-  return `<div class="freq-card">${group('미술능력', artCats)}${group('마음의 능력', mindCats)}<div class="wheel-caption" style="margin-top:10px;">⭐ 표시는 이번 학기 중 특히 자주 관찰된 성장 영역이에요 (언급 빈도 기준)</div></div>`;
+  return `<div class="freq-card">${group('미술능력', counts['미술능력'])}${group('마음의 능력', counts['마음의 능력'])}${group('신체능력', counts['신체능력'])}<div class="wheel-caption" style="margin-top:10px;">⭐ 표시는 이번 학기 중 특히 자주 관찰된 성장 영역이에요 (언급 빈도 기준)</div></div>`;
 }
 
 // 색상×톤을 하나의 원형 차트에: 각도 = 색상, 반지름 = 톤(바깥 pastel → 안쪽 deep),
@@ -805,10 +820,20 @@ function teacherLogin(e){
 }
 
 let _lastName = '', _lastPhone4 = '';
-// 한 회차의 "성장하고 있는 능력" 텍스트를 미술능력/마음의 능력으로 나눠서 보여줘요.
-// 분류가 안 되는 단어는 "기타"로 그대로 남겨서 절대 숨기지 않아요.
-function renderEntryAbilities(text){
-  const tokens = String(text||'').split(/[,、\n·]/).map(s=>s.trim()).filter(Boolean);
+// 한 회차의 성장 능력을 보여줘요. "미술능력/마음의 능력/신체능력" 칸에 직접
+// 적어두셨으면 그대로 그룹별로 보여주고(가장 정확함), 옛 방식으로 한 칸에 자유
+// 텍스트로만 적힌 옛 기록은 자동 분류(미술/마음 2그룹)로 대신 보여줘요.
+function renderEntryAbilities(e){
+  const pills = txt => String(txt||'').split(/[,、\n·]/).map(s=>s.trim()).filter(Boolean).map(t=>`<span class="pill">${t}</span>`).join('');
+  const hasExplicit = e.artAbility || e.mindAbility || e.bodyAbility;
+  if(hasExplicit){
+    let html = '';
+    if(e.artAbility) html += `<div class="ability-mini-group"><span class="ability-mini-label">미술능력</span><div class="material-pills">${pills(e.artAbility)}</div></div>`;
+    if(e.mindAbility) html += `<div class="ability-mini-group"><span class="ability-mini-label">마음의 능력</span><div class="material-pills">${pills(e.mindAbility)}</div></div>`;
+    if(e.bodyAbility) html += `<div class="ability-mini-group"><span class="ability-mini-label">신체능력</span><div class="material-pills">${pills(e.bodyAbility)}</div></div>`;
+    return html;
+  }
+  const tokens = String(e.growingAbility||'').split(/[,、\n·]/).map(s=>s.trim()).filter(Boolean);
   if(!tokens.length) return '';
   const art = [], mind = [], other = [];
   tokens.forEach(t=>{
@@ -818,11 +843,11 @@ function renderEntryAbilities(text){
     else if(group === '마음의 능력') mind.push(t);
     else other.push(t);
   });
-  const pills = arr => arr.map(t=>`<span class="pill">${t}</span>`).join('');
+  const pillsArr = arr => arr.map(t=>`<span class="pill">${t}</span>`).join('');
   let html = '';
-  if(art.length) html += `<div class="ability-mini-group"><span class="ability-mini-label">미술능력</span><div class="material-pills">${pills(art)}</div></div>`;
-  if(mind.length) html += `<div class="ability-mini-group"><span class="ability-mini-label">마음의 능력</span><div class="material-pills">${pills(mind)}</div></div>`;
-  if(other.length) html += `<div class="ability-mini-group"><span class="ability-mini-label">기타</span><div class="material-pills">${pills(other)}</div></div>`;
+  if(art.length) html += `<div class="ability-mini-group"><span class="ability-mini-label">미술능력</span><div class="material-pills">${pillsArr(art)}</div></div>`;
+  if(mind.length) html += `<div class="ability-mini-group"><span class="ability-mini-label">마음의 능력</span><div class="material-pills">${pillsArr(mind)}</div></div>`;
+  if(other.length) html += `<div class="ability-mini-group"><span class="ability-mini-label">기타</span><div class="material-pills">${pillsArr(other)}</div></div>`;
   return html;
 }
 
@@ -953,10 +978,10 @@ function renderJournal(data){
             <span class="info-label">재료 선택의 경향</span>
             <p class="info-note">${e.materialTendency}</p>
           </div>` : ''}
-          ${e.growingAbility ? `
+          ${(e.growingAbility || e.artAbility || e.mindAbility || e.bodyAbility) ? `
           <div class="info-block">
             <span class="info-label">성장하고 있는 능력</span>
-            ${renderEntryAbilities(e.growingAbility)}
+            ${renderEntryAbilities(e)}
           </div>` : ''}
           ${e.styleNotes ? `
           <div class="info-block">

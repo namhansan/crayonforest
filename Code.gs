@@ -26,8 +26,15 @@
  * 이름 | 전화번호뒷4자리 | 학기 | 월 | 작품제목 | 사진1URL | 사진2URL | 사진3URL | 사진4URL |
  * 수업전마음색 | 수업전 마음 한 줄 | 수업후마음색 | 수업후 마음 한 줄 |
  * 자신을 나타내는 색 | 선택색상1순위 | 선택색상2순위 | 선택색상3순위 | 색상톤 |
- * 감정,성장키워드 | 몰입도 | 사용재료 | 재료선택의 경향 | 성장하고 있는 능력 |
+ * 감정,성장키워드 | 몰입도 | 사용재료 | 재료선택의 경향 |
+ * 미술능력 | 마음의 능력 | 신체능력 | 성장하고 있는 능력(옛 방식, 남겨둠) |
  * 재료의 효과 | 관찰노트 | 이번 회차 목표/주제 | 그림 스타일 특징 | 목표행동 태그
+ *
+ * "미술능력"/"마음의 능력"/"신체능력" 3칸은 해당되는 것만 쉼표로 적어주세요
+ * (예: 미술능력 칸에 "색채감각, 조형력"). 이렇게 직접 구분해서 적으면 자동 분류보다
+ * 훨씬 정확해요. "성장하고 있는 능력(옛 방식)" 칸은 예전에 쓰던 방식이라 안 지웠어요 —
+ * 새로 입력할 땐 안 쓰셔도 되고, 이미 있는 옛날 기록은 계속 자동으로 미술/마음 둘로
+ * 나눠서 보여줘요.
  *
  * 사진3URL/사진4URL, 수업전마음색/수업전 마음 한 줄/수업후마음색/수업후 마음 한 줄, 회차목표/스타일특징/목표행동태그는
  * 전부 선택 입력이에요 — 안 적어도 카드에 그냥 안 보일 뿐 문제없이 동작합니다.
@@ -316,7 +323,10 @@ function getJournal(name, phone4) {
       engagement: get(r, '몰입도', ''),
       materials: get(r, '사용재료', ''),
       materialTendency: get(r, '재료선택의 경향', ''),
-      growingAbility: get(r, '성장하고 있는 능력', ''),
+      growingAbility: get(r, '성장하고 있는 능력(옛 방식, 남겨둠)', '') || get(r, '성장하고 있는 능력', ''),
+      artAbility: get(r, '미술능력', ''),
+      mindAbility: get(r, '마음의 능력', ''),
+      bodyAbility: get(r, '신체능력', ''),
       materialEffect: get(r, '재료의 효과', ''),
       note: get(r, '관찰노트', ''),
       sessionTheme: get(r, '이번 회차 목표/주제', ''),
@@ -416,7 +426,9 @@ function addJournalEntry(p) {
   set('몰입도', p.engagement);
   set('사용재료', p.materials);
   set('재료선택의 경향', p.materialTendency);
-  set('성장하고 있는 능력', p.growingAbility);
+  set('미술능력', p.artAbility);
+  set('마음의 능력', p.mindAbility);
+  set('신체능력', p.bodyAbility);
   set('재료의 효과', p.materialEffect);
   set('관찰노트', p.note);
   set('이번 회차 목표/주제', p.sessionTheme);
