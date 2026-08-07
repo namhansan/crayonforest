@@ -254,8 +254,8 @@
           <div class="f-field"><label>🟢 색채 · 후</label><input type="text" id="s_colorAfter"></div>
         </div>
         <div class="form-row">
-          <div class="f-field"><label>🟡 심리 · 전</label><input type="text" id="s_psychologyBefore"></div>
-          <div class="f-field"><label>🟡 심리 · 후</label><input type="text" id="s_psychologyAfter"></div>
+          <div class="f-field"><label>🟡 정서 · 전</label><input type="text" id="s_psychologyBefore"></div>
+          <div class="f-field"><label>🟡 정서 · 후</label><input type="text" id="s_psychologyAfter"></div>
         </div>
         <div class="form-row">
           <div class="f-field"><label>🔴 사고 · 전</label><input type="text" id="s_thinkingBefore"></div>
@@ -281,6 +281,33 @@
       </div>
 
       <div class="form-card">
+        <div class="form-section-title">🌸 꽃밭샘 피드백 <span class="hint">("작품 속 색채흐름" 섹션 아래에 표시돼요)</span></div>
+        <div class="form-row single">
+          <div class="f-field"><textarea id="s_feedbackA" placeholder="이 기간 동안의 색채 흐름을 보고 느낀 점을 자유롭게 적어주세요."></textarea></div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-section-title">종합요약 섹션별 공개 설정 <span class="hint">(체크 해제하면 그 섹션만 학부모 화면에서 숨겨져요)</span></div>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:#4b463f; cursor:pointer; margin-bottom:10px;">
+          <input type="checkbox" id="sec_colorJourney" checked style="width:auto;"> 6개월 색채 여정 (색상 · 톤)
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:#4b463f; cursor:pointer; margin-bottom:10px;">
+          <input type="checkbox" id="sec_materialWheel" checked style="width:auto;"> 재료 효과 바퀴 (사고·감정·뉴트럴)
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:#4b463f; cursor:pointer; margin-bottom:10px;">
+          <input type="checkbox" id="sec_effectBalance" checked style="width:auto;"> 재료 효과 비율
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:#4b463f; cursor:pointer; margin-bottom:10px;">
+          <input type="checkbox" id="sec_keywordCloud" checked style="width:auto;"> 자주 나온 감정 · 성장 키워드
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:#4b463f; cursor:pointer;">
+          <input type="checkbox" id="sec_parentingHints" checked style="width:auto;"> 양육 힌트
+        </label>
+        <div class="hint" style="margin-top:10px; display:block;">이 5개 섹션은 journal.html에서 선생님 모드로 들어가서 바로 켜고 끌 수도 있어요 — 여기서는 한 번에 미리 정해두고 싶을 때 쓰시면 돼요.</div>
+      </div>
+
+      <div class="form-card">
         <div class="form-section-title">공개 설정</div>
         <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:#4b463f; cursor:pointer;">
           <input type="checkbox" id="s_published" style="width:auto;"> 학부모 화면에 이 종합 요약(강점/방향/전후비교/하이라이트) 공개하기
@@ -298,7 +325,7 @@
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyahvBkqM7NVzHde2vdtpWTGdOhaUs8i-ewGe9WBpuyyetVIv1VEPJrhhCNy3fgrmad/exec";
 const ADMIN_PASSWORD = "crayon2026"; // journal.html / index.html 관리자 로그인과 같은 비밀번호예요
 
-const COLORS = ['검정','빨강','주황','노랑','연두','초록','파랑','보라','핑크'];
+const COLORS = ['검정','빨강','주황','노랑','연두','초록','파랑','보라','핑크','회색','청록','무지개','골드','갈색','은색'];
 const TONES = ['deep','vivid','pastel'];
 const EFFECTS = ['감정활동(발산효과)','뉴트럴(중립)','사고활동(집중효과)'];
 
@@ -343,6 +370,13 @@ function loadSummary(){
       document.getElementById('s_narrativeOverride').value = data.narrativeOverride || '';
       document.getElementById('s_hintsOverride').value = (data.hintsOverride || []).join('\n');
       document.getElementById('s_published').checked = !!data.published;
+      document.getElementById('s_feedbackA').value = data.feedbackA || '';
+      const hidden = new Set(data.hiddenSections || []);
+      document.getElementById('sec_colorJourney').checked = !hidden.has('colorJourney');
+      document.getElementById('sec_materialWheel').checked = !hidden.has('materialWheel');
+      document.getElementById('sec_effectBalance').checked = !hidden.has('effectBalance');
+      document.getElementById('sec_keywordCloud').checked = !hidden.has('keywordCloud');
+      document.getElementById('sec_parentingHints').checked = !hidden.has('parentingHints');
       msg.className = 'submit-msg ok';
       msg.textContent = '✔ 기존 내용을 불러왔어요. 수정하고 저장하시면 돼요.';
     })
@@ -362,6 +396,13 @@ function saveSummaryForm(){
     msg.textContent = '이름과 전화번호 뒷자리 4자리를 입력해주세요.';
     return;
   }
+  const hiddenList = [];
+  if(!document.getElementById('sec_colorJourney').checked) hiddenList.push('colorJourney');
+  if(!document.getElementById('sec_materialWheel').checked) hiddenList.push('materialWheel');
+  if(!document.getElementById('sec_effectBalance').checked) hiddenList.push('effectBalance');
+  if(!document.getElementById('sec_keywordCloud').checked) hiddenList.push('keywordCloud');
+  if(!document.getElementById('sec_parentingHints').checked) hiddenList.push('parentingHints');
+
   const params = new URLSearchParams({
     action: 'saveSummary', name, phone4,
     strength: document.getElementById('s_strength').value.trim(),
@@ -377,7 +418,9 @@ function saveSummaryForm(){
     highlights: document.getElementById('s_highlights').value.trim(),
     narrativeOverride: document.getElementById('s_narrativeOverride').value.trim(),
     hintsOverride: document.getElementById('s_hintsOverride').value.trim(),
-    published: document.getElementById('s_published').checked ? 'true' : 'false'
+    published: document.getElementById('s_published').checked ? 'true' : 'false',
+    feedbackA: document.getElementById('s_feedbackA').value.trim(),
+    hiddenSections: hiddenList.join(',')
   });
   const btn = document.getElementById('summarySubmitBtn');
   btn.disabled = true; btn.textContent = '저장 중...';

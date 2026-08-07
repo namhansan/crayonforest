@@ -52,12 +52,13 @@
  * 함수 위 주석 참고)
  *
  * (선택) 종합 요약 시트 준비 — 6개월 마지막에 한 번만 작성:
- * "성장요약"이라는 이름의 시트 탭을 만들고, 첫 줄에 다음 18개를 순서대로 넣어주세요:
+ * "성장요약"이라는 이름의 시트 탭을 만들고, 첫 줄에 다음 20개를 순서대로 넣어주세요:
  * 이름 | 전화번호뒷4자리 | 강점 | 성장방향 | 표현_전 | 표현_후 | 색채_전 | 색채_후 | 심리_전 | 심리_후 | 사고_전 | 사고_후 | 눈에띄는성장 | 공개여부 |
- * 한줄요약(직접입력) | 양육힌트(직접입력) | 요약범위시작 | 요약범위끝
+ * 한줄요약(직접입력) | 양육힌트(직접입력) | 요약범위시작 | 요약범위끝 | 꽃밭샘피드백 | 숨김섹션
  *
- * "요약범위시작"/"요약범위끝"은 teacher-entry.html(선생님 화면)에서 종합요약에 반영할
- * 회차 범위를 지정하면 자동으로 채워져요 — 손으로 직접 안 쓰셔도 됩니다.
+ * "요약범위시작"/"요약범위끝"과 "꽃밭샘피드백"/"숨김섹션"은 전부 teacher-entry.html
+ * (선생님 화면)에서 조작하면 자동으로 채워져요 — 손으로 직접 안 쓰셔도 됩니다.
+ * "숨김섹션"은 콤마로 구분된 값(예: "colorJourney,keywordCloud")이 들어가요.
  *
  * 마지막 2개(한줄요약/양육힌트 직접입력)는 선택 입력이에요. 성장카르테 화면의
  * "성장 한 줄 요약"과 "양육 힌트"는 원래 성장일지 데이터로 자동 생성되는데,
@@ -86,6 +87,7 @@ function doGet(e) {
   if (action === 'visitCount') return jsonOutput(getVisitCounts());
   if (action === 'journal') return jsonOutput(getJournal(e.parameter.name, e.parameter.phone4));
   if (action === 'saveSummaryRange') return jsonOutput(saveSummaryRange(e.parameter.name, e.parameter.phone4, e.parameter.from, e.parameter.to));
+  if (action === 'saveSectionVisibility') return jsonOutput(saveSectionVisibility(e.parameter.name, e.parameter.phone4, e.parameter.hiddenSections));
   if (action === 'addJournalEntry') return jsonOutput(addJournalEntry(e.parameter));
   if (action === 'updateJournalEntry') return jsonOutput(updateJournalEntry(e.parameter));
   if (action === 'summaryForEdit') return jsonOutput(getSummary(e.parameter.name, e.parameter.phone4) || {});
@@ -224,7 +226,7 @@ function setupJournalDropdowns() {
 
   const col = getHeaderIndexMap(sheet);
   const LAST_ROW = 500;
-  const colorList = ['검정', '빨강', '주황', '노랑', '연두', '초록', '파랑', '보라', '핑크'];
+  const colorList = ['검정', '빨강', '주황', '노랑', '연두', '초록', '파랑', '보라', '핑크', '회색', '청록', '무지개', '골드', '갈색', '은색'];
   const toneList = ['deep', 'vivid', 'pastel'];
   const effectList = ['감정활동(발산효과)', '뉴트럴(중립)', '사고활동(집중효과)'];
 
@@ -345,7 +347,9 @@ function getJournal(name, phone4) {
     found: true, name: nameTrim, term: term, entries: entries, summary: publishedSummary,
     narrativeOverride: summary ? summary.narrativeOverride : '',
     hintsOverride: summary ? summary.hintsOverride : [],
-    range: range
+    range: range,
+    feedbackA: summary ? summary.feedbackA : '',
+    hiddenSections: summary ? summary.hiddenSections : []
   };
 }
 
@@ -373,7 +377,7 @@ function saveSummaryRange(name, phone4, from, to) {
   let sheet = ss.getSheetByName(SUMMARY_SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SUMMARY_SHEET_NAME);
-    sheet.appendRow(['이름','전화번호뒷4자리','강점','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝']);
+    sheet.appendRow(['이름','전화번호뒷4자리','강점','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝','꽃밭샘피드백','숨김섹션']);
   }
   const data = sheet.getDataRange().getValues();
   let rowIdx = -1;
@@ -521,7 +525,7 @@ function saveSummary(p) {
   let sheet = ss.getSheetByName(SUMMARY_SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SUMMARY_SHEET_NAME);
-    sheet.appendRow(['이름','전화번호뒷4자리','강점','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝']);
+    sheet.appendRow(['이름','전화번호뒷4자리','강점','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝','꽃밭샘피드백','숨김섹션']);
   }
   const data = sheet.getDataRange().getValues();
   let rowIdx = -1;
@@ -540,9 +544,33 @@ function saveSummary(p) {
     p.narrativeOverride || '', p.hintsOverride || ''
   ];
   if (rowIdx === -1) {
-    sheet.appendRow(values); // 새 줄이라 요약범위 칸은 비워서 시작 (필요하면 나중에 journal.html에서 지정)
+    // 새 줄이라 요약범위(17,18열)는 비워서 시작 (필요하면 나중에 journal.html에서 지정)
+    sheet.appendRow(values.concat(['', '', p.feedbackA || '', p.hiddenSections || '']));
   } else {
     sheet.getRange(rowIdx, 1, 1, 16).setValues([values]); // 17,18열(요약범위)은 그대로 둠
+    sheet.getRange(rowIdx, 19, 1, 2).setValues([[p.feedbackA || '', p.hiddenSections || '']]);
+  }
+  return { ok: true };
+}
+
+// B/E/F/G/H 섹션의 학부모 공개 여부만 빠르게 저장 (다른 성장요약 내용은 안 건드림)
+function saveSectionVisibility(name, phone4, hiddenSections) {
+  if (!name || !phone4) throw new Error('이름과 전화번호 뒷자리가 필요해요.');
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SUMMARY_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SUMMARY_SHEET_NAME);
+    sheet.appendRow(['이름','전화번호뒷4자리','강점','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝','꽃밭샘피드백','숨김섹션']);
+  }
+  const data = sheet.getDataRange().getValues();
+  let rowIdx = -1;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === String(name).trim() && String(data[i][1]).trim() === String(phone4).trim()) { rowIdx = i + 1; break; }
+  }
+  if (rowIdx === -1) {
+    sheet.appendRow([name, phone4, '', '', '', '', '', '', '', '', '', '', '', false, '', '', '', '', '', hiddenSections || '']);
+  } else {
+    sheet.getRange(rowIdx, 20, 1, 1).setValue(hiddenSections || '');
   }
   return { ok: true };
 }
@@ -566,7 +594,9 @@ function getSummary(name, phone4) {
     highlights: String(row[12] || '').split('\n').map(s => s.trim()).filter(Boolean),
     published: row[13] === true,
     narrativeOverride: row[14] || '',
-    hintsOverride: String(row[15] || '').split('\n').map(s => s.trim()).filter(Boolean)
+    hintsOverride: String(row[15] || '').split('\n').map(s => s.trim()).filter(Boolean),
+    feedbackA: row[18] || '',
+    hiddenSections: String(row[19] || '').split(',').map(s => s.trim()).filter(Boolean)
   };
 }
 

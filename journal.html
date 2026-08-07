@@ -153,6 +153,19 @@
     width:26px; height:26px; border-radius:50%; background:var(--forest); color:#fff;
     font-size:13px; font-weight:800; font-family:'Noto Serif KR',serif;
   }
+  .sec-toggle-btn{
+    margin-left:auto; padding:5px 12px; border-radius:999px; border:1px solid var(--line);
+    background:var(--paper); font-size:11.5px; color:#7a7468; cursor:pointer; white-space:nowrap;
+  }
+  .sec-toggle-btn:hover{background:var(--ivory-deep);}
+  .sec-hidden-note{
+    background:#FCEFD8; border:1px dashed #E8CE95; border-radius:10px; padding:8px 14px;
+    font-size:11.5px; color:#8a6a2f; margin-bottom:14px;
+  }
+  .feedback-box{background:#F7EFE4; border:1px solid #EAD9BE; border-radius:14px; padding:16px 20px; margin-top:14px;}
+  .feedback-label{font-size:11.5px; font-weight:700; color:var(--clay); margin-bottom:6px;}
+  .feedback-text{font-size:13.5px; color:#3f3b34; line-height:1.8; white-space:pre-wrap;}
+  .feedback-empty{font-size:12.5px; color:#b7ae9e; font-style:italic;}
 
   .timeline-card, .freq-card, .wheel-card{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:28px 26px; margin-bottom:16px;}
   .wheel-card{text-align:center;}
@@ -316,7 +329,7 @@ const MAIN_COLOR_HEX = {
   "빨강":"#D96B5C","주황":"#E0A24C","노랑":"#E8CE68","연두":"#9ACD32","초록":"#8FA888","청록":"#5C9A93",
   "파랑":"#5C7FA6","남색":"#41577A","보라":"#8B6BA6","분홍":"#D98FA6","갈색":"#8A6B4E",
   "회색":"#A6A29A","검정":"#3A362F","흰색":"#F3EBDC","보랏빛 파랑":"#6E6BA6",
-  "민트":"#7FBFA6","핑크":"#D98FA6","자주":"#8B4B5C","무지개":"#C9A6D9"
+  "민트":"#7FBFA6","핑크":"#D98FA6","자주":"#8B4B5C","무지개":"#C9A6D9","골드":"#D4AF37","은색":"#B9B9B9"
 };
 const TONE_COLS = ['deep','vivid','pastel'];
 const TONE_HUES = ['검정','빨강','주황','노랑','연두','초록','파랑','보라','핑크'];
@@ -990,7 +1003,7 @@ function renderJournal(data){
           </div>` : ''}
           ${(e.growingAbility || e.artAbility || e.mindAbility || e.bodyAbility) ? `
           <div class="info-block">
-            <span class="info-label">성장하고 있는 능력</span>
+            <span class="info-label">이번 수업에서 발견한 힘</span>
             ${renderEntryAbilities(e)}
           </div>` : ''}
           ${e.styleNotes ? `
@@ -1027,7 +1040,7 @@ function renderJournal(data){
   // 종합요약(색채 여정 등)은 흐름이 이어지는 정규반 기록만으로 계산해요 — 특강은
   // 기간이 짧고 별개 활동이라 성장 흐름 계산에 섞이면 오히려 왜곡될 수 있어서예요.
   const summaryEntries = hasIntensive ? entries.filter(e => !isIntensive(e)) : entries;
-  _journalState = { entries: summaryEntries, summary: data.summary, name: data.name, narrativeOverride: data.narrativeOverride, hintsOverride: data.hintsOverride };
+  _journalState = { entries: summaryEntries, summary: data.summary, name: data.name, narrativeOverride: data.narrativeOverride, hintsOverride: data.hintsOverride, feedbackA: data.feedbackA || '', hiddenSections: data.hiddenSections || [] };
   if(hasIntensive){
     wrap.insertAdjacentHTML('beforeend', `<div class="class-note">ℹ️ 특강 ${entries.length - summaryEntries.length}회는 별도 활동이라 아래 종합요약(색채 여정 등) 계산에는 포함하지 않았어요. 위 기록에서는 그대로 확인할 수 있어요.</div>`);
   }
@@ -1037,7 +1050,7 @@ function renderJournal(data){
   const savedFrom = (data.range && data.range.from) ? Math.max(1, Math.min(data.range.from, total)) : 1;
   const savedTo = (data.range && data.range.to) ? Math.max(1, Math.min(data.range.to, total)) : total;
   const initialSlice = summaryEntries.slice(savedFrom - 1, savedTo);
-  renderSummarySection(initialSlice, data.summary, data.name, data.narrativeOverride, data.hintsOverride);
+  renderSummarySection(initialSlice, data.summary, data.name, data.narrativeOverride, data.hintsOverride, data.feedbackA, data.hiddenSections);
 }
 
 // 종합요약(자동 생성 부분)만 원하는 회차 범위로 좁혀볼 수 있는 필터.
@@ -1069,7 +1082,7 @@ function applySummaryFilter(){
   const to = parseInt(document.getElementById('jToSel').value, 10);
   const lo = Math.min(from, to) - 1, hi = Math.max(from, to);
   const subset = _journalState.entries.slice(lo, hi);
-  renderSummarySection(subset, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride);
+  renderSummarySection(subset, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedbackA, _journalState.hiddenSections);
 }
 function resetSummaryFilter(){
   if(!_journalState) return;
@@ -1078,6 +1091,25 @@ function resetSummaryFilter(){
   if(toSel) toSel.value = _journalState.entries.length;
   applySummaryFilter();
 }
+// 선생님 모드에서 B/E/F/G/H 섹션을 학부모 화면에 보일지 숨길지 전환하고,
+// 즉시 화면에 반영한 뒤 시트에도 저장해요.
+function toggleSectionVisibility(key){
+  if(!_journalState) return;
+  const hidden = new Set(_journalState.hiddenSections || []);
+  if(hidden.has(key)) hidden.delete(key); else hidden.add(key);
+  _journalState.hiddenSections = Array.from(hidden);
+
+  const fromSel = document.getElementById('jFromSel');
+  if(fromSel){
+    applySummaryFilter();
+  } else {
+    renderSummarySection(_journalState.entries, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedbackA, _journalState.hiddenSections);
+  }
+
+  const params = new URLSearchParams({ action:'saveSectionVisibility', name:_lastName, phone4:_lastPhone4, hiddenSections: _journalState.hiddenSections.join(',') });
+  fetch(GAS_URL + '?' + params.toString()).catch(()=>{});
+}
+
 function saveSummaryFilter(){
   const from = document.getElementById('jFromSel').value;
   const to = document.getElementById('jToSel').value;
@@ -1090,7 +1122,7 @@ function saveSummaryFilter(){
     .catch(() => { msg.textContent = '저장에 실패했어요. 다시 시도해주세요.'; });
 }
 
-function renderSummarySection(entries, summary, childName, narrativeOverride, hintsOverride){
+function renderSummarySection(entries, summary, childName, narrativeOverride, hintsOverride, feedbackA, hiddenSections){
   const box = document.getElementById('jSummary');
   const colored = entries.filter(e => e.mainColor);
 
@@ -1142,26 +1174,44 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
       : renderParentingHints(entries);
 
     const colorFlowHtml = (wheelHtml || timelineHtml || freqHtml) ? `${wheelHtml}${timelineHtml}${freqHtml}` : '';
+    const feedbackHtml = `
+      <div class="feedback-box">
+        <div class="feedback-label">🌸 꽃밭샘 피드백</div>
+        ${feedbackA && feedbackA.trim()
+          ? `<div class="feedback-text">${feedbackA.trim()}</div>`
+          : (isTeacher ? `<div class="feedback-empty">아직 작성된 피드백이 없어요. teacher-entry.html의 "6개월 종합요약 입력" 탭에서 입력할 수 있어요.</div>` : '')}
+      </div>`;
 
     const sections = [
-      { title:'성장 한 문장', html: narrativeHtml },
-      { title:'회차별 색채 변화', html: colorFlowHtml },
-      { title:'6개월 색채 여정 (색상 · 톤)', html: colorToneWheelHtml },
-      { title:'색으로 보는 마음의 결', html: toneGridHtml },
-      { title:'싹트고 있는 능력', html: abilityBoardHtml },
-      { title:'재료 효과 바퀴 (사고·감정·뉴트럴)', html: materialWheelHtml },
-      { title:'재료 효과 비율', html: effectBalanceHtml },
-      { title:'자주 나온 감정 · 성장 키워드', html: keywordCloudHtml },
-      { title:'양육 힌트', html: hintsHtml }
+      { key:'growthSentence', title:'성장 한 문장', html: narrativeHtml, toggle:false },
+      { key:'colorFlow', title:'작품 속 색채흐름', html: colorFlowHtml, toggle:false, extra: colorFlowHtml ? feedbackHtml : '' },
+      { key:'colorJourney', title:'6개월 색채 여정 (색상 · 톤)', html: colorToneWheelHtml, toggle:true },
+      { key:'toneGrid', title:'색으로 보는 마음의 결', html: toneGridHtml, toggle:false },
+      { key:'abilityBoard', title:'싹트고 있는 능력', html: abilityBoardHtml, toggle:false },
+      { key:'materialWheel', title:'재료 효과 바퀴 (사고·감정·뉴트럴)', html: materialWheelHtml, toggle:true },
+      { key:'effectBalance', title:'재료 효과 비율', html: effectBalanceHtml, toggle:true },
+      { key:'keywordCloud', title:'자주 나온 감정 · 성장 키워드', html: keywordCloudHtml, toggle:true },
+      { key:'parentingHints', title:'양육 힌트', html: hintsHtml, toggle:true }
     ].filter(s => s.html);
 
+    const hiddenSet = new Set(hiddenSections || []);
+    const visible = isTeacher ? sections : sections.filter(s => !hiddenSet.has(s.key));
+
     const LETTERS = 'ABCDEFGHIJ';
-    if(sections.length){
+    if(visible.length){
       autoSection = `
         <div class="summary-section">
-          ${sections.map((s,i) => `
-            <div class="sec-label" style="${i>0?'margin-top:24px;':''}"><span class="sec-letter">${LETTERS[i] || '•'}</span><h3>${s.title}</h3></div>
-            ${s.html}`).join('')}
+          ${visible.map((s,i) => {
+            const isHidden = hiddenSet.has(s.key);
+            const toggleBtn = (isTeacher && s.toggle)
+              ? `<button type="button" class="sec-toggle-btn" onclick="toggleSectionVisibility('${s.key}')">${isHidden ? '👁️ 학부모에게 보이기' : '🙈 학부모에게 숨기기'}</button>`
+              : '';
+            return `
+            <div class="sec-label" style="${i>0?'margin-top:24px;':''}"><span class="sec-letter">${LETTERS[i] || '•'}</span><h3>${s.title}</h3>${toggleBtn}</div>
+            ${(isHidden && isTeacher) ? `<div class="sec-hidden-note">🙈 지금 학부모 화면에는 숨겨져 있어요 (선생님만 보는 중)</div>` : ''}
+            ${s.html}
+            ${s.extra || ''}`;
+          }).join('')}
         </div>`;
     }
   }
@@ -1175,7 +1225,7 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const cats = [
       cat('🔵','표현', summary.expression?.before, summary.expression?.after),
       cat('🟢','색채', summary.color?.before, summary.color?.after),
-      cat('🟡','심리', summary.psychology?.before, summary.psychology?.after),
+      cat('🟡','정서', summary.psychology?.before, summary.psychology?.after),
       cat('🔴','사고', summary.thinking?.before, summary.thinking?.after),
     ].filter(Boolean).join('');
 
