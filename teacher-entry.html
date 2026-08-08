@@ -168,12 +168,16 @@
       </div>
       <div class="form-row">
         <div class="f-field"><label>자신을 나타내는 색</label><select id="f_selfColor"></select></div>
-        <div class="f-field"><label>색상 톤</label><select id="f_tone"></select></div>
+        <div class="f-field"></div>
       </div>
       <div class="form-row triple">
         <div class="f-field"><label>선택색상 1순위</label><select id="f_color1"></select></div>
         <div class="f-field"><label>선택색상 2순위</label><select id="f_color2"></select></div>
         <div class="f-field"><label>선택색상 3순위</label><select id="f_color3"></select></div>
+      </div>
+      <div class="form-row">
+        <div class="f-field"><label>수업 전 색상 톤</label><select id="f_beforeTone"></select></div>
+        <div class="f-field"><label>수업 후 색상 톤 <span class="hint">(작품색 톤도 이 값을 사용해요)</span></label><select id="f_afterTone"></select></div>
       </div>
     </div>
 
@@ -190,14 +194,9 @@
       <div class="form-row single">
         <div class="f-field"><label>감정, 성장 키워드 <span class="hint">(쉼표로 여러 개)</span></label><input type="text" id="f_keywords" placeholder="예: 자기표현, 자신감"></div>
       </div>
-      <div class="form-row single">
-        <div class="f-field"><label>미술능력 <span class="hint">(쉼표로 여러 개, 해당 없으면 비워두세요)</span></label><input type="text" id="f_artAbility" placeholder="예: 색채감각, 조형력"></div>
-      </div>
-      <div class="form-row single">
-        <div class="f-field"><label>마음의 능력 <span class="hint">(쉼표로 여러 개)</span></label><input type="text" id="f_mindAbility" placeholder="예: 자립심, 집중력"></div>
-      </div>
-      <div class="form-row single">
-        <div class="f-field"><label>신체능력 <span class="hint">(쉼표로 여러 개)</span></label><input type="text" id="f_bodyAbility" placeholder="예: 손가락 운동력, 대근육"></div>
+      <div class="form-row">
+        <div class="f-field"><label>미술능력 <span class="hint">(이번 회차에 가장 두드러진 것 하나)</span></label><select id="f_artAbility"></select></div>
+        <div class="f-field"><label>마음의 능력 <span class="hint">(이번 회차에 가장 두드러진 것 하나)</span></label><select id="f_mindAbility"></select></div>
       </div>
     </div>
 
@@ -293,6 +292,12 @@
           <input type="checkbox" id="sec_colorJourney" checked style="width:auto;"> 6개월 색채 여정 (색상 · 톤)
         </label>
         <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:#4b463f; cursor:pointer; margin-bottom:10px;">
+          <input type="checkbox" id="sec_artAbilityWheel" checked style="width:auto;"> 미술능력 (9각형 성장바퀴)
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:#4b463f; cursor:pointer; margin-bottom:10px;">
+          <input type="checkbox" id="sec_mindAbilityWheel" checked style="width:auto;"> 마음의 능력 (5각형 성장바퀴)
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:#4b463f; cursor:pointer; margin-bottom:10px;">
           <input type="checkbox" id="sec_materialWheel" checked style="width:auto;"> 재료 효과 바퀴 (사고·감정·뉴트럴)
         </label>
         <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:#4b463f; cursor:pointer; margin-bottom:10px;">
@@ -328,6 +333,8 @@ const ADMIN_PASSWORD = "crayon2026"; // journal.html / index.html 관리자 로�
 const COLORS = ['검정','빨강','주황','노랑','연두','초록','파랑','보라','핑크','회색','청록','무지개','골드','갈색','은색'];
 const TONES = ['deep','vivid','pastel'];
 const EFFECTS = ['감정활동(발산효과)','뉴트럴(중립)','사고활동(집중효과)'];
+const ART_ABILITIES = ['집중,지속력','언어표현','관계,소통력','표현기술,조형력','탐구,관찰력','발상,창의력','조화감각,색채력','문제해결,도전력','응용,표현전개력'];
+const MIND_ABILITIES = ['마음 알아차림','마음표현','마음조절','마음믿기','마음나누기'];
 
 function switchTab(tab){
   document.getElementById('entryTab').style.display = (tab==='entry') ? 'block' : 'none';
@@ -373,6 +380,8 @@ function loadSummary(){
       document.getElementById('s_feedbackA').value = data.feedbackA || '';
       const hidden = new Set(data.hiddenSections || []);
       document.getElementById('sec_colorJourney').checked = !hidden.has('colorJourney');
+      document.getElementById('sec_artAbilityWheel').checked = !hidden.has('artAbilityWheel');
+      document.getElementById('sec_mindAbilityWheel').checked = !hidden.has('mindAbilityWheel');
       document.getElementById('sec_materialWheel').checked = !hidden.has('materialWheel');
       document.getElementById('sec_effectBalance').checked = !hidden.has('effectBalance');
       document.getElementById('sec_keywordCloud').checked = !hidden.has('keywordCloud');
@@ -398,6 +407,8 @@ function saveSummaryForm(){
   }
   const hiddenList = [];
   if(!document.getElementById('sec_colorJourney').checked) hiddenList.push('colorJourney');
+  if(!document.getElementById('sec_artAbilityWheel').checked) hiddenList.push('artAbilityWheel');
+  if(!document.getElementById('sec_mindAbilityWheel').checked) hiddenList.push('mindAbilityWheel');
   if(!document.getElementById('sec_materialWheel').checked) hiddenList.push('materialWheel');
   if(!document.getElementById('sec_effectBalance').checked) hiddenList.push('effectBalance');
   if(!document.getElementById('sec_keywordCloud').checked) hiddenList.push('keywordCloud');
@@ -453,8 +464,11 @@ fillSelect('f_selfColor', COLORS, true);
 fillSelect('f_color1', COLORS, true);
 fillSelect('f_color2', COLORS, true);
 fillSelect('f_color3', COLORS, true);
-fillSelect('f_tone', TONES, true);
+fillSelect('f_beforeTone', TONES, true);
+fillSelect('f_afterTone', TONES, true);
 fillSelect('f_materialEffect', EFFECTS, true);
+fillSelect('f_artAbility', ART_ABILITIES, true);
+fillSelect('f_mindAbility', MIND_ABILITIES, true);
 
 // 학기(연도·월·반종류)와 회차(번호·날짜)를 클릭으로 고르면, 시트에 저장되는
 // 형식("26년 3월 정규반", "21회차(7.29)")으로 자동 조합해줘요.
@@ -551,14 +565,14 @@ function submitEntry(){
     color1: document.getElementById('f_color1').value,
     color2: document.getElementById('f_color2').value,
     color3: document.getElementById('f_color3').value,
-    tone: document.getElementById('f_tone').value,
+    beforeTone: document.getElementById('f_beforeTone').value,
+    afterTone: document.getElementById('f_afterTone').value,
     keywords: document.getElementById('f_keywords').value.trim(),
     engagement: document.getElementById('f_engagement').value,
     materials: document.getElementById('f_materials').value.trim(),
     materialTendency: document.getElementById('f_materialTendency').value.trim(),
-    artAbility: document.getElementById('f_artAbility').value.trim(),
-    mindAbility: document.getElementById('f_mindAbility').value.trim(),
-    bodyAbility: document.getElementById('f_bodyAbility').value.trim(),
+    artAbility: document.getElementById('f_artAbility').value,
+    mindAbility: document.getElementById('f_mindAbility').value,
     materialEffect: document.getElementById('f_materialEffect').value,
     note: document.getElementById('f_note').value.trim(),
     sessionTheme: document.getElementById('f_sessionTheme').value.trim(),
@@ -672,14 +686,14 @@ function loadSessionIntoForm(){
   document.getElementById('f_color1').value = e.color1 || '';
   document.getElementById('f_color2').value = e.color2 || '';
   document.getElementById('f_color3').value = e.color3 || '';
-  document.getElementById('f_tone').value = e.tone || '';
+  document.getElementById('f_beforeTone').value = e.beforeTone || '';
+  document.getElementById('f_afterTone').value = e.afterTone || '';
   document.getElementById('f_keywords').value = (e.emotionKeywords || []).join(', ');
   document.getElementById('f_engagement').value = e.engagement || '';
   document.getElementById('f_materials').value = e.materials || '';
   document.getElementById('f_materialTendency').value = e.materialTendency || '';
   document.getElementById('f_artAbility').value = e.artAbility || '';
   document.getElementById('f_mindAbility').value = e.mindAbility || '';
-  document.getElementById('f_bodyAbility').value = e.bodyAbility || '';
   document.getElementById('f_materialEffect').value = e.materialEffect || '';
   document.getElementById('f_note').value = e.note || '';
   document.getElementById('f_sessionTheme').value = e.sessionTheme || '';
@@ -732,7 +746,8 @@ function confirmSavedEntry(name, phone4){
           ${row('사진', [e.photo1,e.photo2,e.photo3,e.photo4].filter(Boolean).length ? [e.photo1,e.photo2,e.photo3,e.photo4].filter(Boolean).length + '장' : '')}
           ${(e.beforeColor || e.afterColor) ? `<div class="confirm-row">수업 전 → 후 마음: ${e.beforeColor||'-'}${e.beforeMoodNote?` "${e.beforeMoodNote}"`:''} → ${e.afterColor||'-'}${e.afterMoodNote?` "${e.afterMoodNote}"`:''}</div>` : ''}
           ${row('자신을 나타내는 색', e.selfColor)}
-          ${colors.length ? `<div class="confirm-row">작품색: ${colors.join(', ')}${e.tone ? ` · ${e.tone}` : ''}</div>` : ''}
+          ${colors.length ? `<div class="confirm-row">작품색: ${colors.join(', ')}${e.afterTone ? ` · ${e.afterTone}` : ''}</div>` : ''}
+          ${(e.beforeTone || e.afterTone) ? `<div class="confirm-row">색상 톤: 전 ${e.beforeTone||'-'} → 후 ${e.afterTone||'-'}</div>` : ''}
           ${row('사용 재료', e.materials)}
           ${row('재료의 효과', e.materialEffect)}
           ${row('몰입도', e.engagement)}
@@ -740,7 +755,6 @@ function confirmSavedEntry(name, phone4){
           ${row('감정, 성장 키워드', (e.emotionKeywords||[]).join(', '))}
           ${row('미술능력', e.artAbility)}
           ${row('마음의 능력', e.mindAbility)}
-          ${row('신체능력', e.bodyAbility)}
           ${row('관찰노트', e.note)}
           ${row('이번 회차 목표/주제', e.sessionTheme)}
           ${row('그림 스타일 특징', e.styleNotes)}
@@ -755,9 +769,10 @@ function confirmSavedEntry(name, phone4){
 // 같은 아이를 여러 회차 연달아 입력할 때, 이름/전화번호만 남기고 나머지는 비워줘요.
 function resetFormKeepChild(){
   ['f_title','f_photo1','f_photo2','f_photo3','f_photo4','f_beforeMoodNote','f_afterMoodNote',
-   'f_materials','f_materialTendency','f_artAbility','f_mindAbility','f_bodyAbility','f_note','f_sessionTheme',
+   'f_materials','f_materialTendency','f_note','f_sessionTheme',
    'f_styleNotes','f_goalTags','f_keywords'].forEach(id => document.getElementById(id).value = '');
-  ['f_beforeColor','f_afterColor','f_selfColor','f_color1','f_color2','f_color3','f_tone','f_materialEffect','f_engagement']
+  ['f_beforeColor','f_afterColor','f_selfColor','f_color1','f_color2','f_color3','f_beforeTone','f_afterTone',
+   'f_artAbility','f_mindAbility','f_materialEffect','f_engagement']
     .forEach(id => document.getElementById(id).value = '');
   // 학기(연도/월/반종류)는 같은 반이 이어지는 경우가 많아서 그대로 두고,
   // 회차 번호와 날짜만 비워서 다음 회차를 바로 입력할 수 있게 해요.

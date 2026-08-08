@@ -367,54 +367,42 @@ function categorizeKeyword(k){
   return '기타';
 }
 
-// 성장하고 있는 능력을 14개 표준 카테고리로 묶어서 보여주기 위한 사전.
-// 항목 이름은 일반적인 아동미술교육 용어이고, 설명 문구는 전부 새로 쓴
-// 것이라 참고 교재의 문장을 그대로 옮긴 게 아니에요.
-const ABILITY_CATEGORIES = [
-  ['성취력', ['성취','뿌듯','해냄','성공','완성']],
-  ['응용력·전개력', ['응용','전개력','확장']],
-  ['이야기전개성', ['이야기','서사','스토리']],
-  ['발상력', ['발상','상상력','아이디어','창의']],
-  ['촉감·탐구심', ['촉감','탐구','탐색','호기심']],
-  ['조화감각', ['조화','배색','어울림']],
-  ['색채감각', ['색채감각','색감','컬러감각']],
-  ['관찰력', ['관찰']],
-  ['사회성', ['사회성','또래','협동','공감']],
-  ['자립심', ['자립','주도성']],
-  ['집중력', ['집중']],
-  ['계획성', ['계획']],
-  ['조형력', ['조형','입체감','형태구현']],
-  ['언어표현', ['언어표현','말로 표현','설명력']]
+// 미술능력(9개) / 마음의 능력(5개) — 회차마다 이 중 하나씩 골라서 기록해요.
+// (teacher-entry.html에서 드롭다운으로 선택) 6개월 종합요약에서 이 9개/5개를
+// 각각 9각형·5각형 성장 바퀴로 집계해서 보여줘요.
+const ART_ABILITIES = ['집중,지속력','언어표현','관계,소통력','표현기술,조형력','탐구,관찰력','발상,창의력','조화감각,색채력','문제해결,도전력','응용,표현전개력'];
+const MIND_ABILITIES = ['마음 알아차림','마음표현','마음조절','마음믿기','마음나누기'];
+// 미술능력을 우뇌성장/균형성장/좌뇌성장 3갈래로 묶어서 표로도 보여줘요 (참고용 분류)
+const ART_ABILITY_GROUPS = [
+  ['우뇌성장', ['조화감각,색채력','발상,창의력','탐구,관찰력']],
+  ['균형성장', ['관계,소통력','문제해결,도전력','응용,표현전개력']],
+  ['좌뇌성장', ['표현기술,조형력','언어표현','집중,지속력']]
 ];
-const ABILITY_DEFS = {
-  '성취력':'스스로 해냈다는 뿌듯함과 성공 경험을 쌓아가는 힘',
-  '응용력·전개력':'배운 것을 다른 상황에 적용하고 새로운 시도로 넓혀가는 힘',
-  '이야기전개성':'그림 속에 이야기와 서사를 담아 풀어내는 힘',
-  '발상력':'틀에 얽매이지 않고 자기만의 이미지를 떠올리는 상상력',
-  '촉감·탐구심':'재료를 만지고 탐색하며 성질을 알아가는 호기심',
-  '조화감각':'색과 형태를 서로 어울리게 배치하는 감각',
-  '색채감각':'색을 고르고 조합하는 감수성',
-  '관찰력':'대상을 자세히 보고 특징을 알아채는 힘',
-  '사회성':'또래나 어른과 어울리며 관계를 맺는 힘',
-  '자립심':'스스로 판단하고 해내려는 마음',
-  '집중력':'하나의 활동에 몰입하는 힘',
-  '계획성':'순서를 생각하고 미리 그려보는 힘',
-  '조형력':'형태를 구체적으로 만들어내는 힘',
-  '언어표현':'생각과 감정을 말로 풀어내는 힘'
+const ART_ABILITY_DEFS = {
+  '집중,지속력':'하나의 활동에 몰입해서 끝까지 이어가는 힘',
+  '언어표현':'생각과 느낌을 말로 풀어내는 힘',
+  '관계,소통력':'친구·선생님과 어울리고 생각을 나누는 힘',
+  '표현기술,조형력':'생각한 것을 손으로 구체화해내는 힘',
+  '탐구,관찰력':'대상을 자세히 살피고 알아가는 호기심',
+  '발상,창의력':'자기만의 아이디어와 이미지를 떠올리는 힘',
+  '조화감각,색채력':'색과 형태를 조화롭게 다루는 감각',
+  '문제해결,도전력':'막히는 순간에도 다른 방법을 찾아 다시 시도하는 힘',
+  '응용,표현전개력':'배운 것을 새로운 장면으로 넓혀가는 힘'
 };
-function categorizeAbility(text){
-  for(const [cat, roots] of ABILITY_CATEGORIES){
-    if(roots.some(root => text.includes(root) || root.includes(text))) return cat;
-  }
+const MIND_ABILITY_DEFS = {
+  '마음 알아차림':'자신의 감정을 알아채고 색이나 말로 연결하는 힘',
+  '마음표현':'느낀 마음을 그림이나 말로 표현하는 힘',
+  '마음조절':'하고 싶은 것을 조절하고 기다리는 힘',
+  '마음믿기':'예상 밖의 결과도 스스로 받아들이는 힘',
+  '마음나누기':'친구의 마음과 표현을 받아들이는 힘'
+};
+// 작품색(color1~3)/자신을 나타내는 색은 수업후색상톤을 대표 톤으로 쓰고,
+// 없으면 수업전색상톤으로 대신해요.
+function artTone(e){
+  if(TONE_COLS.includes(e.afterTone)) return e.afterTone;
+  if(TONE_COLS.includes(e.beforeTone)) return e.beforeTone;
   return null;
 }
-// 미술능력(조형·색채 등 표현 기술) / 마음의 능력(사회성·집중력 등 내면의 힘)으로 구분
-const ABILITY_GROUP = {
-  '조형력':'미술능력', '색채감각':'미술능력', '조화감각':'미술능력', '발상력':'미술능력',
-  '촉감·탐구심':'미술능력', '이야기전개성':'미술능력', '응용력·전개력':'미술능력', '관찰력':'미술능력',
-  '성취력':'마음의 능력', '사회성':'마음의 능력', '자립심':'마음의 능력',
-  '집중력':'마음의 능력', '계획성':'마음의 능력', '언어표현':'마음의 능력'
-};
 function hasJongseong(str){
   const c = str.charCodeAt(str.length-1) - 0xAC00;
   if(c < 0 || c > 11171) return false;
@@ -527,7 +515,7 @@ function renderColorWheel(entries){
 function renderToneGrid(entries){
   const picks = {};
   entries.forEach(e=>{
-    const tone = e.tone;
+    const tone = artTone(e);
     if(!TONE_COLS.includes(tone)) return;
     [e.color1, e.color2, e.color3].filter(Boolean).forEach(c=>{
       if(!TONE_HUES.includes(c)) return;
@@ -631,10 +619,11 @@ function buildAutoInsights(entries){
           lines.push(`대표 색이 "${prev.color1}"에서 "${e.color1}"(으)로 바뀌었어요.`);
         }
       }
-      if(e.tone && prev.tone && e.tone !== prev.tone && (e.tone in RANK) && (prev.tone in RANK)){
-        lines.push(RANK[e.tone] > RANK[prev.tone]
-          ? `색의 톤이 더 진하고 또렷해졌어요 (${prev.tone} → ${e.tone}).`
-          : `색의 톤이 더 맑고 부드러워졌어요 (${prev.tone} → ${e.tone}).`);
+      const curTone = artTone(e), prevTone = artTone(prev);
+      if(curTone && prevTone && curTone !== prevTone && (curTone in RANK) && (prevTone in RANK)){
+        lines.push(RANK[curTone] > RANK[prevTone]
+          ? `색의 톤이 더 진하고 또렷해졌어요 (${prevTone} → ${curTone}).`
+          : `색의 톤이 더 맑고 부드러워졌어요 (${prevTone} → ${curTone}).`);
       }
       const curZone = normalizeZone(e.materialEffect), prevZone = normalizeZone(prev.materialEffect);
       if(curZone && prevZone && curZone !== prevZone){
@@ -653,53 +642,96 @@ function buildAutoInsights(entries){
   });
 }
 
-// 성장 능력을 미술능력/마음의 능력/신체능력 세 갈래로 나눠 배지로 보여주고,
-// 가장 많이 언급된 상위 3개(전체 기준)에 ⭐ 표시해요. "미술능력/마음의 능력/신체능력"
-// 칸에 직접 적힌 데이터를 우선 쓰고, 옛 방식(자유 텍스트 한 칸)으로만 적힌 회차는
-// 자동 분류해서 같이 집계해요.
-function renderAbilityBoard(entries){
-  const counts = { '미술능력':{}, '마음의 능력':{}, '신체능력':{} };
-  const bump = (group, text) => String(text||'').split(/[,、\n·]/).map(s=>s.trim()).filter(Boolean).forEach(t=>{
-    counts[group][t] = (counts[group][t]||0) + 1;
-  });
-  entries.forEach(e => {
-    if(e.artAbility || e.mindAbility || e.bodyAbility){
-      bump('미술능력', e.artAbility);
-      bump('마음의 능력', e.mindAbility);
-      bump('신체능력', e.bodyAbility);
-    } else if(e.growingAbility){
-      String(e.growingAbility).split(/[,、\n·]/).map(s=>s.trim()).filter(Boolean).forEach(t=>{
-        const cat = categorizeAbility(t);
-        const group = cat ? ABILITY_GROUP[cat] : null;
-        if(group) counts[group][t] = (counts[group][t]||0) + 1;
-      });
-    }
-  });
+// 각도 헬퍼: 12시 방향을 0도로 두고 시계방향으로 진행
+function polarPt(cx,cy,r,angDeg){
+  const a = (angDeg - 90) * Math.PI / 180;
+  return { x: cx + r*Math.cos(a), y: cy + r*Math.sin(a) };
+}
 
-  const allCounts = {};
-  Object.values(counts).forEach(g => Object.entries(g).forEach(([k,v]) => { allCounts[k] = (allCounts[k]||0) + v; }));
-  const allTags = Object.keys(allCounts);
-  if(!allTags.length) return '';
-  const top = new Set(allTags.sort((a,b)=>allCounts[b]-allCounts[a]).slice(0, Math.min(3, allTags.length)));
+// 미술능력(9개)/마음의 능력(5개)을 정N각형 성장 바퀴(레이더 차트)로 보여줘요.
+// 안쪽 점선 다각형 = 이번 기간 앞쪽 절반(초반), 바깥 실선 다각형 = 전체 누적.
+// 두 다각형의 크기 차이가 바로 "성장한 만큼"을 눈으로 보여줘요.
+function renderAbilityWheel(labels, entries, field){
+  const values = entries.map(e => e[field]).filter(v => v && labels.includes(v));
+  if(!values.length) return '';
+  const n = labels.length;
+  const cx=150, cy=150, minR=18, maxR=108;
+  const angleStep = 360/n;
 
-  const badge = (tag, n) => `
-    <div class="ability-badge${top.has(tag) ? ' standout' : ''}">
-      <span class="ability-name">${tag}${top.has(tag) ? ' ⭐' : ''}</span>
-      <span class="ability-count">${n}회 언급</span>
-      ${ABILITY_DEFS[tag] ? `<span class="ability-desc">${ABILITY_DEFS[tag]}</span>` : ''}
+  const countFor = (list, label) => list.filter(e => e[field] === label).length;
+  const half = Math.max(1, Math.ceil(entries.length/2));
+  const earlyEntries = entries.slice(0, half);
+  const totalCounts = labels.map(l => countFor(entries, l));
+  const earlyCounts = labels.map(l => countFor(earlyEntries, l));
+  const maxCount = Math.max(1, ...totalCounts);
+
+  const gridRings = [0.34,0.67,1].map(f => {
+    const pts = labels.map((l,i) => polarPt(cx,cy, minR+(maxR-minR)*f, i*angleStep));
+    return `<polygon points="${pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}" fill="none" stroke="#E4DBC9" stroke-width="1"/>`;
+  }).join('');
+  const axisLines = labels.map((l,i) => {
+    const p = polarPt(cx,cy,maxR,i*angleStep);
+    return `<line x1="${cx}" y1="${cy}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="#E4DBC9" stroke-width="1"/>`;
+  }).join('');
+  const labelEls = labels.map((l,i) => {
+    const p = polarPt(cx,cy,maxR+30,i*angleStep);
+    return `<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" font-size="9.5" fill="var(--forest)" font-weight="600" text-anchor="middle" dominant-baseline="middle">${l}</text>`;
+  }).join('');
+
+  const ptsFor = counts => labels.map((l,i) => {
+    const r = minR + (counts[i]/maxCount)*(maxR-minR);
+    return polarPt(cx,cy,r,i*angleStep);
+  });
+  const poly = pts => pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
+  const earlyPts = ptsFor(earlyCounts), totalPts = ptsFor(totalCounts);
+  const dots = totalPts.map((p,i) => totalCounts[i] > 0
+    ? `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5" fill="var(--clay)" stroke="#fff" stroke-width="1.5"/>` : '').join('');
+
+  return `
+    <div class="wheel-card">
+      <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        ${gridRings}${axisLines}
+        <polygon points="${poly(earlyPts)}" fill="var(--sage)" opacity="0.16" stroke="var(--sage)" stroke-width="1.5" stroke-dasharray="3,3"/>
+        <polygon points="${poly(totalPts)}" fill="var(--clay)" opacity="0.2" stroke="var(--clay)" stroke-width="2"/>
+        ${dots}
+        ${labelEls}
+      </svg>
+      <div class="wheel-caption">안쪽 점선은 초반 회차, 바깥 실선은 전체 누적 기준이에요 · 넓어질수록 그 힘이 자주 나타났다는 뜻이에요</div>
+    </div>`;
+}
+
+// 능력별 배지(횟수 + 설명), 미술능력은 우뇌/균형/좌뇌 3갈래로 묶어서 보여줘요.
+function renderAbilityBadges(entries, field, labels, defs, groupsDef){
+  const counts = {};
+  labels.forEach(l => counts[l] = 0);
+  entries.forEach(e => { if(e[field] && counts.hasOwnProperty(e[field])) counts[e[field]]++; });
+  if(!Object.values(counts).some(c => c > 0)) return '';
+
+  const present = labels.filter(l => counts[l] > 0);
+  const top = new Set(present.sort((a,b)=>counts[b]-counts[a]).slice(0, Math.min(3, present.length)));
+
+  const badge = l => `
+    <div class="ability-badge${top.has(l) ? ' standout' : ''}">
+      <span class="ability-name">${l}${top.has(l) ? ' ⭐' : ''}</span>
+      <span class="ability-count">${counts[l]}회</span>
+      ${defs[l] ? `<span class="ability-desc">${defs[l]}</span>` : ''}
     </div>`;
 
-  const group = (title, groupCounts) => {
-    const keys = Object.keys(groupCounts).sort((a,b)=>groupCounts[b]-groupCounts[a]);
-    if(!keys.length) return '';
-    return `
-    <div class="ability-group">
-      <span class="ability-group-label">${title}</span>
-      <div class="ability-board">${keys.map(k=>badge(k, groupCounts[k])).join('')}</div>
-    </div>`;
-  };
+  if(groupsDef){
+    return groupsDef.map(([title, items]) => `
+      <div class="ability-group">
+        <span class="ability-group-label">${title}</span>
+        <div class="ability-board">${items.map(badge).join('')}</div>
+      </div>`).join('');
+  }
+  return `<div class="ability-board">${labels.map(badge).join('')}</div>`;
+}
 
-  return `<div class="freq-card">${group('미술능력', counts['미술능력'])}${group('마음의 능력', counts['마음의 능력'])}${group('신체능력', counts['신체능력'])}<div class="wheel-caption" style="margin-top:10px;">⭐ 표시는 이번 학기 중 특히 자주 관찰된 성장 영역이에요 (언급 빈도 기준)</div></div>`;
+function renderAbilitySection(entries, field, labels, defs, groupsDef){
+  const badges = renderAbilityBadges(entries, field, labels, defs, groupsDef);
+  const wheel = renderAbilityWheel(labels, entries, field);
+  if(!badges && !wheel) return '';
+  return `${badges ? `<div class="freq-card" style="margin-bottom:16px;">${badges}</div>` : ''}${wheel}`;
 }
 
 // 색상×톤을 하나의 원형 차트에: 각도 = 색상, 반지름 = 톤(바깥 pastel → 안쪽 deep),
@@ -722,11 +754,12 @@ function renderColorToneWheel(entries){
 
   let dots='', path='';
   usable.forEach((e,i)=>{
+    const tone = artTone(e);
     const ang = getHueAngle(e.color1);
-    const r = ang===null ? 14 : (RADIUS[e.tone] || RADIUS.vivid);
+    const r = ang===null ? 14 : (RADIUS[tone] || RADIUS.vivid);
     const a = (ang===null?0:ang)*Math.PI/180;
     const x = cx + r*Math.sin(a), y = cy - r*Math.cos(a);
-    dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="${toneHex(e.color1,e.tone)}" stroke="#fff" stroke-width="2"/>`;
+    dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="${toneHex(e.color1,tone)}" stroke="#fff" stroke-width="2"/>`;
     path += (i===0?'M':'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
   });
 
@@ -752,11 +785,11 @@ const STYLE_PHRASES = {
 };
 function styleFor(e){
   const zone = normalizeZone(e.materialEffect);
-  return STYLE_PHRASES[`${e.tone}|${zone}`] || null;
+  return STYLE_PHRASES[`${artTone(e)}|${zone}`] || null;
 }
 // 첫 회차와 최근 회차의 톤·재료효과를 비교해서 한 줄 성장 요약 문장을 자동으로 지어요.
 function renderGrowthNarrative(entries, childName){
-  const withData = entries.filter(e => e.tone && normalizeZone(e.materialEffect));
+  const withData = entries.filter(e => artTone(e) && normalizeZone(e.materialEffect));
   if(withData.length < 2) return '';
   const startPhrase = styleFor(withData[0]);
   const endPhrase = styleFor(withData[withData.length-1]);
@@ -777,21 +810,19 @@ function renderParentingHints(entries){
   if(topZone === '사고활동') hints.push('무언가에 몰입해서 파고들 때는 시간을 충분히 확보해주면 집중력이 더 자라요.');
   if(topZone === '뉴트럴') hints.push('차분하게 자기 속도로 해나갈 때는 다그치지 않고 지켜봐주는 게 좋아요.');
 
-  const tones = entries.map(e=>e.tone).filter(t=>TONE_COLS.includes(t));
+  const tones = entries.map(e=>artTone(e)).filter(t=>TONE_COLS.includes(t));
   if(tones.length >= 2){
     const rank = {pastel:0, vivid:1, deep:2};
     if(rank[tones[tones.length-1]] > rank[tones[0]]) hints.push('요즘 에너지가 강해지는 시기예요 — 왕성한 도전과 호기심을 뒷받침해주면 좋아요.');
     else if(rank[tones[tones.length-1]] < rank[tones[0]]) hints.push('요즘 마음이 편안해지는 시기예요 — 급하게 재촉하지 않고 여유를 주면 좋아요.');
   }
 
-  const abilityCounts = {};
-  entries.forEach(e => String(e.growingAbility||'').split(/[,、\n·]/).map(s=>s.trim()).filter(Boolean).forEach(t=>{
-    const cat = categorizeAbility(t);
-    if(cat) abilityCounts[cat] = (abilityCounts[cat]||0)+1;
-  }));
-  if(abilityCounts['자립심']) hints.push('스스로 해보려는 순간에는 먼저 나서지 말고 맡기고 지켜봐주면 자립심이 더 자라요.');
-  if(abilityCounts['사회성']) hints.push('또래나 가족과의 대화 시간이 요즘 특히 도움이 되는 시기예요.');
-  if(abilityCounts['집중력']) hints.push('집중력이 높아지는 활동을 발견하면, 그 활동을 충분히 더 할 수 있게 해주면 좋아요.');
+  const mindCounts = {};
+  entries.forEach(e => { if(e.mindAbility) mindCounts[e.mindAbility] = (mindCounts[e.mindAbility]||0)+1; });
+  if(mindCounts['마음조절']) hints.push('스스로 조절하고 기다리는 순간에는 먼저 나서지 말고 지켜봐주면 그 힘이 더 자라요.');
+  if(mindCounts['마음나누기']) hints.push('또래나 가족과의 대화 시간이 요즘 특히 도움이 되는 시기예요.');
+  if(mindCounts['마음 알아차림']) hints.push('감정을 알아채는 순간을 발견하면, 그 마음에 이름을 붙여 같이 이야기해주면 좋아요.');
+  if(mindCounts['마음믿기']) hints.push('예상 밖의 결과도 받아들이는 모습을 보이면, "그것도 좋은 방법이네" 하고 있는 그대로 인정해주면 좋아요.');
 
   if(!hints.length) return '';
   const items = hints.slice(0,4).map(h=>`<div><span class="check">✔</span>${h}</div>`).join('');
@@ -844,34 +875,11 @@ function teacherLogin(e){
 }
 
 let _lastName = '', _lastPhone4 = '';
-// 한 회차의 성장 능력을 보여줘요. "미술능력/마음의 능력/신체능력" 칸에 직접
-// 적어두셨으면 그대로 그룹별로 보여주고(가장 정확함), 옛 방식으로 한 칸에 자유
-// 텍스트로만 적힌 옛 기록은 자동 분류(미술/마음 2그룹)로 대신 보여줘요.
+// 한 회차에서 발견한 힘(미술능력/마음의 능력)을 보여줘요.
 function renderEntryAbilities(e){
-  const pills = txt => String(txt||'').split(/[,、\n·]/).map(s=>s.trim()).filter(Boolean).map(t=>`<span class="pill">${t}</span>`).join('');
-  const hasExplicit = e.artAbility || e.mindAbility || e.bodyAbility;
-  if(hasExplicit){
-    let html = '';
-    if(e.artAbility) html += `<div class="ability-mini-group"><span class="ability-mini-label">미술능력</span><div class="material-pills">${pills(e.artAbility)}</div></div>`;
-    if(e.mindAbility) html += `<div class="ability-mini-group"><span class="ability-mini-label">마음의 능력</span><div class="material-pills">${pills(e.mindAbility)}</div></div>`;
-    if(e.bodyAbility) html += `<div class="ability-mini-group"><span class="ability-mini-label">신체능력</span><div class="material-pills">${pills(e.bodyAbility)}</div></div>`;
-    return html;
-  }
-  const tokens = String(e.growingAbility||'').split(/[,、\n·]/).map(s=>s.trim()).filter(Boolean);
-  if(!tokens.length) return '';
-  const art = [], mind = [], other = [];
-  tokens.forEach(t=>{
-    const cat = categorizeAbility(t);
-    const group = cat ? ABILITY_GROUP[cat] : null;
-    if(group === '미술능력') art.push(t);
-    else if(group === '마음의 능력') mind.push(t);
-    else other.push(t);
-  });
-  const pillsArr = arr => arr.map(t=>`<span class="pill">${t}</span>`).join('');
   let html = '';
-  if(art.length) html += `<div class="ability-mini-group"><span class="ability-mini-label">미술능력</span><div class="material-pills">${pillsArr(art)}</div></div>`;
-  if(mind.length) html += `<div class="ability-mini-group"><span class="ability-mini-label">마음의 능력</span><div class="material-pills">${pillsArr(mind)}</div></div>`;
-  if(other.length) html += `<div class="ability-mini-group"><span class="ability-mini-label">기타</span><div class="material-pills">${pillsArr(other)}</div></div>`;
+  if(e.artAbility) html += `<div class="ability-mini-group"><span class="ability-mini-label">미술능력</span><div class="material-pills"><span class="pill">${e.artAbility}</span></div></div>`;
+  if(e.mindAbility) html += `<div class="ability-mini-group"><span class="ability-mini-label">마음의 능력</span><div class="material-pills"><span class="pill">${e.mindAbility}</span></div></div>`;
   return html;
 }
 
@@ -960,25 +968,25 @@ function renderJournal(data){
           <div class="info-block">
             <span class="info-label">수업 전 → 수업 후 마음</span>
             <div class="mood-flow">
-              <div class="mood-swatch-wrap"><span class="swatch-lg" style="background:${toneHex(e.beforeColor, e.tone)}"></span><span>${e.beforeColor || '-'}</span>${e.beforeMoodNote ? `<span class="mood-note">"${e.beforeMoodNote}"</span>` : ''}</div>
+              <div class="mood-swatch-wrap"><span class="swatch-lg" style="background:${toneHex(e.beforeColor, e.beforeTone)}"></span><span>${e.beforeColor || '-'}</span>${e.beforeMoodNote ? `<span class="mood-note">"${e.beforeMoodNote}"</span>` : ''}</div>
               <span class="mood-arrow">→</span>
-              <div class="mood-swatch-wrap"><span class="swatch-lg" style="background:${toneHex(e.afterColor, e.tone)}"></span><span>${e.afterColor || '-'}</span>${e.afterMoodNote ? `<span class="mood-note">"${e.afterMoodNote}"</span>` : ''}</div>
+              <div class="mood-swatch-wrap"><span class="swatch-lg" style="background:${toneHex(e.afterColor, e.afterTone)}"></span><span>${e.afterColor || '-'}</span>${e.afterMoodNote ? `<span class="mood-note">"${e.afterMoodNote}"</span>` : ''}</div>
             </div>
           </div>` : ''}
           ${e.selfColor ? `
           <div class="info-block">
             <span class="info-label">자신을 나타내는 색</span>
             <div class="color-row">
-              <span class="swatch" style="background:${toneHex(e.selfColor, e.tone)}"></span>
+              <span class="swatch" style="background:${toneHex(e.selfColor, artTone(e))}"></span>
               <span>${e.selfColor}</span>
             </div>
           </div>` : ''}
           ${(e.color1 || e.color2 || e.color3) ? `
           <div class="info-block">
-            <span class="info-label">작품색${e.tone ? ` · ${e.tone}` : ''}</span>
+            <span class="info-label">작품색${artTone(e) ? ` · ${artTone(e)}` : ''}</span>
             <div class="color-chip-row">
               ${[e.color1,e.color2,e.color3].filter(Boolean).map(c=>`
-              <div class="color-chip"><span class="swatch" style="background:${toneHex(c,e.tone)}"></span><span>${c}</span></div>`).join('')}
+              <div class="color-chip"><span class="swatch" style="background:${toneHex(c,artTone(e))}"></span><span>${c}</span></div>`).join('')}
             </div>
           </div>` : ''}
           ${e.materials ? `
@@ -1001,7 +1009,7 @@ function renderJournal(data){
             <span class="info-label">재료 선택의 경향</span>
             <p class="info-note">${e.materialTendency}</p>
           </div>` : ''}
-          ${(e.growingAbility || e.artAbility || e.mindAbility || e.bodyAbility) ? `
+          ${(e.artAbility || e.mindAbility) ? `
           <div class="info-block">
             <span class="info-label">이번 수업에서 발견한 힘</span>
             ${renderEntryAbilities(e)}
@@ -1165,7 +1173,8 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const toneGridHtml = renderToneGrid(entries);
     const effectBalanceHtml = renderEffectBalance(entries);
     const keywordCloudHtml = renderKeywordCloud(entries);
-    const abilityBoardHtml = renderAbilityBoard(entries);
+    const artAbilityHtml = renderAbilitySection(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_GROUPS);
+    const mindAbilityHtml = renderAbilitySection(entries, 'mindAbility', MIND_ABILITIES, MIND_ABILITY_DEFS, null);
     const narrativeHtml = (narrativeOverride && narrativeOverride.trim())
       ? `<div class="growth-narrative">✨ ${narrativeOverride.trim()}</div>`
       : renderGrowthNarrative(entries, childName);
@@ -1187,7 +1196,8 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
       { key:'colorFlow', title:'작품 속 색채흐름', html: colorFlowHtml, toggle:false, extra: colorFlowHtml ? feedbackHtml : '' },
       { key:'colorJourney', title:'6개월 색채 여정 (색상 · 톤)', html: colorToneWheelHtml, toggle:true },
       { key:'toneGrid', title:'색으로 보는 마음의 결', html: toneGridHtml, toggle:false },
-      { key:'abilityBoard', title:'싹트고 있는 능력', html: abilityBoardHtml, toggle:false },
+      { key:'artAbilityWheel', title:'미술능력 (9각형 성장바퀴)', html: artAbilityHtml, toggle:true },
+      { key:'mindAbilityWheel', title:'마음의 능력 (5각형 성장바퀴)', html: mindAbilityHtml, toggle:true },
       { key:'materialWheel', title:'재료 효과 바퀴 (사고·감정·뉴트럴)', html: materialWheelHtml, toggle:true },
       { key:'effectBalance', title:'재료 효과 비율', html: effectBalanceHtml, toggle:true },
       { key:'keywordCloud', title:'자주 나온 감정 · 성장 키워드', html: keywordCloudHtml, toggle:true },
