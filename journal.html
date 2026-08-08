@@ -265,6 +265,8 @@
   .split-card h4{font-family:'Noto Serif KR',serif; font-size:14px; color:var(--forest); margin-bottom:8px;}
 
   /* ---------- 인쇄 (개인 책자용) ---------- */
+  @page{ size:A4; margin:14mm; }
+  @page summarySheet{ size:A4 landscape; margin:10mm; }
   @media print{
     header, .privacy-note, .logout-link, .print-btn{ display:none !important; }
     body{ background:#fff; }
@@ -272,8 +274,42 @@
     .carte-cover{ min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; page-break-after:always; border-radius:0; }
     .month-card{ page-break-after:always; box-shadow:none; min-height:95vh; display:flex; flex-direction:column; justify-content:center; }
     .month-card:last-child{ page-break-after:auto; }
-    .summary-section{ page-break-before:always; }
     footer{ display:none; }
+
+    /* 종합요약만 가로(landscape) 페이지에 PPT 대시보드처럼 격자 배치 */
+    .summary-section{
+      page:summarySheet; break-before:page; page-break-before:always;
+      display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; align-content:start;
+    }
+    .summary-section.manual{ display:block; }
+    .summary-section .sec-block{ break-inside:avoid; page-break-inside:avoid; min-width:0; }
+    .summary-section .sec-block.print-wide{ grid-column:1 / -1; }
+    .summary-section .sec-label{ margin-top:0 !important; margin-bottom:6px; gap:6px; }
+    .summary-section .sec-label h3{ font-size:11.5px; }
+    .summary-section .sec-letter{ width:16px; height:16px; font-size:9px; }
+    .summary-section .sec-toggle-btn, .summary-section .sec-hidden-note{ display:none !important; }
+    .summary-section .wheel-card, .summary-section .freq-card, .summary-section .timeline-card{
+      padding:10px 12px; margin-bottom:0; border-radius:12px;
+    }
+    .summary-section .wheel-card svg{ max-width:150px; }
+    .summary-section .wheel-caption{ font-size:8px; line-height:1.35; margin-top:6px; }
+    .summary-section .ability-board{ grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap:6px; }
+    .summary-section .ability-badge{ padding:7px 8px; }
+    .summary-section .ability-name{ font-size:9.5px; margin-bottom:1px; }
+    .summary-section .ability-count{ font-size:8px; margin-bottom:3px; }
+    .summary-section .ability-desc{ font-size:8px; line-height:1.35; }
+    .summary-section .ability-group{ margin-bottom:10px; }
+    .summary-section .ability-group-label{ font-size:9.5px; margin-bottom:5px; }
+    .summary-section .evidence-item, .summary-section .evidence-label{ font-size:8.5px; }
+    .summary-section .mood-color-row, .summary-section .mood-color-text, .summary-section .mood-color-name{ font-size:9px; }
+    .summary-section .pill{ font-size:9px; padding:3px 8px; }
+    .summary-section .tone-cell{ height:22px; }
+    .summary-section .keyword-group-label{ font-size:9.5px; }
+    .summary-section .highlight-list, .summary-section .growth-narrative{ font-size:10.5px; }
+    .summary-section .feedback-box{ margin-top:8px; padding:10px 12px; }
+    .summary-section .cat-grid{ grid-template-columns:repeat(4,1fr); gap:8px; }
+    .summary-section .split{ gap:8px; }
+    .summary-section .split-card{ padding:12px 14px; font-size:11px; }
   }
 </style>
 </head>
@@ -1272,6 +1308,7 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const visible = isTeacher ? sections : sections.filter(s => !hiddenSet.has(s.key));
 
     const LETTERS = 'ABCDEFGHIJ';
+    const PRINT_WIDE_KEYS = new Set(['growthSentence', 'colorFlow']);
     if(visible.length){
       autoSection = `
         <div class="summary-section">
@@ -1280,11 +1317,14 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
             const toggleBtn = (isTeacher && s.toggle)
               ? `<button type="button" class="sec-toggle-btn" onclick="toggleSectionVisibility('${s.key}')">${isHidden ? '👁️ 학부모에게 보이기' : '🙈 학부모에게 숨기기'}</button>`
               : '';
+            const wideClass = PRINT_WIDE_KEYS.has(s.key) ? ' print-wide' : '';
             return `
-            <div class="sec-label" style="${i>0?'margin-top:24px;':''}"><span class="sec-letter">${LETTERS[i] || '•'}</span><h3>${s.title}</h3>${toggleBtn}</div>
-            ${(isHidden && isTeacher) ? `<div class="sec-hidden-note">🙈 지금 학부모 화면에는 숨겨져 있어요 (선생님만 보는 중)</div>` : ''}
-            ${s.html}
-            ${s.extra || ''}`;
+            <div class="sec-block${wideClass}">
+              <div class="sec-label" style="${i>0?'margin-top:24px;':''}"><span class="sec-letter">${LETTERS[i] || '•'}</span><h3>${s.title}</h3>${toggleBtn}</div>
+              ${(isHidden && isTeacher) ? `<div class="sec-hidden-note">🙈 지금 학부모 화면에는 숨겨져 있어요 (선생님만 보는 중)</div>` : ''}
+              ${s.html}
+              ${s.extra || ''}
+            </div>`;
           }).join('')}
         </div>`;
     }
@@ -1306,15 +1346,17 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const highlights = (summary.highlights||[]).map(h => `<div><span class="check">✔</span>${h}</div>`).join('');
 
     manualSection = `
-      <div class="summary-section">
-        <div class="sec-label"><span class="tag tag-manual">꽃밭샘 종합 관찰</span><h3>성장 카테고리 요약</h3></div>
-        ${cats ? `<div class="cat-grid">${cats}</div>` : ''}
-        ${highlights ? `<div class="highlight-list">${highlights}</div>` : ''}
-        ${(summary.strength || summary.direction) ? `
-        <div class="split">
-          ${summary.strength ? `<div class="split-card strength"><h4>강점</h4><p>${summary.strength}</p></div>` : ''}
-          ${summary.direction ? `<div class="split-card direction"><h4>앞으로의 방향</h4><p>${summary.direction}</p></div>` : ''}
-        </div>` : ''}
+      <div class="summary-section manual">
+        <div class="sec-block print-wide">
+          <div class="sec-label"><span class="tag tag-manual">꽃밭샘 종합 관찰</span><h3>성장 카테고리 요약</h3></div>
+          ${cats ? `<div class="cat-grid">${cats}</div>` : ''}
+          ${highlights ? `<div class="highlight-list">${highlights}</div>` : ''}
+          ${(summary.strength || summary.direction) ? `
+          <div class="split">
+            ${summary.strength ? `<div class="split-card strength"><h4>강점</h4><p>${summary.strength}</p></div>` : ''}
+            ${summary.direction ? `<div class="split-card direction"><h4>앞으로의 방향</h4><p>${summary.direction}</p></div>` : ''}
+          </div>` : ''}
+        </div>
       </div>`;
   }
 
