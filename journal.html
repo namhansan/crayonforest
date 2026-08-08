@@ -203,6 +203,15 @@
   .tone-cell{height:32px; border-radius:8px; border:1px solid rgba(0,0,0,.06); display:flex; align-items:center; justify-content:center; opacity:.32; transition:opacity .2s;}
   .tone-cell.picked{opacity:1; box-shadow:0 0 0 2px var(--paper), 0 0 0 3.5px var(--clay);}
   .tone-mark{color:#fff; font-size:11.5px; font-weight:800; text-shadow:0 1px 2px rgba(0,0,0,.45);}
+  .mood-color-row{display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid var(--line);}
+  .mood-color-row:last-child{border-bottom:none;}
+  .mood-color-name{font-weight:700; color:var(--forest); font-size:12.5px; min-width:34px; flex-shrink:0; padding-top:1px;}
+  .mood-color-text{color:#4b463f; font-size:12.5px; line-height:1.7;}
+  .evidence-group{margin-bottom:16px;}
+  .evidence-group:last-child{margin-bottom:0;}
+  .evidence-label{font-size:12.5px; font-weight:700; color:var(--forest); margin-bottom:6px; display:block;}
+  .evidence-item{font-size:12px; color:#4b463f; line-height:1.7; padding-left:2px;}
+  .evidence-item b{color:var(--clay); font-weight:700; margin-right:4px;}
 
   /* ---------- 재료 효과 비율 바 ---------- */
   .effect-bar{display:flex; height:22px; border-radius:11px; overflow:hidden; margin-bottom:14px;}
@@ -396,9 +405,10 @@ const MIND_ABILITY_DEFS = {
   '마음믿기':'예상 밖의 결과도 스스로 받아들이는 힘',
   '마음나누기':'친구의 마음과 표현을 받아들이는 힘'
 };
-// 작품색(color1~3)/자신을 나타내는 색은 수업후색상톤을 대표 톤으로 쓰고,
-// 없으면 수업전색상톤으로 대신해요.
-function artTone(e){
+// 수업전/후 마음색·톤은 아이의 "마음 상태"를 색으로 표현한 거예요. 작품 만들 때
+// 고른 선택색상1~3(작품색)과는 다를 수도, 같을 수도 있어요. 톤(deep/vivid/pastel)은
+// 항상 "마음"의 톤이고, 작품색 자체에는 별도 톤이 없어서 스와치는 기본(vivid)로 보여줘요.
+function moodTone(e){
   if(TONE_COLS.includes(e.afterTone)) return e.afterTone;
   if(TONE_COLS.includes(e.beforeTone)) return e.beforeTone;
   return null;
@@ -510,18 +520,18 @@ function renderColorWheel(entries){
     </div>`;
 }
 
-// 색상×톤 체크판: 아이가 고른 색과 톤(deep/vivid/pastel)이 어디쯤인지
-// 예전에 손으로 표시하던 종이 체크판을 그대로 디지털 버전으로 보여줘요.
+// 마음색×톤 체크판: 아이가 수업 전/후에 고른 "마음색"이 어디쯤인지 보여줘요.
+// (작품 만들 때 고른 선택색상1~3과는 다른 개념이에요 — 마음 상태를 색으로 표현한 것)
 function renderToneGrid(entries){
   const picks = {};
+  const bump = (color, tone) => {
+    if(!TONE_HUES.includes(color) || !TONE_COLS.includes(tone)) return;
+    const key = color + '|' + tone;
+    picks[key] = (picks[key] || 0) + 1;
+  };
   entries.forEach(e=>{
-    const tone = artTone(e);
-    if(!TONE_COLS.includes(tone)) return;
-    [e.color1, e.color2, e.color3].filter(Boolean).forEach(c=>{
-      if(!TONE_HUES.includes(c)) return;
-      const key = c + '|' + tone;
-      picks[key] = (picks[key] || 0) + 1;
-    });
+    bump(e.beforeColor, e.beforeTone);
+    bump(e.afterColor, e.afterTone);
   });
   if(Object.keys(picks).length === 0) return '';
 
@@ -543,9 +553,40 @@ function renderToneGrid(entries){
         빨, 주, 노, 연두 색은 의욕, 에너지, 몸을 움직이고 싶은 마음과 연결됩니다.<br>
         초록 계열의 색은 마음의 균형, 안정감, 편안함과 연결됩니다.<br>
         파랑, 보라, 핑크 계열의 색은 생각하는 힘, 상상력, 스스로 표현하고 싶은 마음과 연결됩니다.<br>
-        표시된 색은 우리 아이가 수업 안에서 실제로 고른 색과 톤입니다.<br>
+        표시된 색은 우리 아이가 수업 전 또는 수업 후에 실제로 고른 마음색과 톤입니다.<br>
         색 하나로 마음을 단정하기보다 아이의 말과 행동, 작품 이야기와 함께 살펴봅니다.
       </div>
+    </div>`;
+}
+
+// 마음색별로 회차마다 남긴 "마음 한 줄"을 모아서 보여줘요. 수업 전/후를 따로
+// 구분하지 않고, 같은 색을 고른 순간의 말들을 색 하나로 모아 이어서 보여줘요
+// (그 색에 대한 마음은 수업 전이든 후든 같은 색의 마음이라서요).
+function renderMoodColorNotes(entries){
+  const byColor = {};
+  const push = (color, note) => {
+    if(!color) return;
+    const t = String(note||'').trim();
+    if(!t) return;
+    (byColor[color] = byColor[color] || []).push(t);
+  };
+  entries.forEach(e=>{
+    push(e.beforeColor, e.beforeMoodNote);
+    push(e.afterColor, e.afterMoodNote);
+  });
+  const colors = Object.keys(byColor);
+  if(!colors.length) return '';
+
+  const rows = colors.sort((a,b)=> byColor[b].length - byColor[a].length).map(c => {
+    const hex = MAIN_COLOR_HEX[c] || '#ccc';
+    const text = byColor[c].join(' · ');
+    return `<div class="mood-color-row"><span class="swatch" style="background:${hex}; flex-shrink:0;"></span><span class="mood-color-name">${c}</span><span class="mood-color-text">${text}</span></div>`;
+  }).join('');
+
+  return `
+    <div class="freq-card" style="text-align:left; margin-top:14px;">
+      <div class="wheel-caption" style="margin-bottom:12px; font-weight:700; color:var(--forest);">마음색별로 모은 한 줄 (수업 전·후 구분 없이)</div>
+      ${rows}
     </div>`;
 }
 
@@ -619,11 +660,11 @@ function buildAutoInsights(entries){
           lines.push(`대표 색이 "${prev.color1}"에서 "${e.color1}"(으)로 바뀌었어요.`);
         }
       }
-      const curTone = artTone(e), prevTone = artTone(prev);
+      const curTone = moodTone(e), prevTone = moodTone(prev);
       if(curTone && prevTone && curTone !== prevTone && (curTone in RANK) && (prevTone in RANK)){
         lines.push(RANK[curTone] > RANK[prevTone]
-          ? `색의 톤이 더 진하고 또렷해졌어요 (${prevTone} → ${curTone}).`
-          : `색의 톤이 더 맑고 부드러워졌어요 (${prevTone} → ${curTone}).`);
+          ? `마음의 색 톤이 더 진하고 또렷해졌어요 (${prevTone} → ${curTone}).`
+          : `마음의 색 톤이 더 맑고 부드러워졌어요 (${prevTone} → ${curTone}).`);
       }
       const curZone = normalizeZone(e.materialEffect), prevZone = normalizeZone(prev.materialEffect);
       if(curZone && prevZone && curZone !== prevZone){
@@ -727,17 +768,38 @@ function renderAbilityBadges(entries, field, labels, defs, groupsDef){
   return `<div class="ability-board">${labels.map(badge).join('')}</div>`;
 }
 
-function renderAbilitySection(entries, field, labels, defs, groupsDef){
+function renderAbilitySection(entries, field, labels, defs, groupsDef, noteField){
   const badges = renderAbilityBadges(entries, field, labels, defs, groupsDef);
   const wheel = renderAbilityWheel(labels, entries, field);
+  const evidence = noteField ? renderAbilityEvidence(entries, field, noteField, labels) : '';
   if(!badges && !wheel) return '';
-  return `${badges ? `<div class="freq-card" style="margin-bottom:16px;">${badges}</div>` : ''}${wheel}`;
+  return `${badges ? `<div class="freq-card" style="margin-bottom:16px;">${badges}</div>` : ''}${wheel}${evidence}`;
+}
+
+// 능력별로 남긴 "근거" 문장을 회차와 함께 모아서 보여줘요 (많이 나타난 능력부터,
+// 각 능력당 최근 3개까지).
+function renderAbilityEvidence(entries, field, noteField, labels){
+  const byAbility = {};
+  entries.forEach(e => {
+    const val = e[field];
+    const note = String(e[noteField] || '').trim();
+    if(val && labels.includes(val) && note){
+      (byAbility[val] = byAbility[val] || []).push({ month: e.month, note });
+    }
+  });
+  const keys = Object.keys(byAbility);
+  if(!keys.length) return '';
+  const rows = keys.sort((a,b) => byAbility[b].length - byAbility[a].length).map(k => {
+    const items = byAbility[k].slice(-3).map(it => `<div class="evidence-item"><b>${it.month}</b>${it.note}</div>`).join('');
+    return `<div class="evidence-group"><span class="evidence-label">${k}</span>${items}</div>`;
+  }).join('');
+  return `<div class="freq-card" style="text-align:left; margin-top:14px;"><div class="wheel-caption" style="margin-bottom:10px; font-weight:700; color:var(--forest);">회차별 근거 장면</div>${rows}</div>`;
 }
 
 // 색상×톤을 하나의 원형 차트에: 각도 = 색상, 반지름 = 톤(바깥 pastel → 안쪽 deep),
 // 회차 순서를 화살표로 이어서 6개월 색채 여정을 한눈에 보여줘요.
 function renderColorToneWheel(entries){
-  const usable = entries.filter(e => e.color1);
+  const usable = entries.filter(e => e.afterColor || e.beforeColor);
   if(usable.length < 2) return '';
   const size=280, cx=140, cy=140;
   const RADIUS = {pastel:112, vivid:78, deep:44};
@@ -754,12 +816,13 @@ function renderColorToneWheel(entries){
 
   let dots='', path='';
   usable.forEach((e,i)=>{
-    const tone = artTone(e);
-    const ang = getHueAngle(e.color1);
+    const hue = e.afterColor || e.beforeColor;
+    const tone = e.afterColor ? e.afterTone : e.beforeTone;
+    const ang = getHueAngle(hue);
     const r = ang===null ? 14 : (RADIUS[tone] || RADIUS.vivid);
     const a = (ang===null?0:ang)*Math.PI/180;
     const x = cx + r*Math.sin(a), y = cy - r*Math.cos(a);
-    dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="${toneHex(e.color1,tone)}" stroke="#fff" stroke-width="2"/>`;
+    dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="${toneHex(hue,tone)}" stroke="#fff" stroke-width="2"/>`;
     path += (i===0?'M':'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
   });
 
@@ -774,7 +837,7 @@ function renderColorToneWheel(entries){
         <path d="${path}" fill="none" stroke="var(--clay)" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrow3)"/>
         ${dots}
       </svg>
-      <div class="wheel-caption">바깥쪽(pastel)일수록 편안하고 부드럽게, 안쪽(deep)일수록 강하고 짙게 · 화살표는 회차 순서를 보여줘요</div>
+      <div class="wheel-caption">바깥쪽(pastel)일수록 편안하고 부드럽게, 안쪽(deep)일수록 강하고 짙게 · 수업 후 마음색(없으면 수업 전 마음색) 기준이에요 · 화살표는 회차 순서를 보여줘요</div>
     </div>`;
 }
 
@@ -785,11 +848,11 @@ const STYLE_PHRASES = {
 };
 function styleFor(e){
   const zone = normalizeZone(e.materialEffect);
-  return STYLE_PHRASES[`${artTone(e)}|${zone}`] || null;
+  return STYLE_PHRASES[`${moodTone(e)}|${zone}`] || null;
 }
 // 첫 회차와 최근 회차의 톤·재료효과를 비교해서 한 줄 성장 요약 문장을 자동으로 지어요.
 function renderGrowthNarrative(entries, childName){
-  const withData = entries.filter(e => artTone(e) && normalizeZone(e.materialEffect));
+  const withData = entries.filter(e => moodTone(e) && normalizeZone(e.materialEffect));
   if(withData.length < 2) return '';
   const startPhrase = styleFor(withData[0]);
   const endPhrase = styleFor(withData[withData.length-1]);
@@ -810,7 +873,7 @@ function renderParentingHints(entries){
   if(topZone === '사고활동') hints.push('무언가에 몰입해서 파고들 때는 시간을 충분히 확보해주면 집중력이 더 자라요.');
   if(topZone === '뉴트럴') hints.push('차분하게 자기 속도로 해나갈 때는 다그치지 않고 지켜봐주는 게 좋아요.');
 
-  const tones = entries.map(e=>artTone(e)).filter(t=>TONE_COLS.includes(t));
+  const tones = entries.map(e=>moodTone(e)).filter(t=>TONE_COLS.includes(t));
   if(tones.length >= 2){
     const rank = {pastel:0, vivid:1, deep:2};
     if(rank[tones[tones.length-1]] > rank[tones[0]]) hints.push('요즘 에너지가 강해지는 시기예요 — 왕성한 도전과 호기심을 뒷받침해주면 좋아요.');
@@ -875,11 +938,11 @@ function teacherLogin(e){
 }
 
 let _lastName = '', _lastPhone4 = '';
-// 한 회차에서 발견한 힘(미술능력/마음의 능력)을 보여줘요.
+// 한 회차에서 발견한 힘(미술능력/마음의 능력)과 그 근거를 보여줘요.
 function renderEntryAbilities(e){
   let html = '';
-  if(e.artAbility) html += `<div class="ability-mini-group"><span class="ability-mini-label">미술능력</span><div class="material-pills"><span class="pill">${e.artAbility}</span></div></div>`;
-  if(e.mindAbility) html += `<div class="ability-mini-group"><span class="ability-mini-label">마음의 능력</span><div class="material-pills"><span class="pill">${e.mindAbility}</span></div></div>`;
+  if(e.artAbility) html += `<div class="ability-mini-group"><span class="ability-mini-label">미술능력</span><div class="material-pills"><span class="pill">${e.artAbility}</span></div>${e.artAbilityNote ? `<p class="info-note" style="margin-top:6px;">${e.artAbilityNote}</p>` : ''}</div>`;
+  if(e.mindAbility) html += `<div class="ability-mini-group"><span class="ability-mini-label">마음의 능력</span><div class="material-pills"><span class="pill">${e.mindAbility}</span></div>${e.mindAbilityNote ? `<p class="info-note" style="margin-top:6px;">${e.mindAbilityNote}</p>` : ''}</div>`;
   return html;
 }
 
@@ -977,16 +1040,16 @@ function renderJournal(data){
           <div class="info-block">
             <span class="info-label">자신을 나타내는 색</span>
             <div class="color-row">
-              <span class="swatch" style="background:${toneHex(e.selfColor, artTone(e))}"></span>
+              <span class="swatch" style="background:${toneHex(e.selfColor, null)}"></span>
               <span>${e.selfColor}</span>
             </div>
           </div>` : ''}
           ${(e.color1 || e.color2 || e.color3) ? `
           <div class="info-block">
-            <span class="info-label">작품색${artTone(e) ? ` · ${artTone(e)}` : ''}</span>
+            <span class="info-label">작품색</span>
             <div class="color-chip-row">
               ${[e.color1,e.color2,e.color3].filter(Boolean).map(c=>`
-              <div class="color-chip"><span class="swatch" style="background:${toneHex(c,artTone(e))}"></span><span>${c}</span></div>`).join('')}
+              <div class="color-chip"><span class="swatch" style="background:${toneHex(c,null)}"></span><span>${c}</span></div>`).join('')}
             </div>
           </div>` : ''}
           ${e.materials ? `
@@ -1171,10 +1234,11 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const colorToneWheelHtml = renderColorToneWheel(entries);
     const materialWheelHtml = renderMaterialWheel(entries);
     const toneGridHtml = renderToneGrid(entries);
+    const moodColorNotesHtml = renderMoodColorNotes(entries);
     const effectBalanceHtml = renderEffectBalance(entries);
     const keywordCloudHtml = renderKeywordCloud(entries);
-    const artAbilityHtml = renderAbilitySection(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_GROUPS);
-    const mindAbilityHtml = renderAbilitySection(entries, 'mindAbility', MIND_ABILITIES, MIND_ABILITY_DEFS, null);
+    const artAbilityHtml = renderAbilitySection(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_GROUPS, 'artAbilityNote');
+    const mindAbilityHtml = renderAbilitySection(entries, 'mindAbility', MIND_ABILITIES, MIND_ABILITY_DEFS, null, 'mindAbilityNote');
     const narrativeHtml = (narrativeOverride && narrativeOverride.trim())
       ? `<div class="growth-narrative">✨ ${narrativeOverride.trim()}</div>`
       : renderGrowthNarrative(entries, childName);
@@ -1194,15 +1258,15 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const sections = [
       { key:'growthSentence', title:'성장 한 문장', html: narrativeHtml, toggle:false },
       { key:'colorFlow', title:'작품 속 색채흐름', html: colorFlowHtml, toggle:false, extra: colorFlowHtml ? feedbackHtml : '' },
-      { key:'colorJourney', title:'6개월 색채 여정 (색상 · 톤)', html: colorToneWheelHtml, toggle:true },
-      { key:'toneGrid', title:'색으로 보는 마음의 결', html: toneGridHtml, toggle:false },
+      { key:'colorJourney', title:'6개월 마음색 여정 (색상 · 톤)', html: colorToneWheelHtml, toggle:true },
+      { key:'toneGrid', title:'수업전후 마음색 키워드', html: toneGridHtml, toggle:false, extra: moodColorNotesHtml },
       { key:'artAbilityWheel', title:'미술능력 (9각형 성장바퀴)', html: artAbilityHtml, toggle:true },
       { key:'mindAbilityWheel', title:'마음의 능력 (5각형 성장바퀴)', html: mindAbilityHtml, toggle:true },
       { key:'materialWheel', title:'재료 효과 바퀴 (사고·감정·뉴트럴)', html: materialWheelHtml, toggle:true },
       { key:'effectBalance', title:'재료 효과 비율', html: effectBalanceHtml, toggle:true },
       { key:'keywordCloud', title:'자주 나온 감정 · 성장 키워드', html: keywordCloudHtml, toggle:true },
       { key:'parentingHints', title:'양육 힌트', html: hintsHtml, toggle:true }
-    ].filter(s => s.html);
+    ].filter(s => s.html || s.extra);
 
     const hiddenSet = new Set(hiddenSections || []);
     const visible = isTeacher ? sections : sections.filter(s => !hiddenSet.has(s.key));

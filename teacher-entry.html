@@ -198,6 +198,10 @@
         <div class="f-field"><label>미술능력 <span class="hint">(이번 회차에 가장 두드러진 것 하나)</span></label><select id="f_artAbility"></select></div>
         <div class="f-field"><label>마음의 능력 <span class="hint">(이번 회차에 가장 두드러진 것 하나)</span></label><select id="f_mindAbility"></select></div>
       </div>
+      <div class="form-row">
+        <div class="f-field"><label>미술능력근거 <span class="hint">(왜 그렇게 봤는지 짧게)</span></label><input type="text" id="f_artAbilityNote" placeholder="예: 색을 여러 개 섞어 새 색을 만들어봄"></div>
+        <div class="f-field"><label>마음의 능력근거 <span class="hint">(왜 그렇게 봤는지 짧게)</span></label><input type="text" id="f_mindAbilityNote" placeholder="예: 친구의 색 선택을 그대로 받아들임"></div>
+      </div>
     </div>
 
     <div class="form-card">
@@ -572,7 +576,9 @@ function submitEntry(){
     materials: document.getElementById('f_materials').value.trim(),
     materialTendency: document.getElementById('f_materialTendency').value.trim(),
     artAbility: document.getElementById('f_artAbility').value,
+    artAbilityNote: document.getElementById('f_artAbilityNote').value.trim(),
     mindAbility: document.getElementById('f_mindAbility').value,
+    mindAbilityNote: document.getElementById('f_mindAbilityNote').value.trim(),
     materialEffect: document.getElementById('f_materialEffect').value,
     note: document.getElementById('f_note').value.trim(),
     sessionTheme: document.getElementById('f_sessionTheme').value.trim(),
@@ -693,7 +699,9 @@ function loadSessionIntoForm(){
   document.getElementById('f_materials').value = e.materials || '';
   document.getElementById('f_materialTendency').value = e.materialTendency || '';
   document.getElementById('f_artAbility').value = e.artAbility || '';
+  document.getElementById('f_artAbilityNote').value = e.artAbilityNote || '';
   document.getElementById('f_mindAbility').value = e.mindAbility || '';
+  document.getElementById('f_mindAbilityNote').value = e.mindAbilityNote || '';
   document.getElementById('f_materialEffect').value = e.materialEffect || '';
   document.getElementById('f_note').value = e.note || '';
   document.getElementById('f_sessionTheme').value = e.sessionTheme || '';
@@ -754,7 +762,9 @@ function confirmSavedEntry(name, phone4){
           ${row('재료 선택의 경향', e.materialTendency)}
           ${row('감정, 성장 키워드', (e.emotionKeywords||[]).join(', '))}
           ${row('미술능력', e.artAbility)}
+          ${row('미술능력근거', e.artAbilityNote)}
           ${row('마음의 능력', e.mindAbility)}
+          ${row('마음의 능력근거', e.mindAbilityNote)}
           ${row('관찰노트', e.note)}
           ${row('이번 회차 목표/주제', e.sessionTheme)}
           ${row('그림 스타일 특징', e.styleNotes)}
@@ -769,7 +779,7 @@ function confirmSavedEntry(name, phone4){
 // 같은 아이를 여러 회차 연달아 입력할 때, 이름/전화번호만 남기고 나머지는 비워줘요.
 function resetFormKeepChild(){
   ['f_title','f_photo1','f_photo2','f_photo3','f_photo4','f_beforeMoodNote','f_afterMoodNote',
-   'f_materials','f_materialTendency','f_note','f_sessionTheme',
+   'f_materials','f_materialTendency','f_artAbilityNote','f_mindAbilityNote','f_note','f_sessionTheme',
    'f_styleNotes','f_goalTags','f_keywords'].forEach(id => document.getElementById(id).value = '');
   ['f_beforeColor','f_afterColor','f_selfColor','f_color1','f_color2','f_color3','f_beforeTone','f_afterTone',
    'f_artAbility','f_mindAbility','f_materialEffect','f_engagement']
