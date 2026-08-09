@@ -921,11 +921,11 @@ function renderMindAbilityBars(entries){
     <div class="freq-card">
       <div class="mind-bar-list">${rows}</div>
       <div class="wheel-caption" style="margin-top:12px;">1회(발견) → 2회(시도) → 3회(확장) → 4회 이상(자기화) 나타난 정도로 막대 길이를 표시해요</div>
-    </div>`;
+    </div>${renderAbilityEvidence(entries, 'mindAbility', 'mindAbilityNote', MIND_ABILITIES)}`;
 }
 
 // 능력별로 남긴 "근거" 문장을 회차와 함께 모아서 보여줘요 (많이 나타난 능력부터,
-// 각 능력당 최근 3개까지).
+// 개수 제한 없이 전부 다 보여줘요).
 function renderAbilityEvidence(entries, field, noteField, labels){
   const byAbility = {};
   entries.forEach(e => {
@@ -938,7 +938,7 @@ function renderAbilityEvidence(entries, field, noteField, labels){
   const keys = Object.keys(byAbility);
   if(!keys.length) return '';
   const rows = keys.sort((a,b) => byAbility[b].length - byAbility[a].length).map(k => {
-    const items = byAbility[k].slice(-3).map(it => `<div class="evidence-item"><b>${it.month}</b>${it.note}</div>`).join('');
+    const items = byAbility[k].map(it => `<div class="evidence-item"><b>${it.month}</b>${it.note}</div>`).join('');
     return `<div class="evidence-group"><span class="evidence-label">${k}</span>${items}</div>`;
   }).join('');
   return `<div class="freq-card evidence-card" style="text-align:left; margin-top:14px;"><div class="wheel-caption" style="margin-bottom:10px; font-weight:700; color:var(--forest);">회차별 근거 장면</div>${rows}</div>`;
