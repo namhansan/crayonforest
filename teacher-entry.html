@@ -341,14 +341,14 @@
         <div class="hint" style="margin-top:10px; display:block;">
           횟수(관찰 빈도)와 성장단계는 서로 다른 질문이에요. 횟수는 "얼마나 자주 관찰됐는가"이고,
           성장단계는 "그 힘을 사용하는 방식이 얼마나 깊어졌는가"예요. 횟수가 많다고 그 능력이
-          가장 많이 자란 건 아니라서, 근거 문장(회차 기록에 적어주신 미술능력근거/마음의 능력근거)을
+          가장 많이 자란 건 아니라서, 회차 기록에 적어주신 근거 문장(미술능력근거/마음의 능력근거)을
           직접 읽고 판정하거나, 아래 "AI 해석 요청" 버튼으로 도움을 받아보세요. AI 제안은 참고용이며
           최종 판정은 선생님이 검토해서 저장해주셔야 반영돼요.
         </div>
       </div>
 
       <div class="form-card" id="stageWorkArea" style="display:none;">
-        <div class="form-section-title">AI 해석 <span class="hint">(근거 문장을 보고 성장단계를 제안받아요 — 참고용)</span></div>
+        <div class="form-section-title">AI 해석 <span class="hint">(근거 문장을 보고 성장단계를 제안받아요 — 참고용, 구글 Gemini 무료 API 사용)</span></div>
         <button class="submit-btn" style="background:#6B8F5C;" onclick="requestAIStageAnalysis()" id="aiBtn">🤖 AI 해석 요청</button>
         <div class="submit-msg" id="aiMsg"></div>
       </div>
@@ -374,7 +374,7 @@
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyahvBkqM7NVzHde2vdtpWTGdOhaUs8i-ewGe9WBpuyyetVIv1VEPJrhhCNy3fgrmad/exec";
 const ADMIN_PASSWORD = "crayon2026"; // journal.html / index.html 관리자 로그인과 같은 비밀번호예요
 
-const COLORS = ['검정','빨강','주황','노랑','연두','초록','파랑','보라','핑크','회색','청록','무지개','골드','갈색','은색'];
+const COLORS = ['검정','빨강','주황','노랑','연두','초록','파랑','보라','핑크','회색','청록','무지개','골드','갈색','은색','하늘색','흰색','청보라','자주색'];
 const TONES = ['deep','vivid','pastel'];
 const EFFECTS = ['감정활동(발산효과)','뉴트럴(중립)','사고활동(집중효과)'];
 const ART_ABILITIES = ['집중,지속력','언어표현','관계,소통력','표현기술,조형력','탐구,관찰력','발상,창의력','조화감각,색채력','문제해결,도전력','응용,표현전개력'];

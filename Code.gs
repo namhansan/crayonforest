@@ -51,7 +51,7 @@
  * 사진3URL/사진4URL, 수업전마음색/수업전 마음 한 줄/수업후마음색/수업후 마음 한 줄, 회차목표/스타일특징/목표행동태그는
  * 전부 선택 입력이에요 — 안 적어도 카드에 그냥 안 보일 뿐 문제없이 동작합니다.
  * "목표행동 태그"는 감정키워드처럼 쉼표로 여러 개 적으면 돼요 (예: 집중력, 협동, 자기표현).
- * "수업전마음색"/"수업후마음색"은 "선택색상1순위"와 같은 15개 색상 이름을 그대로 적으면 돼요.
+ * "수업전마음색"/"수업후마음색"은 "선택색상1순위"와 같은 19개 색상 이름을 그대로 적으면 돼요.
  *
  * 헤더 이름은 띄어쓰기 차이(예: "감정,성장키워드" vs "감정, 성장키워드")는 자동으로
  * 무시하고 찾아가지만, 단어 자체가 바뀌면(예: "선택색상1" ↔ "선택색상1순위") 코드가
@@ -96,10 +96,13 @@
  * 나왔다고 응용·전개력이 "두 배로 성장했다"고 볼 수는 없어요. 그래서 이 시트는
  * 능력마다 별도로 "1단계 발견중 / 2단계 시도중 / 3단계 확장중 / 4단계 자기화중"
  * 판정을 저장해요 — 선생님이 회차별 근거 문장(미술능력근거/마음의 능력근거)들을
- * 읽고 직접 판단하거나, "AI 해석 요청" 버튼으로 도움을 받아 판단할 수 있어요.
- * (AI 해석 기능을 쓰려면 Apps Script 편집기 > 프로젝트 설정 > 스크립트 속성에서
- * ANTHROPIC_API_KEY 라는 이름으로 Anthropic API 키를 등록해주세요. 등록 안 해도
- * 나머지 기능은 전부 정상 동작하고, AI 해석 버튼만 못 써요.)
+ * 직접 읽고 판단하거나, "AI 해석 요청" 버튼으로 도움을 받아 판단할 수 있어요.
+ *
+ * (AI 해석 기능을 쓰려면 구글 Gemini API 키가 필요해요 — https://aistudio.google.com/apikey
+ * 에서 구글 계정으로 무료로 발급받을 수 있고, 카드 등록이 필요 없어요. 무료 사용량 한도
+ * 안에서는 요금이 청구되지 않아요. 발급받은 키를 Apps Script 편집기 > 프로젝트 설정 >
+ * 스크립트 속성에서 GEMINI_API_KEY 라는 이름으로 등록해주세요. 등록 안 해도 나머지
+ * 기능은 전부 정상 동작하고, AI 해석 버튼만 안내 메시지가 떠요.)
  */
 
 const SHEET_NAME = '수강신청';
@@ -280,7 +283,7 @@ function setupJournalDropdowns() {
     sheet.getRange(2, col[phoneKey] + 1, LAST_ROW - 1, 1).setNumberFormat('@');
   }
 
-  const colorList = ['검정', '빨강', '주황', '노랑', '연두', '초록', '파랑', '보라', '핑크', '회색', '청록', '무지개', '골드', '갈색', '은색'];
+  const colorList = ['검정', '빨강', '주황', '노랑', '연두', '초록', '파랑', '보라', '핑크', '회색', '청록', '무지개', '골드', '갈색', '은색', '하늘색', '흰색', '청보라', '자주색'];
   const toneList = ['deep', 'vivid', 'pastel'];
   const effectList = ['감정활동(발산효과)', '뉴트럴(중립)', '사고활동(집중효과)'];
   const artAbilityList = ['집중,지속력', '언어표현', '관계,소통력', '표현기술,조형력', '탐구,관찰력', '발상,창의력', '조화감각,색채력', '문제해결,도전력', '응용,표현전개력'];
@@ -483,18 +486,22 @@ function saveAbilityStage(p) {
   return { ok: true };
 }
 
-/* ---------- AI 능력 해석 요청 ----------
+/* ---------- AI 능력 해석 요청 (구글 Gemini API — 무료 티어) ----------
  * 이 아이의 회차별 "미술능력근거"/"마음의 능력근거" 문장들을 능력별로 모아서
- * Anthropic API(Claude)에게 보내고, 빈도가 아니라 "사용 방식이 얼마나 깊어졌는지"를
- * 기준으로 1~4단계를 제안받아요. 결과는 저장되지 않고 teacher-entry.html 화면에
- * 제안으로만 표시되며, 선생님이 검토하고 수정한 뒤 "저장"을 눌러야 실제로 반영돼요.
- * 이 함수를 쓰려면 Apps Script 편집기 > 프로젝트 설정 > 스크립트 속성에서
- * ANTHROPIC_API_KEY 값을 등록해야 해요.
+ * Gemini API에게 보내고, 빈도가 아니라 "사용 방식이 얼마나 깊어졌는지"를 기준으로
+ * 1~4단계를 제안받아요. 결과는 저장되지 않고 teacher-entry.html 화면에 제안으로만
+ * 표시되며, 선생님이 검토하고 수정한 뒤 "저장"을 눌러야 실제로 반영돼요.
+ *
+ * 이 함수를 쓰려면 https://aistudio.google.com/apikey 에서 구글 계정으로 무료
+ * API 키를 발급받아(카드 등록 불필요), Apps Script 편집기 > 프로젝트 설정 >
+ * 스크립트 속성에서 GEMINI_API_KEY 값으로 등록해주세요. 무료 사용량 한도 안에서는
+ * 요금이 청구되지 않아요 (아이 한 명당 요청 한 번은 아주 적은 사용량이라, 일반적인
+ * 사용 빈도로는 무료 한도를 넘기 어려워요).
  */
 function requestAIAbilityAnalysis(name, phone4) {
-  const apiKey = PropertiesService.getScriptProperties().getProperty('ANTHROPIC_API_KEY');
+  const apiKey = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
   if (!apiKey) {
-    throw new Error('AI 해석을 쓰려면 먼저 Apps Script 편집기 > 프로젝트 설정 > 스크립트 속성에 ANTHROPIC_API_KEY를 등록해주세요.');
+    throw new Error('AI 해석을 쓰려면 먼저 https://aistudio.google.com/apikey 에서 무료 API 키를 발급받아, Apps Script 편집기 > 프로젝트 설정 > 스크립트 속성에 GEMINI_API_KEY로 등록해주세요.');
   }
   const journal = getJournal(name, phone4);
   if (!journal.found || !journal.entries || !journal.entries.length) {
@@ -528,14 +535,14 @@ function requestAIAbilityAnalysis(name, phone4) {
   lines.push('{"art":[{"ability":"능력명","stage":1,"reason":"한두 문장 근거"}],"mind":[{"ability":"능력명","stage":1,"reason":"한두 문장 근거"}]}');
   lines.push('근거 문장이 없는 능력은 배열에서 제외하세요.');
 
-  const res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+  const model = 'gemini-2.5-flash';
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(apiKey);
+  const res = UrlFetchApp.fetch(url, {
     method: 'post',
     contentType: 'application/json',
-    headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
     payload: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1500,
-      messages: [{ role: 'user', content: lines.join('\n') }]
+      contents: [{ parts: [{ text: lines.join('\n') }] }],
+      generationConfig: { temperature: 0.3 }
     }),
     muteHttpExceptions: true
   });
@@ -543,15 +550,17 @@ function requestAIAbilityAnalysis(name, phone4) {
   const code = res.getResponseCode();
   const bodyText = res.getContentText();
   if (code !== 200) {
-    throw new Error('AI 요청이 실패했어요 (코드 ' + code + '). API 키가 올바른지 확인해주세요.');
+    throw new Error('AI 요청이 실패했어요 (코드 ' + code + '). API 키가 올바른지, 무료 사용량 한도를 넘지 않았는지 확인해주세요.');
   }
   const body = JSON.parse(bodyText);
-  const textBlock = (body.content || []).find(c => c.type === 'text');
-  if (!textBlock) throw new Error('AI 응답을 이해하지 못했어요. 다시 시도해주세요.');
+  const textOut = body.candidates && body.candidates[0] && body.candidates[0].content &&
+    body.candidates[0].content.parts && body.candidates[0].content.parts[0] &&
+    body.candidates[0].content.parts[0].text;
+  if (!textOut) throw new Error('AI 응답을 이해하지 못했어요. 다시 시도해주세요.');
 
   let parsed;
   try {
-    const cleaned = textBlock.text.replace(/```json|```/g, '').trim();
+    const cleaned = textOut.replace(/```json|```/g, '').trim();
     parsed = JSON.parse(cleaned);
   } catch (err) {
     throw new Error('AI 응답을 해석하지 못했어요. 다시 시도해주세요.');
