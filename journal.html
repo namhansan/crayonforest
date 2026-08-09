@@ -279,7 +279,7 @@
     /* 종합요약만 가로(landscape) 페이지에 PPT 대시보드처럼 격자 배치 */
     .summary-section{
       page:summarySheet; break-before:page; page-break-before:always;
-      display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; align-content:start;
+      display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; align-content:start;
     }
     .summary-section.manual{ display:block; }
     .summary-section .sec-block{ break-inside:avoid; page-break-inside:avoid; min-width:0; }
@@ -293,13 +293,6 @@
     }
     .summary-section .wheel-card svg{ max-width:150px; }
     .summary-section .wheel-caption{ font-size:8px; line-height:1.35; margin-top:6px; }
-    .summary-section .ability-board{ grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap:6px; }
-    .summary-section .ability-badge{ padding:7px 8px; }
-    .summary-section .ability-name{ font-size:9.5px; margin-bottom:1px; }
-    .summary-section .ability-count{ font-size:8px; margin-bottom:3px; }
-    .summary-section .ability-desc{ font-size:8px; line-height:1.35; }
-    .summary-section .ability-group{ margin-bottom:10px; }
-    .summary-section .ability-group-label{ font-size:9.5px; margin-bottom:5px; }
     .summary-section .evidence-item, .summary-section .evidence-label{ font-size:8.5px; }
     .summary-section .mood-color-row, .summary-section .mood-color-text, .summary-section .mood-color-name{ font-size:9px; }
     .summary-section .pill{ font-size:9px; padding:3px 8px; }
@@ -310,6 +303,31 @@
     .summary-section .cat-grid{ grid-template-columns:repeat(4,1fr); gap:8px; }
     .summary-section .split{ gap:8px; }
     .summary-section .split-card{ padding:12px 14px; font-size:11px; }
+
+    /* 능력 배지: 좁은 칸에서 세로로 쌓이던 걸 컴팩트한 알약 형태로 줄여서 높이를 크게 줄임 */
+    .summary-section .ability-desc{ display:none; }
+    .summary-section .ability-board{ grid-template-columns:repeat(auto-fill, minmax(72px, 1fr)); gap:4px; }
+    .summary-section .ability-badge{ padding:4px 7px; display:flex; align-items:center; justify-content:space-between; gap:4px; }
+    .summary-section .ability-name{ display:inline; font-size:8.5px; margin-bottom:0; }
+    .summary-section .ability-count{ display:inline; font-size:7.5px; margin-bottom:0; white-space:nowrap; }
+    .summary-section .ability-group{ margin-bottom:6px; }
+    .summary-section .ability-group-label{ margin-bottom:3px; }
+
+    /* 근거 장면 / 톤 설명 문단은 지면이 부족하므로 인쇄에서는 생략 (화면에서는 계속 보임) */
+    .summary-section .evidence-card{ display:none; }
+    .summary-section .tone-explainer{ display:none; }
+
+    /* 작품 속 색채흐름: 바퀴·타임라인·빈도바를 세로로 쌓지 않고 가로로 나란히 배치 */
+    .summary-section .color-flow-wrap{ display:flex; gap:8px; align-items:flex-start; }
+    .summary-section .color-flow-wrap > *{ flex:1; min-width:0; margin-bottom:0 !important; }
+    .summary-section .color-flow-wrap .timeline{ flex-wrap:wrap; gap:4px; }
+    .summary-section .color-flow-wrap .t-node{ min-width:34px; }
+    .summary-section .color-flow-wrap .t-dot{ width:14px; height:14px; margin-bottom:3px; }
+    .summary-section .color-flow-wrap .t-node .r, .summary-section .color-flow-wrap .t-node .c{ font-size:7.5px; }
+    .summary-section .color-flow-wrap .freq-row{ gap:6px; margin-bottom:5px; }
+    .summary-section .color-flow-wrap .freq-label{ width:42px; font-size:9px; }
+    .summary-section .color-flow-wrap .freq-bar-bg{ height:10px; }
+    .summary-section .color-flow-wrap .freq-count{ width:14px; font-size:9px; }
   }
 </style>
 </head>
@@ -584,7 +602,7 @@ function renderToneGrid(entries){
     <div class="wheel-card" style="text-align:left;">
       <div class="tone-grid-head"><div></div><div>deep</div><div>vivid</div><div>pastel</div></div>
       ${rows}
-      <div class="wheel-caption" style="text-align:left; margin-top:14px; line-height:1.9;">
+      <div class="wheel-caption tone-explainer" style="text-align:left; margin-top:14px; line-height:1.9;">
         진하고 탁할수록 강한 의욕과 에너지, 조금 더 깊고 묵직한 감정을 나타낼 수 있어요. 맑고 연할수록 부드럽고 편안한 마음, 조용히 쉬고 싶은 마음을 나타낼 수 있어요.<br>
         빨, 주, 노, 연두 색은 의욕, 에너지, 몸을 움직이고 싶은 마음과 연결됩니다.<br>
         초록 계열의 색은 마음의 균형, 안정감, 편안함과 연결됩니다.<br>
@@ -829,7 +847,7 @@ function renderAbilityEvidence(entries, field, noteField, labels){
     const items = byAbility[k].slice(-3).map(it => `<div class="evidence-item"><b>${it.month}</b>${it.note}</div>`).join('');
     return `<div class="evidence-group"><span class="evidence-label">${k}</span>${items}</div>`;
   }).join('');
-  return `<div class="freq-card" style="text-align:left; margin-top:14px;"><div class="wheel-caption" style="margin-bottom:10px; font-weight:700; color:var(--forest);">회차별 근거 장면</div>${rows}</div>`;
+  return `<div class="freq-card evidence-card" style="text-align:left; margin-top:14px;"><div class="wheel-caption" style="margin-bottom:10px; font-weight:700; color:var(--forest);">회차별 근거 장면</div>${rows}</div>`;
 }
 
 // 색상×톤을 하나의 원형 차트에: 각도 = 색상, 반지름 = 톤(바깥 pastel → 안쪽 deep),
@@ -1282,7 +1300,7 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
       ? `<div class="highlight-list">${hintsOverride.map(h=>`<div><span class="check">✔</span>${h}</div>`).join('')}</div>`
       : renderParentingHints(entries);
 
-    const colorFlowHtml = (wheelHtml || timelineHtml || freqHtml) ? `${wheelHtml}${timelineHtml}${freqHtml}` : '';
+    const colorFlowHtml = (wheelHtml || timelineHtml || freqHtml) ? `<div class="color-flow-wrap">${wheelHtml}${timelineHtml}${freqHtml}</div>` : '';
     const feedbackHtml = `
       <div class="feedback-box">
         <div class="feedback-label">🌸 꽃밭샘 피드백</div>
