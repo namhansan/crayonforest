@@ -294,8 +294,13 @@
   @page{ size:A4; margin:14mm; }
   @page summarySheet{ size:A4 landscape; margin:10mm; }
   @media print{
-    header, .privacy-note, .logout-link, .print-btn, .teacher-badge, #jSummaryFilter{ display:none !important; }
+    header, .privacy-note, .logout-link, .print-btn, .teacher-badge, #jSummaryFilter, #jGallery{ display:none !important; }
     body{ background:#fff; }
+    /* 배경색/그라데이션(마음색 체크판, 마음의 능력 막대 등)이 인쇄에서 사라지지
+       않도록 강제로 살려요. 그래도 안 나오면 인쇄 대화상자의 "추가 설정 >
+       배경 그래픽"을 꼭 체크해주세요 — 이 설정은 브라우저 쪽이라 CSS만으로는
+       100% 강제가 안 될 수 있어요. */
+    *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
     .wrap{ max-width:100%; padding:0; }
     /* min-height:100vh/95vh는 실제 인쇄 페이지 크기와 안 맞아서 표지·회차 카드가
        어중간하게 다음 장으로 넘어가는 원인이라 빼고, break-after로만 페이지를
@@ -1452,7 +1457,7 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const mindStagesMap = stagesMapFor(abilityStages, '마음');
     const artAbilityHtml = isTeacher
       ? renderAbilitySection(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_GROUPS, 'artAbilityNote', artStagesMap)
-      : renderTopAbilityCards(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_ICONS, artStagesMap);
+      : `${renderAbilityWheel(ART_ABILITIES, entries, 'artAbility')}${renderTopAbilityCards(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_ICONS, artStagesMap)}`;
     const mindAbilityHtml = renderMindAbilityBars(entries, mindStagesMap);
     const narrativeHtml = (narrativeOverride && narrativeOverride.trim())
       ? `<div class="growth-narrative">✨ ${narrativeOverride.trim()}</div>`
