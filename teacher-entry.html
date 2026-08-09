@@ -972,46 +972,54 @@ function requestAIStageAnalysis(){
 function saveAllStages(){
   if(!_stageState) return;
   const rows = document.querySelectorAll('.stage-row');
-  const jobs = [];
+  const jobsParams = [];
   rows.forEach(row => {
     const type = row.getAttribute('data-type');
     const ability = row.getAttribute('data-ability');
     const stage = row.querySelector('.stage-select').value;
     const reason = row.querySelector('.stage-reason').value.trim();
     if(!stage && !reason) return; // 아무것도 입력 안 한 능력은 건너뛰어요
-    const params = new URLSearchParams({
+    jobsParams.push(new URLSearchParams({
       action:'saveAbilityStage', name:_stageState.name, phone4:_stageState.phone4,
       type, ability, stage, reason
-    });
-    jobs.push(fetch(GAS_URL + '?' + params.toString()).then(r=>r.json()));
+    }));
   });
 
   const msg = document.getElementById('stageSaveMsg');
   const btn = document.getElementById('stageSubmitBtn');
-  if(!jobs.length){
+  if(!jobsParams.length){
     msg.className = 'submit-msg err';
     msg.textContent = '저장할 내용이 없어요. 최소 한 능력에 성장단계나 판단근거를 입력해주세요.';
     return;
   }
-  btn.disabled = true; btn.textContent = '저장 중...';
+  btn.disabled = true; btn.textContent = '저장 중... (0/' + jobsParams.length + ')';
   msg.className = 'submit-msg';
   msg.textContent = '';
 
-  Promise.all(jobs).then(results => {
-    btn.disabled = false; btn.textContent = '전체 성장단계 저장하기';
-    const failed = results.filter(r => !r.ok);
-    if(failed.length){
-      msg.className = 'submit-msg err';
-      msg.textContent = `일부 저장에 실패했어요 (${failed.length}건). 다시 시도해주세요.`;
-    } else {
-      msg.className = 'submit-msg ok';
-      msg.textContent = `${results.length}개 능력의 성장단계를 저장했어요.`;
+  // 여러 능력을 동시에 저장 요청하면 시트가 아직 없을 때 여러 요청이 동시에
+  // 시트를 만들려고 해서 구글시트가 "_conflict" 이름으로 중복 탭을 만드는
+  // 문제가 있었어요. 그래서 한 번에 하나씩, 순서대로 저장해요.
+  let successCount = 0, failCount = 0;
+  function saveNext(i){
+    if(i >= jobsParams.length){
+      btn.disabled = false; btn.textContent = '전체 성장단계 저장하기';
+      if(failCount){
+        msg.className = 'submit-msg err';
+        msg.textContent = `일부 저장에 실패했어요 (${failCount}건). 다시 시도해주세요.`;
+      } else {
+        msg.className = 'submit-msg ok';
+        msg.textContent = `${successCount}개 능력의 성장단계를 저장했어요.`;
+      }
+      return;
     }
-  }).catch(() => {
-    btn.disabled = false; btn.textContent = '전체 성장단계 저장하기';
-    msg.className = 'submit-msg err';
-    msg.textContent = '저장 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.';
-  });
+    btn.textContent = `저장 중... (${i+1}/${jobsParams.length})`;
+    fetch(GAS_URL + '?' + jobsParams[i].toString())
+      .then(r => r.json())
+      .then(res => { if(res && res.ok) successCount++; else failCount++; })
+      .catch(() => { failCount++; })
+      .finally(() => saveNext(i+1));
+  }
+  saveNext(0);
 }
 </script>
 

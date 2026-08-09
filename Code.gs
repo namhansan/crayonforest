@@ -457,33 +457,42 @@ function saveAbilityStage(p) {
   if (!p.name || !p.phone4 || !p.type || !p.ability) {
     throw new Error('이름/전화번호/능력유형(미술 또는 마음)/능력명이 모두 필요해요.');
   }
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(ABILITY_STAGE_SHEET_NAME);
-  if (!sheet) {
-    sheet = ss.insertSheet(ABILITY_STAGE_SHEET_NAME);
-    sheet.appendRow(['이름', '전화번호뒷4자리', '능력유형', '능력명', '단계', '판단근거', '업데이트일시']);
-  }
-  const data = sheet.getDataRange().getValues();
-  let rowIdx = -1;
-  for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]).trim() === String(p.name).trim() &&
-        normalizePhone4(data[i][1]) === normalizePhone4(p.phone4) &&
-        String(data[i][2]).trim() === String(p.type).trim() &&
-        String(data[i][3]).trim() === String(p.ability).trim()) {
-      rowIdx = i + 1;
-      break;
+  // 동시에 여러 요청이 들어와도(예: 여러 능력을 한꺼번에 저장) 시트 생성/줄 찾기가
+  // 서로 겹치지 않도록 잠깐 순서를 기다려요. 이게 없으면 시트가 아직 없을 때
+  // 두 요청이 동시에 새로 만들려다가 "_conflict" 이름의 중복 탭이 생길 수 있어요.
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName(ABILITY_STAGE_SHEET_NAME);
+    if (!sheet) {
+      sheet = ss.insertSheet(ABILITY_STAGE_SHEET_NAME);
+      sheet.appendRow(['이름', '전화번호뒷4자리', '능력유형', '능력명', '단계', '판단근거', '업데이트일시']);
     }
+    const data = sheet.getDataRange().getValues();
+    let rowIdx = -1;
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]).trim() === String(p.name).trim() &&
+          normalizePhone4(data[i][1]) === normalizePhone4(p.phone4) &&
+          String(data[i][2]).trim() === String(p.type).trim() &&
+          String(data[i][3]).trim() === String(p.ability).trim()) {
+        rowIdx = i + 1;
+        break;
+      }
+    }
+    const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Seoul', 'yyyy-MM-dd HH:mm');
+    const row = [p.name, normalizePhone4(p.phone4), p.type, p.ability, p.stage || '', p.reason || '', now];
+    if (rowIdx === -1) {
+      sheet.appendRow(row);
+      sheet.getRange(sheet.getLastRow(), 2).setNumberFormat('@');
+    } else {
+      sheet.getRange(rowIdx, 2).setNumberFormat('@');
+      sheet.getRange(rowIdx, 1, 1, row.length).setValues([row]);
+    }
+    return { ok: true };
+  } finally {
+    lock.releaseLock();
   }
-  const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Seoul', 'yyyy-MM-dd HH:mm');
-  const row = [p.name, normalizePhone4(p.phone4), p.type, p.ability, p.stage || '', p.reason || '', now];
-  if (rowIdx === -1) {
-    sheet.appendRow(row);
-    sheet.getRange(sheet.getLastRow(), 2).setNumberFormat('@');
-  } else {
-    sheet.getRange(rowIdx, 2).setNumberFormat('@');
-    sheet.getRange(rowIdx, 1, 1, row.length).setValues([row]);
-  }
-  return { ok: true };
 }
 
 /* ---------- AI 능력 해석 요청 (구글 Gemini API — 무료 티어) ----------
@@ -535,22 +544,47 @@ function requestAIAbilityAnalysis(name, phone4) {
   lines.push('{"art":[{"ability":"능력명","stage":1,"reason":"한두 문장 근거"}],"mind":[{"ability":"능력명","stage":1,"reason":"한두 문장 근거"}]}');
   lines.push('근거 문장이 없는 능력은 배열에서 제외하세요.');
 
-  const model = 'gemini-2.5-flash';
+  // 'gemini-flash-latest'는 구글이 자동으로 최신 Flash 모델을 가리키도록 관리하는
+  // 별칭이에요. 특정 버전 이름(예: gemini-2.5-flash)을 직접 쓰면 그 모델이 나중에
+  // 없어졌을 때 404 에러가 나서, 항상 최신을 가리키는 이 별칭을 쓰는 게 더 안전해요.
+  const model = 'gemini-flash-latest';
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(apiKey);
-  const res = UrlFetchApp.fetch(url, {
-    method: 'post',
-    contentType: 'application/json',
-    payload: JSON.stringify({
-      contents: [{ parts: [{ text: lines.join('\n') }] }],
-      generationConfig: { temperature: 0.3 }
-    }),
-    muteHttpExceptions: true
+  const payload = JSON.stringify({
+    contents: [{ parts: [{ text: lines.join('\n') }] }],
+    generationConfig: { temperature: 0.3 }
   });
 
-  const code = res.getResponseCode();
-  const bodyText = res.getContentText();
+  // 503(서버 혼잡)/429(요청 과다)는 보통 몇 초 안에 풀리는 일시적인 상태라,
+  // 곧바로 실패로 끝내지 않고 짧게 대기했다가 최대 3번까지 자동으로 다시
+  // 시도해요. 그래도 안 되면 그때 진짜 에러로 알려드려요.
+  let res, code, bodyText;
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    res = UrlFetchApp.fetch(url, {
+      method: 'post',
+      contentType: 'application/json',
+      payload: payload,
+      muteHttpExceptions: true
+    });
+    code = res.getResponseCode();
+    bodyText = res.getContentText();
+    if (code === 200) break;
+    if ((code === 503 || code === 429) && attempt < maxAttempts) {
+      Utilities.sleep(1500 * attempt); // 1.5초, 3초로 점점 늘려가며 대기
+      continue;
+    }
+    break;
+  }
+
   if (code !== 200) {
-    throw new Error('AI 요청이 실패했어요 (코드 ' + code + '). API 키가 올바른지, 무료 사용량 한도를 넘지 않았는지 확인해주세요.');
+    let detail = '';
+    try {
+      const errBody = JSON.parse(bodyText);
+      detail = (errBody.error && errBody.error.message) ? errBody.error.message : bodyText.slice(0, 200);
+    } catch (e) {
+      detail = bodyText.slice(0, 200);
+    }
+    throw new Error('AI 요청이 실패했어요 (코드 ' + code + '): ' + detail);
   }
   const body = JSON.parse(bodyText);
   const textOut = body.candidates && body.candidates[0] && body.candidates[0].content &&
