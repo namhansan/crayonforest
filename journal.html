@@ -236,6 +236,25 @@
   .ability-name{display:block; font-weight:700; color:var(--forest); font-size:12.5px; margin-bottom:2px;}
   .ability-count{display:block; color:#9a9285; font-size:11px; margin-bottom:6px;}
   .ability-desc{display:block; color:#6b6459; font-size:11.5px; line-height:1.5;}
+
+  /* 학부모 화면: 가장 크게 자란 힘 TOP 카드 */
+  .top-ability-list{display:flex; flex-direction:column; gap:10px;}
+  .top-ability-card{display:flex; align-items:flex-start; gap:12px; background:#F7F3EA; border:1px solid var(--line); border-radius:14px; padding:14px 16px;}
+  .top-ability-icon{width:34px; height:34px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; box-shadow:0 2px 5px rgba(0,0,0,.06);}
+  .top-ability-body{flex:1; min-width:0;}
+  .top-ability-name{font-weight:700; color:var(--forest); font-size:13.5px; margin-bottom:3px;}
+  .top-ability-blurb{font-size:12px; color:#6b6459; line-height:1.55;}
+  .top-ability-trend{color:#8CA37A; font-weight:800; font-size:14px; flex-shrink:0; padding-top:2px;}
+
+  /* 마음의 능력: 아이콘 + 가로 막대 */
+  .mind-bar-list{display:flex; flex-direction:column; gap:14px;}
+  .mind-bar-row{display:flex; align-items:center; gap:10px;}
+  .mind-bar-icon{font-size:18px; width:22px; text-align:center; flex-shrink:0;}
+  .mind-bar-label{width:88px; font-size:12.5px; color:var(--forest); font-weight:600; flex-shrink:0;}
+  .mind-bar-track{flex:1; height:14px; background:var(--ivory-deep); border-radius:8px; overflow:hidden;}
+  .mind-bar-fill{height:100%; background:linear-gradient(90deg, #C9DDB9, #8CA37A); border-radius:8px;}
+  .mind-bar-count{width:30px; text-align:right; font-size:11px; color:#9a9285; flex-shrink:0;}
+
   .growth-narrative{
     background:#F7EFE4; border:1px solid #EAD9BE; border-radius:var(--radius-md); padding:20px 24px;
     font-size:14px; color:var(--forest); font-family:'Noto Serif KR',serif; line-height:1.8; margin-bottom:16px;
@@ -303,6 +322,15 @@
     .summary-section .cat-grid{ grid-template-columns:repeat(4,1fr); gap:8px; }
     .summary-section .split{ gap:8px; }
     .summary-section .split-card{ padding:12px 14px; font-size:11px; }
+    .summary-section .top-ability-card{ padding:8px 10px; gap:8px; }
+    .summary-section .top-ability-icon{ width:24px; height:24px; font-size:12px; }
+    .summary-section .top-ability-name{ font-size:10.5px; margin-bottom:2px; }
+    .summary-section .top-ability-blurb{ font-size:9px; line-height:1.4; }
+    .summary-section .mind-bar-list{ gap:8px; }
+    .summary-section .mind-bar-icon{ font-size:13px; width:16px; }
+    .summary-section .mind-bar-label{ width:58px; font-size:9px; }
+    .summary-section .mind-bar-track{ height:9px; }
+    .summary-section .mind-bar-count{ font-size:8px; width:20px; }
 
     /* 능력 배지: 좁은 칸에서 세로로 쌓이던 걸 컴팩트한 알약 형태로 줄여서 높이를 크게 줄임 */
     .summary-section .ability-desc{ display:none; }
@@ -743,27 +771,33 @@ function polarPt(cx,cy,r,angDeg){
   return { x: cx + r*Math.cos(a), y: cy + r*Math.sin(a) };
 }
 
-// 미술능력(9개)/마음의 능력(5개)을 정N각형 성장 바퀴(레이더 차트)로 보여줘요.
-// 안쪽 점선 다각형 = 이번 기간 앞쪽 절반(초반), 바깥 실선 다각형 = 전체 누적.
-// 두 다각형의 크기 차이가 바로 "성장한 만큼"을 눈으로 보여줘요.
+// 미술능력/마음의 능력을 정N각형 성장 바퀴(레이더 차트)로 보여줘요.
+// 거미줄(칸) 하나하나가 정확히 "1회"를 뜻하도록 눈금을 실제 횟수에 맞춰 그려서,
+// 점이 눈금 사이 어중간한 곳에 걸치지 않고 항상 정확한 칸 위에 찍히게 했어요.
 function renderAbilityWheel(labels, entries, field){
   const values = entries.map(e => e[field]).filter(v => v && labels.includes(v));
   if(!values.length) return '';
   const n = labels.length;
-  const cx=150, cy=150, minR=18, maxR=108;
+  const cx=150, cy=150, minR=18, maxR=104;
   const angleStep = 360/n;
 
-  const countFor = (list, label) => list.filter(e => e[field] === label).length;
-  const half = Math.max(1, Math.ceil(entries.length/2));
-  const earlyEntries = entries.slice(0, half);
-  const totalCounts = labels.map(l => countFor(entries, l));
-  const earlyCounts = labels.map(l => countFor(earlyEntries, l));
+  const countFor = label => entries.filter(e => e[field] === label).length;
+  const totalCounts = labels.map(l => countFor(l));
   const maxCount = Math.max(1, ...totalCounts);
+  // 눈금 수는 실제 최대 횟수만큼 (너무 많으면 6개로 압축, 이땐 눈금이 근사값)
+  const ringCount = Math.min(maxCount, 6);
 
-  const gridRings = [0.34,0.67,1].map(f => {
-    const pts = labels.map((l,i) => polarPt(cx,cy, minR+(maxR-minR)*f, i*angleStep));
-    return `<polygon points="${pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}" fill="none" stroke="#E4DBC9" stroke-width="1"/>`;
-  }).join('');
+  const ringsHtml = [];
+  const ringLabelsHtml = [];
+  for(let k=1; k<=ringCount; k++){
+    const frac = k/ringCount;
+    const r = minR + (maxR-minR)*frac;
+    const countVal = ringCount === maxCount ? k : Math.round(maxCount*frac);
+    const pts = labels.map((l,i) => polarPt(cx,cy,r,i*angleStep));
+    ringsHtml.push(`<polygon points="${pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}" fill="none" stroke="#E4DBC9" stroke-width="1"/>`);
+    // 맨 위(첫 번째 축) 옆에 눈금 숫자를 작게 표시해요
+    ringLabelsHtml.push(`<text x="${cx+7}" y="${(cy-r).toFixed(1)}" font-size="8" fill="#b7ae9e" text-anchor="start" dominant-baseline="middle">${countVal}</text>`);
+  }
   const axisLines = labels.map((l,i) => {
     const p = polarPt(cx,cy,maxR,i*angleStep);
     return `<line x1="${cx}" y1="${cy}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="#E4DBC9" stroke-width="1"/>`;
@@ -773,25 +807,24 @@ function renderAbilityWheel(labels, entries, field){
     return `<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" font-size="9.5" fill="var(--forest)" font-weight="600" text-anchor="middle" dominant-baseline="middle">${l}</text>`;
   }).join('');
 
-  const ptsFor = counts => labels.map((l,i) => {
-    const r = minR + (counts[i]/maxCount)*(maxR-minR);
+  const pts = labels.map((l,i) => {
+    const r = minR + (totalCounts[i]/maxCount)*(maxR-minR);
     return polarPt(cx,cy,r,i*angleStep);
   });
-  const poly = pts => pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
-  const earlyPts = ptsFor(earlyCounts), totalPts = ptsFor(totalCounts);
-  const dots = totalPts.map((p,i) => totalCounts[i] > 0
+  const poly = pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
+  const dots = pts.map((p,i) => totalCounts[i] > 0
     ? `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5" fill="var(--clay)" stroke="#fff" stroke-width="1.5"/>` : '').join('');
 
   return `
     <div class="wheel-card">
       <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
-        ${gridRings}${axisLines}
-        <polygon points="${poly(earlyPts)}" fill="var(--sage)" opacity="0.16" stroke="var(--sage)" stroke-width="1.5" stroke-dasharray="3,3"/>
-        <polygon points="${poly(totalPts)}" fill="var(--clay)" opacity="0.2" stroke="var(--clay)" stroke-width="2"/>
+        ${ringsHtml.join('')}${axisLines}
+        <polygon points="${poly}" fill="var(--clay)" opacity="0.22" stroke="var(--clay)" stroke-width="2"/>
         ${dots}
+        ${ringLabelsHtml.join('')}
         ${labelEls}
       </svg>
-      <div class="wheel-caption">안쪽 점선은 초반 회차, 바깥 실선은 전체 누적 기준이에요 · 넓어질수록 그 힘이 자주 나타났다는 뜻이에요</div>
+      <div class="wheel-caption">칸 하나가 1회를 뜻해요 (최대 ${maxCount}회) · 바깥쪽으로 갈수록 그 힘이 자주 나타났다는 뜻이에요</div>
     </div>`;
 }
 
@@ -828,6 +861,67 @@ function renderAbilitySection(entries, field, labels, defs, groupsDef, noteField
   const evidence = noteField ? renderAbilityEvidence(entries, field, noteField, labels) : '';
   if(!badges && !wheel) return '';
   return `${badges ? `<div class="freq-card" style="margin-bottom:16px;">${badges}</div>` : ''}${wheel}${evidence}`;
+}
+
+// 학부모 화면용: 있는 항목만, 가장 많이 나타난 순으로 최대 3개까지 "가장 크게 자라나고
+// 있는 힘" 카드로 보여줘요. 근거로 남긴 문장이 있으면 그걸 그대로 쓰고, 없으면 능력
+// 설명 문장을 대신 써요.
+const ART_ABILITY_ICONS = {
+  '집중,지속력':'🎯','언어표현':'💬','관계,소통력':'👥','표현기술,조형력':'✋','탐구,관찰력':'🔍',
+  '발상,창의력':'💡','조화감각,색채력':'🎨','문제해결,도전력':'🧩','응용,표현전개력':'🚀'
+};
+function renderTopAbilityCards(entries, field, labels, defs, icons){
+  const counts = {};
+  labels.forEach(l => counts[l] = 0);
+  const latestNote = {};
+  entries.forEach(e => {
+    const val = e[field];
+    if(val && counts.hasOwnProperty(val)){
+      counts[val]++;
+      const note = String(e[field + 'Note'] || '').trim();
+      if(note) latestNote[val] = note;
+    }
+  });
+  const present = labels.filter(l => counts[l] > 0).sort((a,b) => counts[b]-counts[a]).slice(0,3);
+  if(!present.length) return '';
+  const cards = present.map(l => `
+    <div class="top-ability-card">
+      <div class="top-ability-icon">${(icons && icons[l]) || '🌱'}</div>
+      <div class="top-ability-body">
+        <div class="top-ability-name">${l}</div>
+        <p class="top-ability-blurb">${latestNote[l] || defs[l] || ''}</p>
+      </div>
+      <div class="top-ability-trend">↑↑</div>
+    </div>`).join('');
+  return `<div class="top-ability-list">${cards}</div>`;
+}
+
+// 마음의 능력(5개)은 귀여운 아이콘 + 가로 막대로 보여줘요. 막대 길이는 1~4회를
+// 발견→시도→확장→자기화 4단계에 대응시켜서(4회 이상은 자기화로 가득 참) 표현해요.
+const MIND_ABILITY_ICONS = { '마음 알아차림':'💗','마음표현':'🎨','마음조절':'💧','마음믿기':'⭐','마음나누기':'🤝' };
+function renderMindAbilityBars(entries){
+  const counts = {};
+  MIND_ABILITIES.forEach(l => counts[l] = 0);
+  entries.forEach(e => { if(e.mindAbility && counts.hasOwnProperty(e.mindAbility)) counts[e.mindAbility]++; });
+  if(!Object.values(counts).some(c => c > 0)) return '';
+
+  const rows = MIND_ABILITIES.map(l => {
+    const stage = Math.min(counts[l], 4);
+    const pct = (stage/4)*100;
+    return `
+    <div class="mind-bar-row">
+      <span class="mind-bar-icon">${MIND_ABILITY_ICONS[l] || '💗'}</span>
+      <span class="mind-bar-label">${l}</span>
+      <div class="mind-bar-track"><div class="mind-bar-fill" style="width:${pct}%;"></div></div>
+      <span class="mind-bar-count">${counts[l]}회</span>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="freq-card">
+      <div class="mind-bar-list">${rows}</div>
+      <div class="wheel-caption" style="margin-top:12px;">1회(발견) → 2회(시도) → 3회(확장) → 4회 이상(자기화) 나타난 정도로 막대 길이를 표시해요</div>
+    </div>`;
 }
 
 // 능력별로 남긴 "근거" 문장을 회차와 함께 모아서 보여줘요 (많이 나타난 능력부터,
@@ -869,6 +963,7 @@ function renderColorToneWheel(entries){
     <text x="${cx}" y="${cy-RADIUS.deep+12}" font-size="9" fill="#b7ae9e" text-anchor="middle">deep</text>`;
 
   let dots='', path='';
+  const pathPts = [];
   usable.forEach((e,i)=>{
     const hue = e.afterColor || e.beforeColor;
     const tone = e.afterColor ? e.afterTone : e.beforeTone;
@@ -876,20 +971,36 @@ function renderColorToneWheel(entries){
     const r = ang===null ? 14 : (RADIUS[tone] || RADIUS.vivid);
     const a = (ang===null?0:ang)*Math.PI/180;
     const x = cx + r*Math.sin(a), y = cy - r*Math.cos(a);
+    pathPts.push({x,y});
     dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="${toneHex(hue,tone)}" stroke="#fff" stroke-width="2"/>`;
     path += (i===0?'M':'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
   });
 
+  // 화살표를 SVG marker 대신 직접 삼각형으로 그려서 렌더링 문제 없이 항상 보이게 해요
+  let arrowHtml = '';
+  if(pathPts.length >= 2){
+    const p1 = pathPts[pathPts.length-2], p2 = pathPts[pathPts.length-1];
+    const dx = p2.x-p1.x, dy = p2.y-p1.y;
+    const len = Math.sqrt(dx*dx+dy*dy) || 1;
+    const ux = dx/len, uy = dy/len;
+    const tipX = p2.x - ux*9, tipY = p2.y - uy*9; // 점 마커에 가리지 않게 살짝 앞에서 시작
+    const backX = tipX - ux*11, backY = tipY - uy*11;
+    const perpX = -uy, perpY = ux;
+    const leftX = backX + perpX*5, leftY = backY + perpY*5;
+    const rightX = backX - perpX*5, rightY = backY - perpY*5;
+    arrowHtml = `<polygon points="${tipX.toFixed(1)},${tipY.toFixed(1)} ${leftX.toFixed(1)},${leftY.toFixed(1)} ${rightX.toFixed(1)},${rightY.toFixed(1)}" fill="var(--clay)"/>`;
+  }
+
   return `
     <div class="wheel-card">
       <svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
-        <defs><marker id="arrow3" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--clay)"/></marker></defs>
         ${ringsHtml}
         <circle cx="${cx}" cy="${cy}" r="14" fill="#3A362F" opacity="0.15"/>
         ${labels}
         ${toneLabels}
-        <path d="${path}" fill="none" stroke="var(--clay)" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrow3)"/>
+        <path d="${path}" fill="none" stroke="var(--clay)" stroke-width="2" stroke-dasharray="3,3"/>
         ${dots}
+        ${arrowHtml}
       </svg>
       <div class="wheel-caption">바깥쪽(pastel)일수록 편안하고 부드럽게, 안쪽(deep)일수록 강하고 짙게 · 수업 후 마음색(없으면 수업 전 마음색) 기준이에요 · 화살표는 회차 순서를 보여줘요</div>
     </div>`;
@@ -1291,8 +1402,10 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const moodColorNotesHtml = renderMoodColorNotes(entries);
     const effectBalanceHtml = renderEffectBalance(entries);
     const keywordCloudHtml = renderKeywordCloud(entries);
-    const artAbilityHtml = renderAbilitySection(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_GROUPS, 'artAbilityNote');
-    const mindAbilityHtml = renderAbilitySection(entries, 'mindAbility', MIND_ABILITIES, MIND_ABILITY_DEFS, null, 'mindAbilityNote');
+    const artAbilityHtml = isTeacher
+      ? renderAbilitySection(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_GROUPS, 'artAbilityNote')
+      : renderTopAbilityCards(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_ICONS);
+    const mindAbilityHtml = renderMindAbilityBars(entries);
     const narrativeHtml = (narrativeOverride && narrativeOverride.trim())
       ? `<div class="growth-narrative">✨ ${narrativeOverride.trim()}</div>`
       : renderGrowthNarrative(entries, childName);
@@ -1314,8 +1427,8 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
       { key:'colorFlow', title:'작품 속 색채흐름', html: colorFlowHtml, toggle:false, extra: colorFlowHtml ? feedbackHtml : '' },
       { key:'colorJourney', title:'6개월 마음색 여정 (색상 · 톤)', html: colorToneWheelHtml, toggle:true },
       { key:'toneGrid', title:'수업전후 마음색 키워드', html: toneGridHtml, toggle:false, extra: moodColorNotesHtml },
-      { key:'artAbilityWheel', title:'미술능력 (9각형 성장바퀴)', html: artAbilityHtml, toggle:true },
-      { key:'mindAbilityWheel', title:'마음의 능력 (5각형 성장바퀴)', html: mindAbilityHtml, toggle:true },
+      { key:'artAbilityWheel', title:'미술능력', html: artAbilityHtml, toggle:true },
+      { key:'mindAbilityWheel', title:'마음의 능력', html: mindAbilityHtml, toggle:true },
       { key:'materialWheel', title:'재료 효과 바퀴 (사고·감정·뉴트럴)', html: materialWheelHtml, toggle:true },
       { key:'effectBalance', title:'재료 효과 비율', html: effectBalanceHtml, toggle:true },
       { key:'keywordCloud', title:'자주 나온 감정 · 성장 키워드', html: keywordCloudHtml, toggle:true },
