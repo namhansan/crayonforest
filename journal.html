@@ -294,12 +294,16 @@
   @page{ size:A4; margin:14mm; }
   @page summarySheet{ size:A4 landscape; margin:10mm; }
   @media print{
-    header, .privacy-note, .logout-link, .print-btn{ display:none !important; }
+    header, .privacy-note, .logout-link, .print-btn, .teacher-badge, #jSummaryFilter{ display:none !important; }
     body{ background:#fff; }
     .wrap{ max-width:100%; padding:0; }
-    .carte-cover{ min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; page-break-after:always; border-radius:0; }
-    .month-card{ page-break-after:always; box-shadow:none; min-height:95vh; display:flex; flex-direction:column; justify-content:center; }
-    .month-card:last-child{ page-break-after:auto; }
+    /* min-height:100vh/95vh는 실제 인쇄 페이지 크기와 안 맞아서 표지·회차 카드가
+       어중간하게 다음 장으로 넘어가는 원인이라 빼고, break-after로만 페이지를
+       나눠요. 내용이 짧으면 자연스럽게 한 페이지 안에 다 들어가고, 유난히 긴
+       회차만 다음 페이지로 이어져요. */
+    .carte-cover{ display:flex; flex-direction:column; align-items:center; justify-content:center; break-after:page; page-break-after:always; border-radius:0; padding-top:22vh; }
+    .month-card{ break-after:page; page-break-after:always; break-inside:avoid; box-shadow:none; }
+    .month-card:last-child{ break-after:auto; page-break-after:auto; }
     footer{ display:none; }
 
     /* 종합요약만 가로(landscape) 페이지에 PPT 대시보드처럼 격자 배치 */
@@ -1468,11 +1472,11 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
 
     const sections = [
       { key:'growthSentence', title:'성장 한 문장', html: narrativeHtml, toggle:false },
-      { key:'colorFlow', title:'작품 속 색채흐름', html: colorFlowHtml, toggle:false, extra: colorFlowHtml ? feedbackHtml : '' },
-      { key:'colorJourney', title:'6개월 마음색 여정 (색상 · 톤)', html: colorToneWheelHtml, toggle:true },
-      { key:'toneGrid', title:'수업전후 마음색 키워드', html: toneGridHtml, toggle:false, extra: moodColorNotesHtml },
       { key:'artAbilityWheel', title:'미술에서 자라고 있는 힘', html: artAbilityHtml, toggle:true },
       { key:'mindAbilityWheel', title:'마음의 능력', html: mindAbilityHtml, toggle:true },
+      { key:'toneGrid', title:'수업전후 마음색 키워드', html: toneGridHtml, toggle:false, extra: moodColorNotesHtml },
+      { key:'colorFlow', title:'작품 속 색채흐름', html: colorFlowHtml, toggle:false, extra: colorFlowHtml ? feedbackHtml : '' },
+      { key:'colorJourney', title:'6개월 마음색 여정 (색상 · 톤)', html: colorToneWheelHtml, toggle:true },
       { key:'materialWheel', title:'재료 효과 바퀴 (사고·감정·뉴트럴)', html: materialWheelHtml, toggle:true },
       { key:'effectBalance', title:'재료 효과 비율', html: effectBalanceHtml, toggle:true },
       { key:'keywordCloud', title:'자주 나온 감정 · 성장 키워드', html: keywordCloudHtml, toggle:true },
