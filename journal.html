@@ -236,6 +236,12 @@
   .ability-name{display:block; font-weight:700; color:var(--forest); font-size:12.5px; margin-bottom:2px;}
   .ability-count{display:block; color:#9a9285; font-size:11px; margin-bottom:6px;}
   .ability-desc{display:block; color:#6b6459; font-size:11.5px; line-height:1.5;}
+  .stage-chip{display:inline-block; margin-top:4px; margin-bottom:4px; padding:2px 8px; border-radius:20px; font-size:10.5px; font-weight:700; color:#fff;}
+  .stage-chip.stage-1{background:#B7AE9E;}
+  .stage-chip.stage-2{background:#D9A756;}
+  .stage-chip.stage-3{background:#8CA37A;}
+  .stage-chip.stage-4{background:#6B8F5C;}
+  .stage-chip.stage-none{background:transparent; color:#b7ae9e; border:1px dashed #d8cfc0; font-weight:600;}
 
   /* 학부모 화면: 가장 크게 자란 힘 TOP 카드 */
   .top-ability-list{display:flex; flex-direction:column; gap:10px;}
@@ -253,7 +259,8 @@
   .mind-bar-label{width:88px; font-size:12.5px; color:var(--forest); font-weight:600; flex-shrink:0;}
   .mind-bar-track{flex:1; height:14px; background:var(--ivory-deep); border-radius:8px; overflow:hidden;}
   .mind-bar-fill{height:100%; background:linear-gradient(90deg, #C9DDB9, #8CA37A); border-radius:8px;}
-  .mind-bar-count{width:30px; text-align:right; font-size:11px; color:#9a9285; flex-shrink:0;}
+  .mind-bar-fill.unconfirmed{background:repeating-linear-gradient(45deg, #E4DBC9, #E4DBC9 6px, #ECE4D4 6px, #ECE4D4 12px);}
+  .mind-bar-count{width:56px; text-align:right; font-size:11px; color:#9a9285; flex-shrink:0;}
 
   .growth-narrative{
     background:#F7EFE4; border:1px solid #EAD9BE; border-radius:var(--radius-md); padding:20px 24px;
@@ -330,7 +337,7 @@
     .summary-section .mind-bar-icon{ font-size:13px; width:16px; }
     .summary-section .mind-bar-label{ width:58px; font-size:9px; }
     .summary-section .mind-bar-track{ height:9px; }
-    .summary-section .mind-bar-count{ font-size:8px; width:20px; }
+    .summary-section .mind-bar-count{ font-size:8px; width:36px; }
 
     /* 능력 배지: 좁은 칸에서 세로로 쌓이던 걸 컴팩트한 알약 형태로 줄여서 높이를 크게 줄임 */
     .summary-section .ability-desc{ display:none; }
@@ -771,6 +778,16 @@ function polarPt(cx,cy,r,angDeg){
   return { x: cx + r*Math.cos(a), y: cy + r*Math.sin(a) };
 }
 
+// 성장단계(1~4) 관련 공통 상수/도우미. 횟수(관찰 빈도)와 완전히 별개의 데이터로,
+// teacher-entry.html "능력 성장단계" 탭에서 선생님이 직접(또는 AI 도움을 받아) 판정해요.
+const STAGE_LABELS = {1:'1단계·발견중', 2:'2단계·시도중', 3:'3단계·확장중', 4:'4단계·자기화중'};
+const STAGE_SHORT = {1:'발견중', 2:'시도중', 3:'확장중', 4:'자기화중'};
+function stagesMapFor(abilityStages, type){
+  const map = {};
+  (abilityStages || []).forEach(s => { if(s.type === type && s.ability) map[s.ability] = s; });
+  return map;
+}
+
 // 미술능력/마음의 능력을 정N각형 성장 바퀴(레이더 차트)로 보여줘요.
 // 거미줄(칸) 하나하나가 정확히 "1회"를 뜻하도록 눈금을 실제 횟수에 맞춰 그려서,
 // 점이 눈금 사이 어중간한 곳에 걸치지 않고 항상 정확한 칸 위에 찍히게 했어요.
@@ -824,26 +841,30 @@ function renderAbilityWheel(labels, entries, field){
         ${ringLabelsHtml.join('')}
         ${labelEls}
       </svg>
-      <div class="wheel-caption">칸 하나가 1회를 뜻해요 (최대 ${maxCount}회) · 바깥쪽으로 갈수록 그 힘이 자주 나타났다는 뜻이에요</div>
+      <div class="wheel-caption">칸 하나가 1회를 뜻해요 (최대 ${maxCount}회) · 이 바퀴는 "얼마나 자주 관찰됐는지"만 보여줘요. 실제 성장 단계(발견→시도→확장→자기화)는 아래에서 따로 확인하세요.</div>
     </div>`;
 }
 
-// 능력별 배지(횟수 + 설명), 미술능력은 우뇌/균형/좌뇌 3갈래로 묶어서 보여줘요.
-function renderAbilityBadges(entries, field, labels, defs, groupsDef){
+// 능력별 배지: 관찰 횟수(참고용)와, 있다면 실제 판정된 성장단계를 함께 보여줘요.
+// 횟수가 많다고 ⭐ 표시를 하던 예전 방식은 "많이 나온 게 곧 많이 자란 것"으로
+// 오해할 수 있어서 없앴어요 — 성장단계는 별도로 판정된 값만 표시해요.
+function renderAbilityBadges(entries, field, labels, defs, groupsDef, stagesMap){
   const counts = {};
   labels.forEach(l => counts[l] = 0);
   entries.forEach(e => { if(e[field] && counts.hasOwnProperty(e[field])) counts[e[field]]++; });
   if(!Object.values(counts).some(c => c > 0)) return '';
 
-  const present = labels.filter(l => counts[l] > 0);
-  const top = new Set(present.sort((a,b)=>counts[b]-counts[a]).slice(0, Math.min(3, present.length)));
-
-  const badge = l => `
-    <div class="ability-badge${top.has(l) ? ' standout' : ''}">
-      <span class="ability-name">${l}${top.has(l) ? ' ⭐' : ''}</span>
-      <span class="ability-count">${counts[l]}회</span>
+  const badge = l => {
+    const st = stagesMap && stagesMap[l];
+    return `
+    <div class="ability-badge">
+      <span class="ability-name">${l}</span>
+      <span class="ability-count">관찰 ${counts[l]}회</span>
+      ${st && st.stage ? `<span class="stage-chip stage-${st.stage}">${STAGE_LABELS[st.stage] || ''}</span>` : `<span class="stage-chip stage-none">성장단계 미판정</span>`}
       ${defs[l] ? `<span class="ability-desc">${defs[l]}</span>` : ''}
+      ${st && st.reason ? `<span class="ability-desc" style="margin-top:4px;">"${st.reason}"</span>` : ''}
     </div>`;
+  };
 
   if(groupsDef){
     return groupsDef.map(([title, items]) => `
@@ -855,22 +876,23 @@ function renderAbilityBadges(entries, field, labels, defs, groupsDef){
   return `<div class="ability-board">${labels.map(badge).join('')}</div>`;
 }
 
-function renderAbilitySection(entries, field, labels, defs, groupsDef, noteField){
-  const badges = renderAbilityBadges(entries, field, labels, defs, groupsDef);
+function renderAbilitySection(entries, field, labels, defs, groupsDef, noteField, stagesMap){
+  const badges = renderAbilityBadges(entries, field, labels, defs, groupsDef, stagesMap);
   const wheel = renderAbilityWheel(labels, entries, field);
   const evidence = noteField ? renderAbilityEvidence(entries, field, noteField, labels) : '';
   if(!badges && !wheel) return '';
-  return `${badges ? `<div class="freq-card" style="margin-bottom:16px;">${badges}</div>` : ''}${wheel}${evidence}`;
+  const note = `<div class="wheel-caption" style="text-align:left; margin-bottom:12px;">횟수는 "얼마나 자주 관찰됐는가", 성장단계는 "그 힘을 사용하는 방식이 얼마나 깊어졌는가"를 보는 거라 서로 달라요. 횟수가 많다고 그 능력이 가장 많이 자란 건 아니에요 — 성장단계는 teacher-entry.html의 "능력 성장단계" 탭에서 근거 문장을 보고 따로 판정해요.</div>`;
+  return `${note}${badges ? `<div class="freq-card" style="margin-bottom:16px;">${badges}</div>` : ''}${wheel}${evidence}`;
 }
 
-// 학부모 화면용: 있는 항목만, 가장 많이 나타난 순으로 최대 3개까지 "가장 크게 자라나고
-// 있는 힘" 카드로 보여줘요. 근거로 남긴 문장이 있으면 그걸 그대로 쓰고, 없으면 능력
-// 설명 문장을 대신 써요.
+// 학부모 화면용: 있는 항목만, 최대 3개까지 카드로 보여줘요. 성장단계가 판정된 능력을
+// 우선하고(질적으로 확인된 것이 먼저), 그다음은 관찰 횟수 순으로 채워요. 판정근거가
+// 있으면 그 문장을 그대로 쓰고, 없으면 능력 설명으로 대체해요.
 const ART_ABILITY_ICONS = {
   '집중,지속력':'🎯','언어표현':'💬','관계,소통력':'👥','표현기술,조형력':'✋','탐구,관찰력':'🔍',
   '발상,창의력':'💡','조화감각,색채력':'🎨','문제해결,도전력':'🧩','응용,표현전개력':'🚀'
 };
-function renderTopAbilityCards(entries, field, labels, defs, icons){
+function renderTopAbilityCards(entries, field, labels, defs, icons, stagesMap){
   const counts = {};
   labels.forEach(l => counts[l] = 0);
   const latestNote = {};
@@ -882,45 +904,61 @@ function renderTopAbilityCards(entries, field, labels, defs, icons){
       if(note) latestNote[val] = note;
     }
   });
-  const present = labels.filter(l => counts[l] > 0).sort((a,b) => counts[b]-counts[a]).slice(0,3);
+  const present = labels.filter(l => counts[l] > 0)
+    .sort((a,b) => {
+      const sa = (stagesMap && stagesMap[a] && stagesMap[a].stage) || 0;
+      const sb = (stagesMap && stagesMap[b] && stagesMap[b].stage) || 0;
+      if(sb !== sa) return sb - sa; // 판정된 성장단계가 높은 순 먼저
+      return counts[b] - counts[a];
+    })
+    .slice(0,3);
   if(!present.length) return '';
-  const cards = present.map(l => `
+  const cards = present.map(l => {
+    const st = stagesMap && stagesMap[l];
+    const blurb = (st && st.reason) || latestNote[l] || defs[l] || '';
+    return `
     <div class="top-ability-card">
       <div class="top-ability-icon">${(icons && icons[l]) || '🌱'}</div>
       <div class="top-ability-body">
         <div class="top-ability-name">${l}</div>
-        <p class="top-ability-blurb">${latestNote[l] || defs[l] || ''}</p>
+        <p class="top-ability-blurb">${blurb}</p>
       </div>
-      <div class="top-ability-trend">↑↑</div>
-    </div>`).join('');
+      <div class="top-ability-trend">${st && st.stage ? STAGE_SHORT[st.stage] : '관찰 중'}</div>
+    </div>`;
+  }).join('');
   return `<div class="top-ability-list">${cards}</div>`;
 }
 
-// 마음의 능력(5개)은 귀여운 아이콘 + 가로 막대로 보여줘요. 막대 길이는 1~4회를
-// 발견→시도→확장→자기화 4단계에 대응시켜서(4회 이상은 자기화로 가득 참) 표현해요.
+// 마음의 능력(5개)은 귀여운 아이콘 + 가로 막대로 보여줘요. 판정된 성장단계(1~4)가
+// 있으면 그 값을 그대로 막대 길이로 쓰고, 아직 판정 전이면 관찰 횟수를 참고용으로만
+// 보여줘요(별표시 없이, "미판정"이라고 명시).
 const MIND_ABILITY_ICONS = { '마음 알아차림':'💗','마음표현':'🎨','마음조절':'💧','마음믿기':'⭐','마음나누기':'🤝' };
-function renderMindAbilityBars(entries){
+function renderMindAbilityBars(entries, stagesMap){
   const counts = {};
   MIND_ABILITIES.forEach(l => counts[l] = 0);
   entries.forEach(e => { if(e.mindAbility && counts.hasOwnProperty(e.mindAbility)) counts[e.mindAbility]++; });
-  if(!Object.values(counts).some(c => c > 0)) return '';
+  if(!Object.values(counts).some(c => c > 0) && !Object.keys(stagesMap||{}).length) return '';
 
   const rows = MIND_ABILITIES.map(l => {
-    const stage = Math.min(counts[l], 4);
+    const st = stagesMap && stagesMap[l];
+    const hasStage = st && st.stage;
+    const stage = hasStage ? st.stage : Math.min(counts[l], 4);
     const pct = (stage/4)*100;
     return `
     <div class="mind-bar-row">
       <span class="mind-bar-icon">${MIND_ABILITY_ICONS[l] || '💗'}</span>
       <span class="mind-bar-label">${l}</span>
-      <div class="mind-bar-track"><div class="mind-bar-fill" style="width:${pct}%;"></div></div>
-      <span class="mind-bar-count">${counts[l]}회</span>
+      <div class="mind-bar-track"><div class="mind-bar-fill${hasStage?'':' unconfirmed'}" style="width:${pct}%;"></div></div>
+      <span class="mind-bar-count">${hasStage ? STAGE_SHORT[st.stage] : `관찰 ${counts[l]}회`}</span>
     </div>`;
   }).join('');
 
+  const anyConfirmed = MIND_ABILITIES.some(l => stagesMap && stagesMap[l] && stagesMap[l].stage);
   return `
     <div class="freq-card">
+      <div class="wheel-caption" style="margin-bottom:12px; text-align:left;">발달검사나 성격평가가 아니라, 미술 수업에서 반복적으로 관찰된 마음의 사용방식입니다.</div>
       <div class="mind-bar-list">${rows}</div>
-      <div class="wheel-caption" style="margin-top:12px;">1회(발견) → 2회(시도) → 3회(확장) → 4회 이상(자기화) 나타난 정도로 막대 길이를 표시해요</div>
+      <div class="wheel-caption" style="margin-top:12px;">1단계(발견) → 2단계(시도) → 3단계(확장) → 4단계(자기화)로 막대 길이를 표시해요${anyConfirmed ? '' : ' · 아직 선생님이 판정한 성장단계가 없어서, 지금은 관찰 횟수를 참고용으로 대신 보여주고 있어요'}</div>
     </div>${renderAbilityEvidence(entries, 'mindAbility', 'mindAbilityNote', MIND_ABILITIES)}`;
 }
 
@@ -1127,15 +1165,18 @@ function checkJournal(){
   btn.disabled = true; btn.textContent = '확인 중...';
 
   const params = new URLSearchParams({ action:'journal', name, phone4 });
-  fetch(GAS_URL + '?' + params.toString())
-    .then(r => r.json())
-    .then(data => {
+  const stageParams = new URLSearchParams({ action:'abilityStages', name, phone4 });
+  Promise.all([
+      fetch(GAS_URL + '?' + params.toString()).then(r => r.json()),
+      fetch(GAS_URL + '?' + stageParams.toString()).then(r => r.json()).catch(() => ({stages:[]}))
+    ])
+    .then(([data, stageData]) => {
       btn.disabled = false; btn.textContent = '성장카르테 확인하기';
       if(!data.found){
         errEl.textContent = data.message || '일치하는 기록이 없어요.';
         return;
       }
-      renderJournal(data);
+      renderJournal(data, (stageData && stageData.stages) || []);
     })
     .catch(() => {
       btn.disabled = false; btn.textContent = '성장카르테 확인하기';
@@ -1143,7 +1184,7 @@ function checkJournal(){
     });
 }
 
-function renderJournal(data){
+function renderJournal(data, abilityStages){
   document.getElementById('loginView').style.display = 'none';
   document.getElementById('journalView').style.display = 'block';
   document.getElementById('jChildName').textContent = `${data.name} 어린이`;
@@ -1276,7 +1317,7 @@ function renderJournal(data){
   // 종합요약(색채 여정 등)은 흐름이 이어지는 정규반 기록만으로 계산해요 — 특강은
   // 기간이 짧고 별개 활동이라 성장 흐름 계산에 섞이면 오히려 왜곡될 수 있어서예요.
   const summaryEntries = hasIntensive ? entries.filter(e => !isIntensive(e)) : entries;
-  _journalState = { entries: summaryEntries, summary: data.summary, name: data.name, narrativeOverride: data.narrativeOverride, hintsOverride: data.hintsOverride, feedbackA: data.feedbackA || '', hiddenSections: data.hiddenSections || [] };
+  _journalState = { entries: summaryEntries, summary: data.summary, name: data.name, narrativeOverride: data.narrativeOverride, hintsOverride: data.hintsOverride, feedbackA: data.feedbackA || '', hiddenSections: data.hiddenSections || [], abilityStages: abilityStages || [] };
   if(hasIntensive){
     wrap.insertAdjacentHTML('beforeend', `<div class="class-note">ℹ️ 특강 ${entries.length - summaryEntries.length}회는 별도 활동이라 아래 종합요약(색채 여정 등) 계산에는 포함하지 않았어요. 위 기록에서는 그대로 확인할 수 있어요.</div>`);
   }
@@ -1286,7 +1327,7 @@ function renderJournal(data){
   const savedFrom = (data.range && data.range.from) ? Math.max(1, Math.min(data.range.from, total)) : 1;
   const savedTo = (data.range && data.range.to) ? Math.max(1, Math.min(data.range.to, total)) : total;
   const initialSlice = summaryEntries.slice(savedFrom - 1, savedTo);
-  renderSummarySection(initialSlice, data.summary, data.name, data.narrativeOverride, data.hintsOverride, data.feedbackA, data.hiddenSections);
+  renderSummarySection(initialSlice, data.summary, data.name, data.narrativeOverride, data.hintsOverride, data.feedbackA, data.hiddenSections, abilityStages || []);
 }
 
 // 종합요약(자동 생성 부분)만 원하는 회차 범위로 좁혀볼 수 있는 필터.
@@ -1318,7 +1359,7 @@ function applySummaryFilter(){
   const to = parseInt(document.getElementById('jToSel').value, 10);
   const lo = Math.min(from, to) - 1, hi = Math.max(from, to);
   const subset = _journalState.entries.slice(lo, hi);
-  renderSummarySection(subset, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedbackA, _journalState.hiddenSections);
+  renderSummarySection(subset, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedbackA, _journalState.hiddenSections, _journalState.abilityStages);
 }
 function resetSummaryFilter(){
   if(!_journalState) return;
@@ -1339,7 +1380,7 @@ function toggleSectionVisibility(key){
   if(fromSel){
     applySummaryFilter();
   } else {
-    renderSummarySection(_journalState.entries, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedbackA, _journalState.hiddenSections);
+    renderSummarySection(_journalState.entries, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedbackA, _journalState.hiddenSections, _journalState.abilityStages);
   }
 
   const params = new URLSearchParams({ action:'saveSectionVisibility', name:_lastName, phone4:_lastPhone4, hiddenSections: _journalState.hiddenSections.join(',') });
@@ -1358,7 +1399,7 @@ function saveSummaryFilter(){
     .catch(() => { msg.textContent = '저장에 실패했어요. 다시 시도해주세요.'; });
 }
 
-function renderSummarySection(entries, summary, childName, narrativeOverride, hintsOverride, feedbackA, hiddenSections){
+function renderSummarySection(entries, summary, childName, narrativeOverride, hintsOverride, feedbackA, hiddenSections, abilityStages){
   const box = document.getElementById('jSummary');
   const colored = entries.filter(e => e.mainColor);
 
@@ -1402,10 +1443,12 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const moodColorNotesHtml = renderMoodColorNotes(entries);
     const effectBalanceHtml = renderEffectBalance(entries);
     const keywordCloudHtml = renderKeywordCloud(entries);
+    const artStagesMap = stagesMapFor(abilityStages, '미술');
+    const mindStagesMap = stagesMapFor(abilityStages, '마음');
     const artAbilityHtml = isTeacher
-      ? renderAbilitySection(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_GROUPS, 'artAbilityNote')
-      : renderTopAbilityCards(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_ICONS);
-    const mindAbilityHtml = renderMindAbilityBars(entries);
+      ? renderAbilitySection(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_GROUPS, 'artAbilityNote', artStagesMap)
+      : renderTopAbilityCards(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_ICONS, artStagesMap);
+    const mindAbilityHtml = renderMindAbilityBars(entries, mindStagesMap);
     const narrativeHtml = (narrativeOverride && narrativeOverride.trim())
       ? `<div class="growth-narrative">✨ ${narrativeOverride.trim()}</div>`
       : renderGrowthNarrative(entries, childName);
@@ -1427,7 +1470,7 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
       { key:'colorFlow', title:'작품 속 색채흐름', html: colorFlowHtml, toggle:false, extra: colorFlowHtml ? feedbackHtml : '' },
       { key:'colorJourney', title:'6개월 마음색 여정 (색상 · 톤)', html: colorToneWheelHtml, toggle:true },
       { key:'toneGrid', title:'수업전후 마음색 키워드', html: toneGridHtml, toggle:false, extra: moodColorNotesHtml },
-      { key:'artAbilityWheel', title:'미술능력', html: artAbilityHtml, toggle:true },
+      { key:'artAbilityWheel', title:'미술에서 자라고 있는 힘', html: artAbilityHtml, toggle:true },
       { key:'mindAbilityWheel', title:'마음의 능력', html: mindAbilityHtml, toggle:true },
       { key:'materialWheel', title:'재료 효과 바퀴 (사고·감정·뉴트럴)', html: materialWheelHtml, toggle:true },
       { key:'effectBalance', title:'재료 효과 비율', html: effectBalanceHtml, toggle:true },

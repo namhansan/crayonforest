@@ -99,6 +99,7 @@
     <div class="tab-row">
       <button class="tab-btn active" id="tabEntryBtn" onclick="switchTab('entry')">회차 기록 입력</button>
       <button class="tab-btn" id="tabSummaryBtn" onclick="switchTab('summary')">6개월 종합요약 입력</button>
+      <button class="tab-btn" id="tabStageBtn" onclick="switchTab('stage')">능력 성장단계</button>
     </div>
 
     <div id="entryTab">
@@ -327,6 +328,45 @@
       <button class="submit-btn" id="summarySubmitBtn" onclick="saveSummaryForm()">성장요약 저장하기</button>
       <div class="submit-msg" id="summaryMsg"></div>
     </div>
+
+    <div id="stageTab" style="display:none;">
+      <div class="form-card">
+        <div class="form-section-title">아이 찾기</div>
+        <div class="form-row">
+          <div class="f-field"><label>이름 *</label><input type="text" id="st_name" placeholder="예: 국다온"></div>
+          <div class="f-field"><label>전화번호 뒷 4자리 *</label><input type="text" id="st_phone4" maxlength="4" placeholder="예: 9713"></div>
+        </div>
+        <button class="submit-btn" style="background:var(--forest);" onclick="loadAbilityStages()">불러오기</button>
+        <div class="submit-msg" id="stageLoadMsg"></div>
+        <div class="hint" style="margin-top:10px; display:block;">
+          횟수(관찰 빈도)와 성장단계는 서로 다른 질문이에요. 횟수는 "얼마나 자주 관찰됐는가"이고,
+          성장단계는 "그 힘을 사용하는 방식이 얼마나 깊어졌는가"예요. 횟수가 많다고 그 능력이
+          가장 많이 자란 건 아니라서, 근거 문장(회차 기록에 적어주신 미술능력근거/마음의 능력근거)을
+          직접 읽고 판정하거나, 아래 "AI 해석 요청" 버튼으로 도움을 받아보세요. AI 제안은 참고용이며
+          최종 판정은 선생님이 검토해서 저장해주셔야 반영돼요.
+        </div>
+      </div>
+
+      <div class="form-card" id="stageWorkArea" style="display:none;">
+        <div class="form-section-title">AI 해석 <span class="hint">(근거 문장을 보고 성장단계를 제안받아요 — 참고용)</span></div>
+        <button class="submit-btn" style="background:#6B8F5C;" onclick="requestAIStageAnalysis()" id="aiBtn">🤖 AI 해석 요청</button>
+        <div class="submit-msg" id="aiMsg"></div>
+      </div>
+
+      <div class="form-card" id="stageArtCard" style="display:none;">
+        <div class="form-section-title">미술에서 자라고 있는 힘</div>
+        <div id="stageRowsArt"></div>
+      </div>
+
+      <div class="form-card" id="stageMindCard" style="display:none;">
+        <div class="form-section-title">마음의 능력</div>
+        <div class="hint" style="margin-bottom:12px; display:block;">발달검사나 성격평가가 아니라, 미술 수업에서 반복적으로 관찰된 마음의 사용방식입니다.</div>
+        <div id="stageRowsMind"></div>
+      </div>
+
+      <button class="submit-btn" id="stageSubmitBtn" style="display:none;" onclick="saveAllStages()">전체 성장단계 저장하기</button>
+      <div class="submit-msg" id="stageSaveMsg"></div>
+    </div>
   </div>
 </div>
 
@@ -343,8 +383,10 @@ const MIND_ABILITIES = ['마음 알아차림','마음표현','마음조절','마
 function switchTab(tab){
   document.getElementById('entryTab').style.display = (tab==='entry') ? 'block' : 'none';
   document.getElementById('summaryTab').style.display = (tab==='summary') ? 'block' : 'none';
+  document.getElementById('stageTab').style.display = (tab==='stage') ? 'block' : 'none';
   document.getElementById('tabEntryBtn').classList.toggle('active', tab==='entry');
   document.getElementById('tabSummaryBtn').classList.toggle('active', tab==='summary');
+  document.getElementById('tabStageBtn').classList.toggle('active', tab==='stage');
 }
 
 function loadSummary(){
@@ -799,6 +841,177 @@ function resetFormKeepChild(){
   btn.disabled = false; btn.textContent = '이 회차 저장하기';
   document.getElementById('p_round').focus();
   window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ---------- 능력 성장단계 탭 ---------- */
+const STAGE_OPTIONS = [
+  {v:'', label:'미판정'},
+  {v:'1', label:'1단계 · 발견중'},
+  {v:'2', label:'2단계 · 시도중'},
+  {v:'3', label:'3단계 · 확장중'},
+  {v:'4', label:'4단계 · 자기화중'}
+];
+let _stageState = null;
+
+function loadAbilityStages(){
+  const name = document.getElementById('st_name').value.trim();
+  const phone4 = document.getElementById('st_phone4').value.trim();
+  const msg = document.getElementById('stageLoadMsg');
+  msg.className = 'submit-msg';
+  if(!name || phone4.length !== 4){
+    msg.className = 'submit-msg err';
+    msg.textContent = '이름과 전화번호 뒷자리 4자리를 입력해주세요.';
+    return;
+  }
+  msg.textContent = '불러오는 중...';
+
+  const jParams = new URLSearchParams({ action:'journal', name, phone4 });
+  const sParams = new URLSearchParams({ action:'abilityStages', name, phone4 });
+  Promise.all([
+    fetch(GAS_URL + '?' + jParams.toString()).then(r=>r.json()),
+    fetch(GAS_URL + '?' + sParams.toString()).then(r=>r.json()).catch(()=>({stages:[]}))
+  ]).then(([jRes, sRes]) => {
+    if(!jRes.found){
+      msg.className = 'submit-msg err';
+      msg.textContent = jRes.message || '일치하는 회차 기록이 없어요.';
+      document.getElementById('stageWorkArea').style.display = 'none';
+      document.getElementById('stageArtCard').style.display = 'none';
+      document.getElementById('stageMindCard').style.display = 'none';
+      document.getElementById('stageSubmitBtn').style.display = 'none';
+      return;
+    }
+    msg.className = 'submit-msg ok';
+    msg.textContent = `${jRes.entries.length}개 회차 기록을 불러왔어요.`;
+    _stageState = { name, phone4, entries: jRes.entries || [], stages: (sRes && sRes.stages) || [] };
+    renderStageRows();
+    document.getElementById('stageWorkArea').style.display = 'block';
+    document.getElementById('stageArtCard').style.display = 'block';
+    document.getElementById('stageMindCard').style.display = 'block';
+    document.getElementById('stageSubmitBtn').style.display = 'block';
+  }).catch(() => {
+    msg.className = 'submit-msg err';
+    msg.textContent = '불러오는 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.';
+  });
+}
+
+function stageRowHtml(type, ability, count, existing){
+  const opts = STAGE_OPTIONS.map(o => `<option value="${o.v}" ${existing && String(existing.stage||'')===o.v ? 'selected':''}>${o.label}</option>`).join('');
+  return `
+  <div class="stage-row" data-type="${type}" data-ability="${ability}" style="border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:10px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+      <span style="font-weight:700; color:var(--forest); font-size:13.5px;">${ability}</span>
+      <span style="font-size:11.5px; color:#9a9285;">관찰 ${count}회 (참고용)</span>
+    </div>
+    <div class="form-row">
+      <div class="f-field"><label>성장단계</label><select class="stage-select">${opts}</select></div>
+    </div>
+    <div class="form-row single">
+      <div class="f-field"><label>판단근거</label><textarea class="stage-reason" placeholder="예: 재료가 뜻대로 안 되자 스스로 다른 방법을 찾아 시도함">${existing ? (existing.reason||'') : ''}</textarea></div>
+    </div>
+  </div>`;
+}
+
+function renderStageRows(){
+  const entries = _stageState.entries;
+  const stages = _stageState.stages;
+  const artStageMap = {}; stages.filter(s=>s.type==='미술').forEach(s => artStageMap[s.ability]=s);
+  const mindStageMap = {}; stages.filter(s=>s.type==='마음').forEach(s => mindStageMap[s.ability]=s);
+
+  const artCounts = {}; ART_ABILITIES.forEach(a=>artCounts[a]=0);
+  const mindCounts = {}; MIND_ABILITIES.forEach(a=>mindCounts[a]=0);
+  entries.forEach(e => {
+    if(e.artAbility && artCounts.hasOwnProperty(e.artAbility)) artCounts[e.artAbility]++;
+    if(e.mindAbility && mindCounts.hasOwnProperty(e.mindAbility)) mindCounts[e.mindAbility]++;
+  });
+
+  document.getElementById('stageRowsArt').innerHTML = ART_ABILITIES.map(a => stageRowHtml('미술', a, artCounts[a], artStageMap[a])).join('');
+  document.getElementById('stageRowsMind').innerHTML = MIND_ABILITIES.map(a => stageRowHtml('마음', a, mindCounts[a], mindStageMap[a])).join('');
+}
+
+function requestAIStageAnalysis(){
+  if(!_stageState) return;
+  const btn = document.getElementById('aiBtn');
+  const msg = document.getElementById('aiMsg');
+  btn.disabled = true; btn.textContent = 'AI가 근거를 읽는 중...';
+  msg.className = 'submit-msg';
+  msg.textContent = '';
+
+  const params = new URLSearchParams({ action:'aiAbilityAnalysis', name:_stageState.name, phone4:_stageState.phone4 });
+  fetch(GAS_URL + '?' + params.toString())
+    .then(r => r.json())
+    .then(res => {
+      btn.disabled = false; btn.textContent = '🤖 AI 해석 요청';
+      if(res.error){
+        msg.className = 'submit-msg err';
+        msg.textContent = res.error;
+        return;
+      }
+      const applySuggestions = (list, type) => {
+        (list || []).forEach(s => {
+          const safeAbility = String(s.ability || '').replace(/"/g, '\\"');
+          const row = document.querySelector(`.stage-row[data-type="${type}"][data-ability="${safeAbility}"]`);
+          if(!row) return;
+          const sel = row.querySelector('.stage-select');
+          const txt = row.querySelector('.stage-reason');
+          if(sel && s.stage) sel.value = String(s.stage);
+          if(txt && s.reason) txt.value = `[AI 제안] ${s.reason}`;
+        });
+      };
+      applySuggestions(res.art, '미술');
+      applySuggestions(res.mind, '마음');
+      msg.className = 'submit-msg ok';
+      msg.textContent = 'AI 제안을 채워 넣었어요. 내용을 검토하고 필요하면 고친 뒤 저장해주세요.';
+    })
+    .catch(() => {
+      btn.disabled = false; btn.textContent = '🤖 AI 해석 요청';
+      msg.className = 'submit-msg err';
+      msg.textContent = 'AI 요청 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.';
+    });
+}
+
+function saveAllStages(){
+  if(!_stageState) return;
+  const rows = document.querySelectorAll('.stage-row');
+  const jobs = [];
+  rows.forEach(row => {
+    const type = row.getAttribute('data-type');
+    const ability = row.getAttribute('data-ability');
+    const stage = row.querySelector('.stage-select').value;
+    const reason = row.querySelector('.stage-reason').value.trim();
+    if(!stage && !reason) return; // 아무것도 입력 안 한 능력은 건너뛰어요
+    const params = new URLSearchParams({
+      action:'saveAbilityStage', name:_stageState.name, phone4:_stageState.phone4,
+      type, ability, stage, reason
+    });
+    jobs.push(fetch(GAS_URL + '?' + params.toString()).then(r=>r.json()));
+  });
+
+  const msg = document.getElementById('stageSaveMsg');
+  const btn = document.getElementById('stageSubmitBtn');
+  if(!jobs.length){
+    msg.className = 'submit-msg err';
+    msg.textContent = '저장할 내용이 없어요. 최소 한 능력에 성장단계나 판단근거를 입력해주세요.';
+    return;
+  }
+  btn.disabled = true; btn.textContent = '저장 중...';
+  msg.className = 'submit-msg';
+  msg.textContent = '';
+
+  Promise.all(jobs).then(results => {
+    btn.disabled = false; btn.textContent = '전체 성장단계 저장하기';
+    const failed = results.filter(r => !r.ok);
+    if(failed.length){
+      msg.className = 'submit-msg err';
+      msg.textContent = `일부 저장에 실패했어요 (${failed.length}건). 다시 시도해주세요.`;
+    } else {
+      msg.className = 'submit-msg ok';
+      msg.textContent = `${results.length}개 능력의 성장단계를 저장했어요.`;
+    }
+  }).catch(() => {
+    btn.disabled = false; btn.textContent = '전체 성장단계 저장하기';
+    msg.className = 'submit-msg err';
+    msg.textContent = '저장 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.';
+  });
 }
 </script>
 

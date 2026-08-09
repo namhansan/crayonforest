@@ -83,12 +83,30 @@
  * 월별 성장일지 기록은 언제나 그대로 보입니다. "공개여부"를 체크해야 보이는 건
  * 맨 마지막의 "종합 요약" 부분(색채 차트+강점+성장방향)뿐입니다 — 체크 전에는
  * 그 부분만 화면에서 생략되고, 체크하면 그때부터 나타납니다.
+ * (선택) 능력 성장단계 시트 준비 — 횟수(빈도)와 성장단계(질적 판단)를 분리해서 관리:
+ * "능력성장단계"라는 이름의 시트 탭을 만들고, 첫 줄에 다음 7개를 순서대로 넣어주세요:
+ * 이름 | 전화번호뒷4자리 | 능력유형 | 능력명 | 단계 | 판단근거 | 업데이트일시
+ *
+ * 이 시트는 teacher-entry.html의 "능력 성장단계" 탭에서 자동으로 만들고 채워줘서
+ * 손으로 직접 만들지 않아도 됩니다. 왜 이 시트가 따로 필요한지 설명하면:
+ *
+ * "미술능력"/"마음의 능력" 열은 회차마다 하나씩 쌓이는 "관찰 빈도" 데이터예요.
+ * 그런데 몇 번 관찰됐는지(빈도)와 그 힘을 얼마나 깊이 있게 쓰는지(성장 단계)는
+ * 서로 다른 질문이에요 — 예를 들어 응용·전개력이 10번, 문제해결·도전력이 5번
+ * 나왔다고 응용·전개력이 "두 배로 성장했다"고 볼 수는 없어요. 그래서 이 시트는
+ * 능력마다 별도로 "1단계 발견중 / 2단계 시도중 / 3단계 확장중 / 4단계 자기화중"
+ * 판정을 저장해요 — 선생님이 회차별 근거 문장(미술능력근거/마음의 능력근거)들을
+ * 읽고 직접 판단하거나, "AI 해석 요청" 버튼으로 도움을 받아 판단할 수 있어요.
+ * (AI 해석 기능을 쓰려면 Apps Script 편집기 > 프로젝트 설정 > 스크립트 속성에서
+ * ANTHROPIC_API_KEY 라는 이름으로 Anthropic API 키를 등록해주세요. 등록 안 해도
+ * 나머지 기능은 전부 정상 동작하고, AI 해석 버튼만 못 써요.)
  */
 
 const SHEET_NAME = '수강신청';
 const JOURNAL_SHEET_NAME = '성장일지';
 const SUMMARY_SHEET_NAME = '성장요약';
 const VISIT_SHEET_NAME = '방문통계';
+const ABILITY_STAGE_SHEET_NAME = '능력성장단계';
 
 function doGet(e) {
   const action = e.parameter.action;
@@ -104,6 +122,21 @@ function doGet(e) {
   if (action === 'updateJournalEntry') return jsonOutput(updateJournalEntry(e.parameter));
   if (action === 'summaryForEdit') return jsonOutput(getSummary(e.parameter.name, e.parameter.phone4) || {});
   if (action === 'saveSummary') return jsonOutput(saveSummary(e.parameter));
+  if (action === 'abilityStages') return jsonOutput({ stages: getAbilityStages(e.parameter.name, e.parameter.phone4) });
+  if (action === 'saveAbilityStage') {
+    try {
+      return jsonOutput(saveAbilityStage(e.parameter));
+    } catch (err) {
+      return jsonOutput({ ok: false, error: err.message });
+    }
+  }
+  if (action === 'aiAbilityAnalysis') {
+    try {
+      return jsonOutput(requestAIAbilityAnalysis(e.parameter.name, e.parameter.phone4));
+    } catch (err) {
+      return jsonOutput({ error: err.message });
+    }
+  }
 
   return jsonOutput({ ok: true });
 }
@@ -238,6 +271,15 @@ function setupJournalDropdowns() {
 
   const col = getHeaderIndexMap(sheet);
   const LAST_ROW = 500;
+
+  // 전화번호뒷4자리 열 전체를 "일반 텍스트" 서식으로 지정해요. 그래야 시트에
+  // 직접 0312처럼 입력해도 앞자리 0이 312로 사라지지 않아요. (이미 0이 사라진
+  // 예전 값은 서식만으로는 복구되지 않으니, 그 줄만 다시 0312로 고쳐 입력해주세요.)
+  const phoneKey = normalizeHeader('전화번호뒷4자리');
+  if (phoneKey in col) {
+    sheet.getRange(2, col[phoneKey] + 1, LAST_ROW - 1, 1).setNumberFormat('@');
+  }
+
   const colorList = ['검정', '빨강', '주황', '노랑', '연두', '초록', '파랑', '보라', '핑크', '회색', '청록', '무지개', '골드', '갈색', '은색'];
   const toneList = ['deep', 'vivid', 'pastel'];
   const effectList = ['감정활동(발산효과)', '뉴트럴(중립)', '사고활동(집중효과)'];
@@ -291,6 +333,16 @@ function getHeaderIndexMap(sheet) {
   return map;
 }
 
+// 전화번호 뒷 4자리 비교용 도우미. 구글 시트가 "0312" 같은 값을 숫자로 인식해서
+// 앞자리 0을 지워버리는 경우가 있어서(=312로 저장됨), 순수 숫자면 항상 4자리로
+// 0을 채워서 비교해요. 이렇게 하면 시트에 0312로 저장했든 312로 저장했든,
+// 학부모가 0312를 입력하면 똑같이 매칭돼요.
+function normalizePhone4(v) {
+  const s = String(v == null ? '' : v).trim();
+  if (/^\d+$/.test(s) && s.length <= 4) return s.padStart(4, '0');
+  return s;
+}
+
 function getJournal(name, phone4) {
   if (!name || !phone4) {
     return { found: false, message: '이름과 전화번호 뒷자리를 모두 입력해주세요.' };
@@ -316,10 +368,10 @@ function getJournal(name, phone4) {
   rows.shift(); // 헤더 제거
 
   const nameTrim = String(name).trim();
-  const phoneTrim = String(phone4).trim();
+  const phoneTrim = normalizePhone4(phone4);
 
   const matched = rows.filter(r =>
-    String(get(r, '이름', '')).trim() === nameTrim && String(get(r, '전화번호뒷4자리', '')).trim() === phoneTrim
+    String(get(r, '이름', '')).trim() === nameTrim && normalizePhone4(get(r, '전화번호뒷4자리', '')) === phoneTrim
   );
 
   if (matched.length === 0) {
@@ -378,6 +430,135 @@ function getJournal(name, phone4) {
   };
 }
 
+/* ---------- 능력 성장단계 (횟수와는 별개인 "질적 판단" 데이터) ----------
+ * "능력성장단계" 시트에서 이름+전화번호가 일치하는 줄들을 모아서 돌려줘요.
+ * 능력 하나(예: "문제해결,도전력")당 최대 한 줄만 있고, 다시 저장하면 그 줄을
+ * 덮어써요(새로 쌓이지 않음) — 항상 "가장 최근 판단"만 남깁니다.
+ */
+function getAbilityStages(name, phone4) {
+  if (!name || !phone4) return [];
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(ABILITY_STAGE_SHEET_NAME);
+  if (!sheet) return [];
+  const data = sheet.getDataRange().getValues();
+  data.shift();
+  const nameTrim = String(name).trim(), phoneTrim = normalizePhone4(phone4);
+  return data
+    .filter(r => String(r[0]).trim() === nameTrim && normalizePhone4(r[1]) === phoneTrim)
+    .map(r => ({ type: String(r[2] || '').trim(), ability: String(r[3] || '').trim(), stage: Number(r[4]) || 0, reason: String(r[5] || ''), updatedAt: r[6] || '' }))
+    .filter(s => s.type && s.ability);
+}
+
+// 능력 하나의 성장단계(1~4)와 판단근거를 저장해요. 같은 아이+같은 능력이면 새로 쌓지
+// 않고 그 줄을 덮어써서, 시트가 무한히 늘어나지 않고 항상 최신 판단만 남아요.
+function saveAbilityStage(p) {
+  if (!p.name || !p.phone4 || !p.type || !p.ability) {
+    throw new Error('이름/전화번호/능력유형(미술 또는 마음)/능력명이 모두 필요해요.');
+  }
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(ABILITY_STAGE_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(ABILITY_STAGE_SHEET_NAME);
+    sheet.appendRow(['이름', '전화번호뒷4자리', '능력유형', '능력명', '단계', '판단근거', '업데이트일시']);
+  }
+  const data = sheet.getDataRange().getValues();
+  let rowIdx = -1;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === String(p.name).trim() &&
+        normalizePhone4(data[i][1]) === normalizePhone4(p.phone4) &&
+        String(data[i][2]).trim() === String(p.type).trim() &&
+        String(data[i][3]).trim() === String(p.ability).trim()) {
+      rowIdx = i + 1;
+      break;
+    }
+  }
+  const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Seoul', 'yyyy-MM-dd HH:mm');
+  const row = [p.name, normalizePhone4(p.phone4), p.type, p.ability, p.stage || '', p.reason || '', now];
+  if (rowIdx === -1) {
+    sheet.appendRow(row);
+    sheet.getRange(sheet.getLastRow(), 2).setNumberFormat('@');
+  } else {
+    sheet.getRange(rowIdx, 2).setNumberFormat('@');
+    sheet.getRange(rowIdx, 1, 1, row.length).setValues([row]);
+  }
+  return { ok: true };
+}
+
+/* ---------- AI 능력 해석 요청 ----------
+ * 이 아이의 회차별 "미술능력근거"/"마음의 능력근거" 문장들을 능력별로 모아서
+ * Anthropic API(Claude)에게 보내고, 빈도가 아니라 "사용 방식이 얼마나 깊어졌는지"를
+ * 기준으로 1~4단계를 제안받아요. 결과는 저장되지 않고 teacher-entry.html 화면에
+ * 제안으로만 표시되며, 선생님이 검토하고 수정한 뒤 "저장"을 눌러야 실제로 반영돼요.
+ * 이 함수를 쓰려면 Apps Script 편집기 > 프로젝트 설정 > 스크립트 속성에서
+ * ANTHROPIC_API_KEY 값을 등록해야 해요.
+ */
+function requestAIAbilityAnalysis(name, phone4) {
+  const apiKey = PropertiesService.getScriptProperties().getProperty('ANTHROPIC_API_KEY');
+  if (!apiKey) {
+    throw new Error('AI 해석을 쓰려면 먼저 Apps Script 편집기 > 프로젝트 설정 > 스크립트 속성에 ANTHROPIC_API_KEY를 등록해주세요.');
+  }
+  const journal = getJournal(name, phone4);
+  if (!journal.found || !journal.entries || !journal.entries.length) {
+    throw new Error('먼저 성장일지 회차 데이터가 있어야 AI 해석을 요청할 수 있어요.');
+  }
+
+  const artNotes = {}, mindNotes = {};
+  journal.entries.forEach(e => {
+    if (e.artAbility && e.artAbilityNote) (artNotes[e.artAbility] = artNotes[e.artAbility] || []).push(`${e.month || ''}: ${e.artAbilityNote}`);
+    if (e.mindAbility && e.mindAbilityNote) (mindNotes[e.mindAbility] = mindNotes[e.mindAbility] || []).push(`${e.month || ''}: ${e.mindAbilityNote}`);
+  });
+  if (!Object.keys(artNotes).length && !Object.keys(mindNotes).length) {
+    throw new Error('근거 문장(미술능력근거/마음의 능력근거)이 하나도 없어서 AI가 판단할 자료가 없어요. 회차 기록에 근거 문장을 먼저 적어주세요.');
+  }
+
+  const lines = [];
+  lines.push('아래는 한 아동의 미술 수업 회차별 관찰 기록입니다. 능력별로 선생님이 남긴 근거 문장들을 보고,');
+  lines.push('그 능력의 "사용 방식이 얼마나 깊어졌는지"를 판단해서 1~4단계로 분류해주세요.');
+  lines.push('단계 기준: 1=발견중(그 힘이 처음 나타남), 2=시도중(스스로 해보려 시도함),');
+  lines.push('3=확장중(다른 상황에서도 반복적으로, 더 복잡하게 사용함), 4=자기화중(완전히 자기 것으로 만들어 자기만의 언어/방식으로 표현함).');
+  lines.push('중요: 문장 개수(횟수)가 많다고 무조건 높은 단계가 아닙니다. "수용 → 재시도 → 스스로 해결책 고안"처럼');
+  lines.push('내용이 질적으로 깊어졌는지를 근거로 판단하세요. 문장이 비슷한 수준으로만 반복되면 낮은 단계에 머물 수 있습니다.');
+  lines.push('');
+  lines.push('[미술능력 근거]');
+  Object.keys(artNotes).forEach(k => lines.push(`- ${k}: ${artNotes[k].join(' / ')}`));
+  lines.push('');
+  lines.push('[마음의 능력 근거]');
+  Object.keys(mindNotes).forEach(k => lines.push(`- ${k}: ${mindNotes[k].join(' / ')}`));
+  lines.push('');
+  lines.push('아래 JSON 형식으로만 답하세요 (다른 설명이나 코드블록 없이 JSON 텍스트만):');
+  lines.push('{"art":[{"ability":"능력명","stage":1,"reason":"한두 문장 근거"}],"mind":[{"ability":"능력명","stage":1,"reason":"한두 문장 근거"}]}');
+  lines.push('근거 문장이 없는 능력은 배열에서 제외하세요.');
+
+  const res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+    payload: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1500,
+      messages: [{ role: 'user', content: lines.join('\n') }]
+    }),
+    muteHttpExceptions: true
+  });
+
+  const code = res.getResponseCode();
+  const bodyText = res.getContentText();
+  if (code !== 200) {
+    throw new Error('AI 요청이 실패했어요 (코드 ' + code + '). API 키가 올바른지 확인해주세요.');
+  }
+  const body = JSON.parse(bodyText);
+  const textBlock = (body.content || []).find(c => c.type === 'text');
+  if (!textBlock) throw new Error('AI 응답을 이해하지 못했어요. 다시 시도해주세요.');
+
+  let parsed;
+  try {
+    const cleaned = textBlock.text.replace(/```json|```/g, '').trim();
+    parsed = JSON.parse(cleaned);
+  } catch (err) {
+    throw new Error('AI 응답을 해석하지 못했어요. 다시 시도해주세요.');
+  }
+  return { ok: true, art: parsed.art || [], mind: parsed.mind || [] };
+}
+
 /* ---------- 종합요약 회차 범위 (선생님이 지정하면 학부모 화면에도 동일하게 반영) ----------
  * "성장요약" 시트의 17, 18번째 열(요약범위시작 / 요약범위끝)에 회차 번호(1부터 시작하는
  * 숫자)를 저장해둡니다. "공개여부"와 무관하게 항상 적용돼요 — 범위는 자동 생성 종합요약
@@ -389,7 +570,7 @@ function getSummaryRange(name, phone4) {
   if (!sheet) return null;
   const rows = sheet.getDataRange().getValues();
   rows.shift();
-  const row = rows.find(r => String(r[0]).trim() === name && String(r[1]).trim() === phone4);
+  const row = rows.find(r => String(r[0]).trim() === String(name).trim() && normalizePhone4(r[1]) === normalizePhone4(phone4));
   if (!row) return null;
   const from = row[16], to = row[17];
   if (!from && !to) return null;
@@ -407,7 +588,7 @@ function saveSummaryRange(name, phone4, from, to) {
   const data = sheet.getDataRange().getValues();
   let rowIdx = -1;
   for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]).trim() === String(name).trim() && String(data[i][1]).trim() === String(phone4).trim()) { rowIdx = i + 1; break; }
+    if (String(data[i][0]).trim() === String(name).trim() && normalizePhone4(data[i][1]) === normalizePhone4(phone4)) { rowIdx = i + 1; break; }
   }
   if (rowIdx === -1) {
     sheet.appendRow([name, phone4, '', '', '', '', '', '', '', '', '', '', '', false, '', '', from, to]);
@@ -422,6 +603,15 @@ function saveSummaryRange(name, phone4, from, to) {
  * 열 위치가 아니라 헤더 "이름"으로 값을 채워 넣기 때문에, 시트의 열 순서가
  * 달라져 있어도 정확한 칸에 들어갑니다.
  */
+// 전화번호뒷4자리 칸이 시트에서 "숫자"로 인식되면 0312 같은 값의 앞자리 0이
+// 사라지므로, 저장할 때마다 그 칸만 "일반 텍스트" 서식으로 강제 지정해요.
+function forcePhoneCellAsText(sheet, rowIdx, col) {
+  const key = normalizeHeader('전화번호뒷4자리');
+  if (key in col) {
+    sheet.getRange(rowIdx, col[key] + 1).setNumberFormat('@');
+  }
+}
+
 function addJournalEntry(p) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(JOURNAL_SHEET_NAME);
   if (!sheet) throw new Error('"성장일지" 시트를 먼저 만들어주세요.');
@@ -436,7 +626,7 @@ function addJournalEntry(p) {
   };
 
   set('이름', p.name);
-  set('전화번호뒷4자리', p.phone4);
+  set('전화번호뒷4자리', normalizePhone4(p.phone4));
   set('학기', p.term);
   set('월', p.month);
   set('작품제목', p.title);
@@ -468,6 +658,8 @@ function addJournalEntry(p) {
   set('그림 스타일 특징', p.styleNotes);
   set('목표행동 태그', p.goalTags);
 
+  const nextRow = sheet.getLastRow() + 1;
+  forcePhoneCellAsText(sheet, nextRow, col);
   sheet.appendRow(newRow);
   return { ok: true };
 }
@@ -492,7 +684,7 @@ function updateJournalEntry(p) {
   let rowIdx = -1;
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][nameCol]).trim() === String(p.name).trim() &&
-        String(data[i][phoneCol]).trim() === String(p.phone4).trim() &&
+        normalizePhone4(data[i][phoneCol]) === normalizePhone4(p.phone4) &&
         String(data[i][monthCol]).trim() === String(p.originalMonth).trim()) {
       rowIdx = i + 1;
       break;
@@ -508,7 +700,7 @@ function updateJournalEntry(p) {
   };
 
   set('이름', p.name);
-  set('전화번호뒷4자리', p.phone4);
+  set('전화번호뒷4자리', normalizePhone4(p.phone4));
   set('학기', p.term);
   set('월', p.month);
   set('작품제목', p.title);
@@ -540,6 +732,7 @@ function updateJournalEntry(p) {
   set('그림 스타일 특징', p.styleNotes);
   set('목표행동 태그', p.goalTags);
 
+  forcePhoneCellAsText(sheet, rowIdx, col);
   sheet.getRange(rowIdx, 1, 1, lastCol).setValues([rowValues]);
   return { ok: true };
 }
@@ -559,7 +752,7 @@ function saveSummary(p) {
   const data = sheet.getDataRange().getValues();
   let rowIdx = -1;
   for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]).trim() === String(p.name).trim() && String(data[i][1]).trim() === String(p.phone4).trim()) { rowIdx = i + 1; break; }
+    if (String(data[i][0]).trim() === String(p.name).trim() && normalizePhone4(data[i][1]) === normalizePhone4(p.phone4)) { rowIdx = i + 1; break; }
   }
   const published = (p.published === 'true' || p.published === true);
   const values = [
@@ -594,7 +787,7 @@ function saveSectionVisibility(name, phone4, hiddenSections) {
   const data = sheet.getDataRange().getValues();
   let rowIdx = -1;
   for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]).trim() === String(name).trim() && String(data[i][1]).trim() === String(phone4).trim()) { rowIdx = i + 1; break; }
+    if (String(data[i][0]).trim() === String(name).trim() && normalizePhone4(data[i][1]) === normalizePhone4(phone4)) { rowIdx = i + 1; break; }
   }
   if (rowIdx === -1) {
     sheet.appendRow([name, phone4, '', '', '', '', '', '', '', '', '', '', '', false, '', '', '', '', '', hiddenSections || '']);
@@ -611,7 +804,7 @@ function getSummary(name, phone4) {
 
   const rows = sheet.getDataRange().getValues();
   rows.shift();
-  const row = rows.find(r => String(r[0]).trim() === name && String(r[1]).trim() === phone4);
+  const row = rows.find(r => String(r[0]).trim() === String(name).trim() && normalizePhone4(r[1]) === normalizePhone4(phone4));
   if (!row) return null;
 
   return {
