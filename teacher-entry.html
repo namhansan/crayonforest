@@ -130,7 +130,14 @@
         <div class="f-field"><label>개강월</label><select id="p_month" onchange="updateTermFromPickers()"></select></div>
       </div>
       <div class="form-row">
-        <div class="f-field"><label>반 종류</label><select id="p_type" onchange="updateTermFromPickers()"><option value="정규반">정규반</option><option value="특강">특강</option></select></div>
+        <div class="f-field"><label>반 이름</label><select id="p_type" onchange="updateTermFromPickers()">
+          <option value="감각의 숲 색채마법사">감각의 숲 색채마법사</option>
+          <option value="상징의 숲 마음여행가">상징의 숲 마음여행가</option>
+          <option value="사유의 숲">사유의 숲</option>
+          <option value="창조의 숲">창조의 숲</option>
+          <option value="여름 방학 특강">여름 방학 특강</option>
+          <option value="겨울방학 특강">겨울방학 특강</option>
+        </select></div>
         <div class="f-field"></div>
       </div>
       <div class="form-row">
@@ -285,9 +292,18 @@
       </div>
 
       <div class="form-card">
-        <div class="form-section-title">🌸 꽃밭샘 피드백 <span class="hint">("작품 속 색채흐름" 섹션 아래에 표시돼요)</span></div>
+        <div class="form-section-title">🌸 꽃밭샘 피드백</div>
         <div class="form-row single">
-          <div class="f-field"><textarea id="s_feedbackA" placeholder="이 기간 동안의 색채 흐름을 보고 느낀 점을 자유롭게 적어주세요."></textarea></div>
+          <div class="f-field"><label>B. 미술에서 자라고 있는 힘 아래에 표시</label><textarea id="s_feedbackB" placeholder="미술능력 성장에 대해 느낀 점을 자유롭게 적어주세요."></textarea></div>
+        </div>
+        <div class="form-row single">
+          <div class="f-field"><label>C. 마음의 능력 아래에 표시</label><textarea id="s_feedbackC" placeholder="마음의 능력 성장에 대해 느낀 점을 자유롭게 적어주세요."></textarea></div>
+        </div>
+        <div class="form-row single">
+          <div class="f-field"><label>D. 수업전후 마음색 키워드 아래에 표시</label><textarea id="s_feedbackD" placeholder="마음색 변화를 보고 느낀 점을 자유롭게 적어주세요."></textarea></div>
+        </div>
+        <div class="form-row single">
+          <div class="f-field"><label>E. 작품 속 색채흐름 아래에 표시</label><textarea id="s_feedbackA" placeholder="이 기간 동안의 색채 흐름을 보고 느낀 점을 자유롭게 적어주세요."></textarea></div>
         </div>
       </div>
 
@@ -424,6 +440,9 @@ function loadSummary(){
       document.getElementById('s_hintsOverride').value = (data.hintsOverride || []).join('\n');
       document.getElementById('s_published').checked = !!data.published;
       document.getElementById('s_feedbackA').value = data.feedbackA || '';
+      document.getElementById('s_feedbackB').value = data.feedbackB || '';
+      document.getElementById('s_feedbackC').value = data.feedbackC || '';
+      document.getElementById('s_feedbackD').value = data.feedbackD || '';
       const hidden = new Set(data.hiddenSections || []);
       document.getElementById('sec_colorJourney').checked = !hidden.has('colorJourney');
       document.getElementById('sec_artAbilityWheel').checked = !hidden.has('artAbilityWheel');
@@ -477,6 +496,9 @@ function saveSummaryForm(){
     hintsOverride: document.getElementById('s_hintsOverride').value.trim(),
     published: document.getElementById('s_published').checked ? 'true' : 'false',
     feedbackA: document.getElementById('s_feedbackA').value.trim(),
+    feedbackB: document.getElementById('s_feedbackB').value.trim(),
+    feedbackC: document.getElementById('s_feedbackC').value.trim(),
+    feedbackD: document.getElementById('s_feedbackD').value.trim(),
     hiddenSections: hiddenList.join(',')
   });
   const btn = document.getElementById('summarySubmitBtn');
@@ -548,15 +570,28 @@ function updateMonthFromPickers(){
   document.getElementById('previewMonth').textContent = month;
 }
 
-// 기존 회차를 불러올 때, "26년 3월 정규반" / "21회차(7.29)" 형식이면 픽커에도
-// 값을 채워줘요. 형식이 안 맞는 옛날 기록이어도 실제 저장 값(hidden input)은
-// 그대로 유지되니 데이터가 깨지지는 않아요.
+// 기존 회차를 불러올 때, "26년 3월 상징의 숲 마음여행가" / "21회차(7.29)" 형식이면
+// 픽커에도 값을 채워줘요. 형식이 안 맞는 옛날 기록(예: "26년 3월 정규반")이어도
+// 실제 저장 값(hidden input)은 그대로 유지되니 데이터가 깨지지는 않아요.
+const CLASS_NAMES = ['감각의 숲 색채마법사', '상징의 숲 마음여행가', '사유의 숲', '창조의 숲', '여름 방학 특강', '겨울방학 특강', '정규반', '특강'];
 function tryParseTermIntoPickers(str){
-  const m = String(str||'').match(/(\d{2,4})\s*년\s*(\d{1,2})\s*월\s*(정규반|특강)/);
+  const s = String(str||'');
+  const m = s.match(/(\d{2,4})\s*년\s*(\d{1,2})\s*월\s*(.+)/);
   if(m){
     document.getElementById('p_year').value = m[1].length > 2 ? m[1].slice(-2) : m[1];
     document.getElementById('p_month').value = String(parseInt(m[2], 10));
-    document.getElementById('p_type').value = m[3];
+    const rest = m[3].trim();
+    const sel = document.getElementById('p_type');
+    // 드롭다운에 있는 이름이면 그대로 선택, 옛날 기록("정규반"/"특강" 등 새 목록에 없는
+    // 값)이면 select에 임시 옵션을 만들어서라도 값이 안 사라지게 해요.
+    if(!CLASS_NAMES.slice(0,6).includes(rest)){
+      if(![...sel.options].some(o => o.value === rest)){
+        const opt = document.createElement('option');
+        opt.value = rest; opt.textContent = rest + ' (예전 기록)';
+        sel.appendChild(opt);
+      }
+    }
+    sel.value = rest;
   }
 }
 function tryParseMonthIntoPickers(str){

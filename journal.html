@@ -56,6 +56,7 @@
   .cover-photo-ring img{width:100%; height:100%; object-fit:cover;}
   .carte-cover .child-name{font-family:'Noto Serif KR',serif; font-size:22px; color:var(--forest); margin-bottom:6px;}
   .carte-cover .term{font-size:13.5px; color:var(--clay); font-weight:600;}
+  .carte-cover .reg-period{font-size:12px; color:#9a9285; margin-top:2px;}
   .stat-row{display:flex; justify-content:center; gap:26px; margin-top:26px; flex-wrap:wrap;}
   .stat-row div{font-size:12px; color:#8a8378;}
   .stat-row b{display:block; font-family:'Noto Serif KR',serif; font-size:20px; color:var(--forest);}
@@ -140,6 +141,8 @@
 
   .empty-state{text-align:center; padding:50px 0; color:#8a8378; font-size:14px;}
   footer{text-align:center; padding:40px 0; font-size:12.5px; color:#8a8378;}
+  .print-footer{display:none;}
+  .print-footer-en{font-family:'Playfair Display',serif; font-style:italic;}
 
   /* ---------- 종합 요약 (색채 차트 + 원장님 해석) ---------- */
   .summary-section{margin-top:30px;}
@@ -292,9 +295,8 @@
 
   /* ---------- 인쇄 (개인 책자용) ---------- */
   @page{ size:A4; margin:14mm; }
-  @page summarySheet{ size:A4 landscape; margin:10mm; }
   @media print{
-    header, .privacy-note, .logout-link, .print-btn, .teacher-badge, #jSummaryFilter, #jGallery{ display:none !important; }
+    header, .privacy-note, .logout-link, .print-btn, .teacher-badge, #jSummaryFilter, #jGallery, .hero{ display:none !important; }
     body{ background:#fff; }
     /* 배경색/그라데이션(마음색 체크판, 마음의 능력 막대 등)이 인쇄에서 사라지지
        않도록 강제로 살려요. 그래도 안 나오면 인쇄 대화상자의 "추가 설정 >
@@ -310,68 +312,22 @@
     .month-card{ break-after:page; page-break-after:always; break-inside:avoid; box-shadow:none; }
     .month-card:last-child{ break-after:auto; page-break-after:auto; }
     footer{ display:none; }
-
-    /* 종합요약만 가로(landscape) 페이지에 PPT 대시보드처럼 격자 배치 */
-    .summary-section{
-      page:summarySheet; break-before:page; page-break-before:always;
-      display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; align-content:start;
+    /* position:fixed로 둔 요소는 크롬 인쇄에서 매 페이지 하단에 반복해서
+       찍혀요 — 이 방식으로 모든 페이지에 브랜드 표시를 남겨요. */
+    .print-footer{
+      display:block; position:fixed; bottom:6mm; left:0; right:0;
+      text-align:center; font-size:8.5px; color:#9a9285; letter-spacing:0.2px;
     }
-    .summary-section.manual{ display:block; }
-    .summary-section .sec-block{ break-inside:avoid; page-break-inside:avoid; min-width:0; }
-    .summary-section .sec-block.print-wide{ grid-column:1 / -1; }
-    .summary-section .sec-label{ margin-top:0 !important; margin-bottom:6px; gap:6px; }
-    .summary-section .sec-label h3{ font-size:11.5px; }
-    .summary-section .sec-letter{ width:16px; height:16px; font-size:9px; }
+
+    /* 종합요약도 회차 카드와 똑같이 세로(A4)로, 화면과 같은 한 줄(1열) 배치로
+       인쇄해요. 가로 2열 대시보드는 크롬 인쇄 엔진에서 페이지 경계 처리가
+       불안정해서 내용이 어중간하게 끊기는 문제가 있었어요 — 세로 단일열이
+       훨씬 안정적으로 나와요. 종합요약 전체가 새 페이지에서 시작하고, 이후는
+       내용 길이에 따라 자연스럽게 여러 페이지로 이어져요(그래도 괜찮아요).*/
+    .summary-section{ break-before:page; page-break-before:always; display:block; }
+    .summary-section .sec-block{ break-inside:avoid; page-break-inside:avoid; margin-bottom:22px; }
     .summary-section .sec-toggle-btn, .summary-section .sec-hidden-note{ display:none !important; }
-    .summary-section .wheel-card, .summary-section .freq-card, .summary-section .timeline-card{
-      padding:10px 12px; margin-bottom:0; border-radius:12px;
-    }
-    .summary-section .wheel-card svg{ max-width:150px; }
-    .summary-section .wheel-caption{ font-size:8px; line-height:1.35; margin-top:6px; }
-    .summary-section .evidence-item, .summary-section .evidence-label{ font-size:8.5px; }
-    .summary-section .mood-color-row, .summary-section .mood-color-text, .summary-section .mood-color-name{ font-size:9px; }
-    .summary-section .pill{ font-size:9px; padding:3px 8px; }
-    .summary-section .tone-cell{ height:22px; }
-    .summary-section .keyword-group-label{ font-size:9.5px; }
-    .summary-section .highlight-list, .summary-section .growth-narrative{ font-size:10.5px; }
-    .summary-section .feedback-box{ margin-top:8px; padding:10px 12px; }
-    .summary-section .cat-grid{ grid-template-columns:repeat(4,1fr); gap:8px; }
-    .summary-section .split{ gap:8px; }
-    .summary-section .split-card{ padding:12px 14px; font-size:11px; }
-    .summary-section .top-ability-card{ padding:8px 10px; gap:8px; }
-    .summary-section .top-ability-icon{ width:24px; height:24px; font-size:12px; }
-    .summary-section .top-ability-name{ font-size:10.5px; margin-bottom:2px; }
-    .summary-section .top-ability-blurb{ font-size:9px; line-height:1.4; }
-    .summary-section .mind-bar-list{ gap:8px; }
-    .summary-section .mind-bar-icon{ font-size:13px; width:16px; }
-    .summary-section .mind-bar-label{ width:58px; font-size:9px; }
-    .summary-section .mind-bar-track{ height:9px; }
-    .summary-section .mind-bar-count{ font-size:8px; width:36px; }
-
-    /* 능력 배지: 좁은 칸에서 세로로 쌓이던 걸 컴팩트한 알약 형태로 줄여서 높이를 크게 줄임 */
-    .summary-section .ability-desc{ display:none; }
-    .summary-section .ability-board{ grid-template-columns:repeat(auto-fill, minmax(72px, 1fr)); gap:4px; }
-    .summary-section .ability-badge{ padding:4px 7px; display:flex; align-items:center; justify-content:space-between; gap:4px; }
-    .summary-section .ability-name{ display:inline; font-size:8.5px; margin-bottom:0; }
-    .summary-section .ability-count{ display:inline; font-size:7.5px; margin-bottom:0; white-space:nowrap; }
-    .summary-section .ability-group{ margin-bottom:6px; }
-    .summary-section .ability-group-label{ margin-bottom:3px; }
-
-    /* 근거 장면 / 톤 설명 문단은 지면이 부족하므로 인쇄에서는 생략 (화면에서는 계속 보임) */
-    .summary-section .evidence-card{ display:none; }
-    .summary-section .tone-explainer{ display:none; }
-
-    /* 작품 속 색채흐름: 바퀴·타임라인·빈도바를 세로로 쌓지 않고 가로로 나란히 배치 */
-    .summary-section .color-flow-wrap{ display:flex; gap:8px; align-items:flex-start; }
-    .summary-section .color-flow-wrap > *{ flex:1; min-width:0; margin-bottom:0 !important; }
-    .summary-section .color-flow-wrap .timeline{ flex-wrap:wrap; gap:4px; }
-    .summary-section .color-flow-wrap .t-node{ min-width:34px; }
-    .summary-section .color-flow-wrap .t-dot{ width:14px; height:14px; margin-bottom:3px; }
-    .summary-section .color-flow-wrap .t-node .r, .summary-section .color-flow-wrap .t-node .c{ font-size:7.5px; }
-    .summary-section .color-flow-wrap .freq-row{ gap:6px; margin-bottom:5px; }
-    .summary-section .color-flow-wrap .freq-label{ width:42px; font-size:9px; }
-    .summary-section .color-flow-wrap .freq-bar-bg{ height:10px; }
-    .summary-section .color-flow-wrap .freq-count{ width:14px; font-size:9px; }
+    .summary-section .wheel-card svg{ max-width:220px; }
   }
 </style>
 </head>
@@ -417,6 +373,7 @@
       <div class="child-name" id="jChildName"></div>
       <div class="teacher-badge" id="jTeacherBadge" style="display:none;">🔑 선생님 화면 (학부모에게는 안 보여요) · <a href="teacher-entry.html" style="text-decoration:underline;">회차 입력하러 가기</a></div>
       <div class="term" id="jTerm"></div>
+      <div class="reg-period" id="jRegPeriod"></div>
       <div class="stat-row" id="jStatRow"></div>
       <div><button class="print-btn" onclick="window.print()">🖨️ 개인 책자로 인쇄 / PDF 저장</button></div>
     </div>
@@ -429,6 +386,7 @@
 </div>
 
 <footer>© 2026 Forêt des Crayons</footer>
+<div class="print-footer">크레용숲 · <span class="print-footer-en">Forêt des Crayons</span> · 무단 복제 및 배포를 금합니다</div>
 
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyahvBkqM7NVzHde2vdtpWTGdOhaUs8i-ewGe9WBpuyyetVIv1VEPJrhhCNy3fgrmad/exec";
@@ -1194,13 +1152,41 @@ function checkJournal(){
     });
 }
 
+// "26년 3월 상징의 숲 마음여행가" 같은 학기 문자열에서 반 이름만 뽑아서
+// "어린이 색채학교 상징의 숲 마음여행가" 형태로 표지에 보여줘요.
+function formatTermDisplay(term){
+  if(!term) return '';
+  const m = String(term).match(/\d{2,4}\s*년\s*\d{1,2}\s*월\s*(.+)/);
+  const className = m ? m[1].trim() : String(term).trim();
+  return className ? `어린이 색채학교 ${className}` : '';
+}
+
+// 회차별 "학기"(연도·월)와 "회차(월.일)" 값을 조합해서 실제 날짜를 추정하고,
+// 그중 가장 이른 날짜~가장 늦은 날짜를 등록기간으로 보여줘요.
+function parseEntryDate(e){
+  const ym = String(e.classLabel||'').match(/(\d{2,4})\s*년\s*(\d{1,2})\s*월/);
+  const rd = String(e.month||'').match(/\((\d{1,2})\.(\d{1,2})\)/);
+  if(!ym || !rd) return null;
+  const yr = ym[1].length === 2 ? '20'+ym[1] : ym[1];
+  const d = new Date(Number(yr), Number(rd[1])-1, Number(rd[2]));
+  return isNaN(d.getTime()) ? null : d;
+}
+function computeRegistrationPeriod(entries){
+  const dates = entries.map(parseEntryDate).filter(Boolean);
+  if(!dates.length) return '';
+  const min = new Date(Math.min(...dates)), max = new Date(Math.max(...dates));
+  const fmt = d => `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}`;
+  return '등록기간 ' + (min.getTime()===max.getTime() ? fmt(min) : `${fmt(min)} — ${fmt(max)}`);
+}
+
 function renderJournal(data, abilityStages){
   document.getElementById('loginView').style.display = 'none';
   document.getElementById('journalView').style.display = 'block';
   document.getElementById('jChildName').textContent = `${data.name} 어린이`;
-  document.getElementById('jTerm').textContent = data.term || '';
+  document.getElementById('jTerm').textContent = formatTermDisplay(data.term);
 
   const entries = buildAutoInsights(data.entries || []);
+  document.getElementById('jRegPeriod').textContent = computeRegistrationPeriod(entries);
 
   // 표지 대표 사진: 첫 기록의 사진1 사용
   const coverImg = entries.find(e => e.photo1)?.photo1;
@@ -1327,7 +1313,7 @@ function renderJournal(data, abilityStages){
   // 종합요약(색채 여정 등)은 흐름이 이어지는 정규반 기록만으로 계산해요 — 특강은
   // 기간이 짧고 별개 활동이라 성장 흐름 계산에 섞이면 오히려 왜곡될 수 있어서예요.
   const summaryEntries = hasIntensive ? entries.filter(e => !isIntensive(e)) : entries;
-  _journalState = { entries: summaryEntries, summary: data.summary, name: data.name, narrativeOverride: data.narrativeOverride, hintsOverride: data.hintsOverride, feedbackA: data.feedbackA || '', hiddenSections: data.hiddenSections || [], abilityStages: abilityStages || [] };
+  _journalState = { entries: summaryEntries, summary: data.summary, name: data.name, narrativeOverride: data.narrativeOverride, hintsOverride: data.hintsOverride, feedback: { A: data.feedbackA||'', B: data.feedbackB||'', C: data.feedbackC||'', D: data.feedbackD||'' }, hiddenSections: data.hiddenSections || [], abilityStages: abilityStages || [] };
   if(hasIntensive){
     wrap.insertAdjacentHTML('beforeend', `<div class="class-note">ℹ️ 특강 ${entries.length - summaryEntries.length}회는 별도 활동이라 아래 종합요약(색채 여정 등) 계산에는 포함하지 않았어요. 위 기록에서는 그대로 확인할 수 있어요.</div>`);
   }
@@ -1337,7 +1323,7 @@ function renderJournal(data, abilityStages){
   const savedFrom = (data.range && data.range.from) ? Math.max(1, Math.min(data.range.from, total)) : 1;
   const savedTo = (data.range && data.range.to) ? Math.max(1, Math.min(data.range.to, total)) : total;
   const initialSlice = summaryEntries.slice(savedFrom - 1, savedTo);
-  renderSummarySection(initialSlice, data.summary, data.name, data.narrativeOverride, data.hintsOverride, data.feedbackA, data.hiddenSections, abilityStages || []);
+  renderSummarySection(initialSlice, data.summary, data.name, data.narrativeOverride, data.hintsOverride, { A: data.feedbackA||'', B: data.feedbackB||'', C: data.feedbackC||'', D: data.feedbackD||'' }, data.hiddenSections, abilityStages || []);
 }
 
 // 종합요약(자동 생성 부분)만 원하는 회차 범위로 좁혀볼 수 있는 필터.
@@ -1369,7 +1355,7 @@ function applySummaryFilter(){
   const to = parseInt(document.getElementById('jToSel').value, 10);
   const lo = Math.min(from, to) - 1, hi = Math.max(from, to);
   const subset = _journalState.entries.slice(lo, hi);
-  renderSummarySection(subset, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedbackA, _journalState.hiddenSections, _journalState.abilityStages);
+  renderSummarySection(subset, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedback, _journalState.hiddenSections, _journalState.abilityStages);
 }
 function resetSummaryFilter(){
   if(!_journalState) return;
@@ -1390,7 +1376,7 @@ function toggleSectionVisibility(key){
   if(fromSel){
     applySummaryFilter();
   } else {
-    renderSummarySection(_journalState.entries, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedbackA, _journalState.hiddenSections, _journalState.abilityStages);
+    renderSummarySection(_journalState.entries, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedback, _journalState.hiddenSections, _journalState.abilityStages);
   }
 
   const params = new URLSearchParams({ action:'saveSectionVisibility', name:_lastName, phone4:_lastPhone4, hiddenSections: _journalState.hiddenSections.join(',') });
@@ -1409,7 +1395,7 @@ function saveSummaryFilter(){
     .catch(() => { msg.textContent = '저장에 실패했어요. 다시 시도해주세요.'; });
 }
 
-function renderSummarySection(entries, summary, childName, narrativeOverride, hintsOverride, feedbackA, hiddenSections, abilityStages){
+function renderSummarySection(entries, summary, childName, narrativeOverride, hintsOverride, feedback, hiddenSections, abilityStages){
   const box = document.getElementById('jSummary');
   const colored = entries.filter(e => e.mainColor);
 
@@ -1467,20 +1453,26 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
       : renderParentingHints(entries);
 
     const colorFlowHtml = (wheelHtml || timelineHtml || freqHtml) ? `<div class="color-flow-wrap">${wheelHtml}${timelineHtml}${freqHtml}</div>` : '';
-    const feedbackHtml = `
+    // 꽃밭샘 피드백 박스 — B/C/D/E 섹션 각각에 자기 것만 따로 붙어요.
+    const buildFeedbackBox = (text) => {
+      const t = (text || '').trim();
+      if(!t && !isTeacher) return '';
+      return `
       <div class="feedback-box">
         <div class="feedback-label">🌸 꽃밭샘 피드백</div>
-        ${feedbackA && feedbackA.trim()
-          ? `<div class="feedback-text">${feedbackA.trim()}</div>`
-          : (isTeacher ? `<div class="feedback-empty">아직 작성된 피드백이 없어요. teacher-entry.html의 "6개월 종합요약 입력" 탭에서 입력할 수 있어요.</div>` : '')}
+        ${t
+          ? `<div class="feedback-text">${t}</div>`
+          : `<div class="feedback-empty">아직 작성된 피드백이 없어요. teacher-entry.html의 "6개월 종합요약 입력" 탭에서 입력할 수 있어요.</div>`}
       </div>`;
+    };
+    const fb = feedback || {};
 
     const sections = [
       { key:'growthSentence', title:'성장 한 문장', html: narrativeHtml, toggle:false },
-      { key:'artAbilityWheel', title:'미술에서 자라고 있는 힘', html: artAbilityHtml, toggle:true },
-      { key:'mindAbilityWheel', title:'마음의 능력', html: mindAbilityHtml, toggle:true },
-      { key:'toneGrid', title:'수업전후 마음색 키워드', html: toneGridHtml, toggle:false, extra: moodColorNotesHtml },
-      { key:'colorFlow', title:'작품 속 색채흐름', html: colorFlowHtml, toggle:false, extra: colorFlowHtml ? feedbackHtml : '' },
+      { key:'artAbilityWheel', title:'미술에서 자라고 있는 힘', html: artAbilityHtml, toggle:true, extra: buildFeedbackBox(fb.B) },
+      { key:'mindAbilityWheel', title:'마음의 능력', html: mindAbilityHtml, toggle:true, extra: buildFeedbackBox(fb.C) },
+      { key:'toneGrid', title:'수업전후 마음색 키워드', html: toneGridHtml, toggle:false, extra: moodColorNotesHtml + buildFeedbackBox(fb.D) },
+      { key:'colorFlow', title:'작품 속 색채흐름', html: colorFlowHtml, toggle:false, extra: colorFlowHtml ? buildFeedbackBox(fb.A) : '' },
       { key:'colorJourney', title:'6개월 마음색 여정 (색상 · 톤)', html: colorToneWheelHtml, toggle:true },
       { key:'materialWheel', title:'재료 효과 바퀴 (사고·감정·뉴트럴)', html: materialWheelHtml, toggle:true },
       { key:'effectBalance', title:'재료 효과 비율', html: effectBalanceHtml, toggle:true },

@@ -66,10 +66,14 @@
  * (선택) 종합 요약 시트 준비 — 6개월 마지막에 한 번만 작성:
  * "성장요약"이라는 이름의 시트 탭을 만들고, 첫 줄에 다음 20개를 순서대로 넣어주세요:
  * 이름 | 전화번호뒷4자리 | 강점 | 성장방향 | 표현_전 | 표현_후 | 색채_전 | 색채_후 | 심리_전 | 심리_후 | 사고_전 | 사고_후 | 눈에띄는성장 | 공개여부 |
- * 한줄요약(직접입력) | 양육힌트(직접입력) | 요약범위시작 | 요약범위끝 | 꽃밭샘피드백 | 숨김섹션
+ * 한줄요약(직접입력) | 양육힌트(직접입력) | 요약범위시작 | 요약범위끝 | 꽃밭샘피드백 | 숨김섹션 |
+ * 꽃밭샘피드백B | 꽃밭샘피드백C | 꽃밭샘피드백D
  *
  * "요약범위시작"/"요약범위끝"과 "꽃밭샘피드백"/"숨김섹션"은 전부 teacher-entry.html
  * (선생님 화면)에서 조작하면 자동으로 채워져요 — 손으로 직접 안 쓰셔도 됩니다.
+ * "꽃밭샘피드백"은 학부모 화면의 E(작품 속 색채흐름) 아래, "꽃밭샘피드백B/C/D"는
+ * 각각 B(미술에서 자라고 있는 힘)/C(마음의 능력)/D(수업전후 마음색 키워드) 아래에
+ * 표시돼요.
  * "숨김섹션"은 콤마로 구분된 값(예: "colorJourney,keywordCloud")이 들어가요.
  *
  * 마지막 2개(한줄요약/양육힌트 직접입력)는 선택 입력이에요. 성장카르테 화면의
@@ -429,6 +433,9 @@ function getJournal(name, phone4) {
     hintsOverride: summary ? summary.hintsOverride : [],
     range: range,
     feedbackA: summary ? summary.feedbackA : '',
+    feedbackB: summary ? summary.feedbackB : '',
+    feedbackC: summary ? summary.feedbackC : '',
+    feedbackD: summary ? summary.feedbackD : '',
     hiddenSections: summary ? summary.hiddenSections : []
   };
 }
@@ -626,7 +633,7 @@ function saveSummaryRange(name, phone4, from, to) {
   let sheet = ss.getSheetByName(SUMMARY_SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SUMMARY_SHEET_NAME);
-    sheet.appendRow(['이름','전화번호뒷4자리','강점','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝','꽃밭샘피드백','숨김섹션']);
+    sheet.appendRow(['이름','전화번호뒷4자리','강점','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝','꽃밭샘피드백','숨김섹션','꽃밭샘피드백B','꽃밭샘피드백C','꽃밭샘피드백D']);
   }
   const data = sheet.getDataRange().getValues();
   let rowIdx = -1;
@@ -790,7 +797,7 @@ function saveSummary(p) {
   let sheet = ss.getSheetByName(SUMMARY_SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SUMMARY_SHEET_NAME);
-    sheet.appendRow(['이름','전화번호뒷4자리','강점','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝','꽃밭샘피드백','숨김섹션']);
+    sheet.appendRow(['이름','전화번호뒷4자리','강점','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝','꽃밭샘피드백','숨김섹션','꽃밭샘피드백B','꽃밭샘피드백C','꽃밭샘피드백D']);
   }
   const data = sheet.getDataRange().getValues();
   let rowIdx = -1;
@@ -810,10 +817,10 @@ function saveSummary(p) {
   ];
   if (rowIdx === -1) {
     // 새 줄이라 요약범위(17,18열)는 비워서 시작 (필요하면 나중에 journal.html에서 지정)
-    sheet.appendRow(values.concat(['', '', p.feedbackA || '', p.hiddenSections || '']));
+    sheet.appendRow(values.concat(['', '', p.feedbackA || '', p.hiddenSections || '', p.feedbackB || '', p.feedbackC || '', p.feedbackD || '']));
   } else {
     sheet.getRange(rowIdx, 1, 1, 16).setValues([values]); // 17,18열(요약범위)은 그대로 둠
-    sheet.getRange(rowIdx, 19, 1, 2).setValues([[p.feedbackA || '', p.hiddenSections || '']]);
+    sheet.getRange(rowIdx, 19, 1, 5).setValues([[p.feedbackA || '', p.hiddenSections || '', p.feedbackB || '', p.feedbackC || '', p.feedbackD || '']]);
   }
   return { ok: true };
 }
@@ -825,7 +832,7 @@ function saveSectionVisibility(name, phone4, hiddenSections) {
   let sheet = ss.getSheetByName(SUMMARY_SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SUMMARY_SHEET_NAME);
-    sheet.appendRow(['이름','전화번호뒷4자리','강점','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝','꽃밭샘피드백','숨김섹션']);
+    sheet.appendRow(['이름','전화번호뒷4자리','강점','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝','꽃밭샘피드백','숨김섹션','꽃밭샘피드백B','꽃밭샘피드백C','꽃밭샘피드백D']);
   }
   const data = sheet.getDataRange().getValues();
   let rowIdx = -1;
@@ -833,7 +840,7 @@ function saveSectionVisibility(name, phone4, hiddenSections) {
     if (String(data[i][0]).trim() === String(name).trim() && normalizePhone4(data[i][1]) === normalizePhone4(phone4)) { rowIdx = i + 1; break; }
   }
   if (rowIdx === -1) {
-    sheet.appendRow([name, phone4, '', '', '', '', '', '', '', '', '', '', '', false, '', '', '', '', '', hiddenSections || '']);
+    sheet.appendRow([name, phone4, '', '', '', '', '', '', '', '', '', '', '', false, '', '', '', '', '', hiddenSections || '', '', '', '']);
   } else {
     sheet.getRange(rowIdx, 20, 1, 1).setValue(hiddenSections || '');
   }
@@ -861,7 +868,10 @@ function getSummary(name, phone4) {
     narrativeOverride: row[14] || '',
     hintsOverride: String(row[15] || '').split('\n').map(s => s.trim()).filter(Boolean),
     feedbackA: row[18] || '',
-    hiddenSections: String(row[19] || '').split(',').map(s => s.trim()).filter(Boolean)
+    hiddenSections: String(row[19] || '').split(',').map(s => s.trim()).filter(Boolean),
+    feedbackB: row[20] || '',
+    feedbackC: row[21] || '',
+    feedbackD: row[22] || ''
   };
 }
 
