@@ -312,7 +312,7 @@
   .split-card h4{font-family:'Noto Serif KR',serif; font-size:14px; color:var(--forest); margin-bottom:8px;}
 
   /* ---------- 인쇄 (개인 책자용) ---------- */
-  @page{ size:A4; margin:24mm 16mm 20mm; }
+  @page{ size:A4; margin:24mm 22mm 20mm; }
   @media print{
     header, .privacy-note, .logout-link, .print-btn, .teacher-badge, #jSummaryFilter, #jGallery, .hero, .auto-insight{ display:none !important; }
     body{ background:#fff; }
@@ -368,6 +368,17 @@
     .summary-section .ability-top-wheel{ flex:1 1 260px; max-width:280px; }
     .summary-section .ability-top-wheel .wheel-card{ max-width:100%; }
     .summary-section .ability-top-cards{ flex:2 1 260px; min-width:0; }
+    /* 아까는 B섹션 전체(sec-block)에만 break-inside:avoid를 걸었는데, 그 전체
+       덩어리가 한 페이지보다 커서 지켜질 수가 없었어요. 그룹(3개 카드 묶음)과
+       카드 하나하나에 따로 걸어야, 안 들어가면 그 단위 전체가 통째로 다음
+       페이지로 넘어가고 중간에서 잘리지 않아요. */
+    .ability-group{ break-inside:avoid; page-break-inside:avoid; }
+    .ability-badge{ break-inside:avoid; page-break-inside:avoid; }
+    .top-ability-card{ break-inside:avoid; page-break-inside:avoid; }
+    .ability-top-row{ break-inside:avoid; page-break-inside:avoid; }
+    .mind-bar-row{ break-inside:avoid; page-break-inside:avoid; }
+    .mind-table tr{ break-inside:avoid; page-break-inside:avoid; }
+    .evidence-group{ break-inside:avoid; page-break-inside:avoid; }
     .summary-section .mind-table{ font-size:9.5px; }
     .summary-section .mind-table th, .summary-section .mind-table td{ padding:5px 6px; }
     /* D 섹션(마음색 체크판)을 압축해서 한 페이지에 더 잘 들어가게 */
