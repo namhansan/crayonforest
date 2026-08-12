@@ -47,6 +47,9 @@
     border:1px solid var(--line);
   }
   .carte-cover .brand-mark{font-family:'Playfair Display',serif; font-style:italic; color:var(--clay); font-size:18px;}
+  .summary-title-banner{text-align:center; margin:48px 0 28px; padding-top:36px; border-top:2px solid var(--line);}
+  .summary-title-banner .summary-title-eyebrow{display:block; font-family:'Playfair Display',serif; font-style:italic; color:var(--clay); font-size:13px; letter-spacing:1px; margin-bottom:6px;}
+  .summary-title-banner h2{font-family:'Noto Serif KR',serif; font-size:24px; color:var(--forest);}
   .carte-cover h2{font-family:'Noto Serif KR',serif; font-size:clamp(26px,4vw,36px); color:var(--forest); margin:14px 0 6px;}
   .carte-cover .sub{font-size:13.5px; color:#8a8378; margin-bottom:26px;}
   .cover-photo-ring{
@@ -143,6 +146,8 @@
   footer{text-align:center; padding:40px 0; font-size:12.5px; color:#8a8378;}
   .print-footer{display:none;}
   .print-footer-en{font-family:'Playfair Display',serif; font-style:italic;}
+  .print-header{display:none;}
+  .print-copyright{display:none;}
 
   /* ---------- 종합 요약 (색채 차트 + 원장님 해석) ---------- */
   .summary-section{margin-top:30px;}
@@ -265,6 +270,14 @@
   .mind-bar-fill.unconfirmed{background:repeating-linear-gradient(45deg, #E4DBC9, #E4DBC9 6px, #ECE4D4 6px, #ECE4D4 12px);}
   .mind-bar-count{width:56px; text-align:right; font-size:11px; color:#9a9285; flex-shrink:0;}
 
+  /* 마음의 능력 성장방향 표 */
+  .mind-table{width:100%; border-collapse:collapse; font-size:12px;}
+  .mind-table th{background:var(--ivory-deep); color:var(--forest); font-weight:700; text-align:left; padding:8px 10px; border-bottom:2px solid var(--line); white-space:nowrap;}
+  .mind-table td{padding:10px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.6; color:#4b463f;}
+  .mind-table tr:last-child td{border-bottom:none;}
+  .mind-table-name{white-space:nowrap; font-weight:600; color:var(--forest);}
+  .mind-table-icon{margin-right:6px;}
+
   .growth-narrative{
     background:#F7EFE4; border:1px solid #EAD9BE; border-radius:var(--radius-md); padding:20px 24px;
     font-size:14px; color:var(--forest); font-family:'Noto Serif KR',serif; line-height:1.8; margin-bottom:16px;
@@ -294,9 +307,9 @@
   .split-card h4{font-family:'Noto Serif KR',serif; font-size:14px; color:var(--forest); margin-bottom:8px;}
 
   /* ---------- 인쇄 (개인 책자용) ---------- */
-  @page{ size:A4; margin:14mm; }
+  @page{ size:A4; margin:18mm 16mm; }
   @media print{
-    header, .privacy-note, .logout-link, .print-btn, .teacher-badge, #jSummaryFilter, #jGallery, .hero{ display:none !important; }
+    header, .privacy-note, .logout-link, .print-btn, .teacher-badge, #jSummaryFilter, #jGallery, .hero, .auto-insight{ display:none !important; }
     body{ background:#fff; }
     /* 배경색/그라데이션(마음색 체크판, 마음의 능력 막대 등)이 인쇄에서 사라지지
        않도록 강제로 살려요. 그래도 안 나오면 인쇄 대화상자의 "추가 설정 >
@@ -304,30 +317,49 @@
        100% 강제가 안 될 수 있어요. */
     *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
     .wrap{ max-width:100%; padding:0; }
-    /* min-height:100vh/95vh는 실제 인쇄 페이지 크기와 안 맞아서 표지·회차 카드가
-       어중간하게 다음 장으로 넘어가는 원인이라 빼고, break-after로만 페이지를
-       나눠요. 내용이 짧으면 자연스럽게 한 페이지 안에 다 들어가고, 유난히 긴
-       회차만 다음 페이지로 이어져요. */
-    .carte-cover{ display:flex; flex-direction:column; align-items:center; justify-content:center; break-after:page; page-break-after:always; border-radius:0; padding-top:22vh; }
+    /* vh(뷰포트 높이) 단위는 실제 인쇄 페이지 크기와 안 맞아서 표지·회차 카드가
+       어중간하게 다음 장으로 넘어가는 원인이라 안 쓰고, mm 단위로 페이지 높이를
+       정확히 계산해서 표지가 한 페이지 안에 예쁘게 가운데 정렬되게 했어요.
+       (A4 297mm - 위아래 여백 18mm×2 = 261mm) */
+    .carte-cover{ display:flex; flex-direction:column; align-items:center; justify-content:center; break-after:page; page-break-after:always; border-radius:0; height:261mm; box-sizing:border-box; padding:0 10mm; }
     .month-card{ break-after:page; page-break-after:always; break-inside:avoid; box-shadow:none; }
     .month-card:last-child{ break-after:auto; page-break-after:auto; }
     footer{ display:none; }
-    /* position:fixed로 둔 요소는 크롬 인쇄에서 매 페이지 하단에 반복해서
-       찍혀요 — 이 방식으로 모든 페이지에 브랜드 표시를 남겨요. */
+
+    /* 매 페이지 위/아래에 작게 브랜드·이름 표시 (position:fixed는 인쇄 시
+       페이지마다 반복해서 찍혀요) */
+    .print-header{
+      display:block; position:fixed; top:8mm; left:0; right:0;
+      text-align:right; font-size:8.5px; color:#b7ae9e; padding-right:2mm;
+    }
     .print-footer{
-      display:block; position:fixed; bottom:6mm; left:0; right:0;
+      display:block; position:fixed; bottom:8mm; left:0; right:0;
       text-align:center; font-size:8.5px; color:#9a9285; letter-spacing:0.2px;
     }
+    /* 무단복제 금지 문구는 매 페이지가 아니라, 인쇄되는 내용의 맨 끝(보통
+       마지막 페이지)에 한 번만 나오게 고정(fixed) 대신 일반 블록으로 둬요. */
+    .print-copyright{
+      display:block; text-align:center; font-size:9px; color:#9a9285;
+      margin-top:40px; padding-top:16px; border-top:1px solid #E4DBC9;
+    }
+
+    /* 회차 카드와 종합요약 사이 구분을 위한 타이틀 배너 — 여기서 새 페이지가
+       시작되고, 뒤따르는 .summary-section은 별도로 페이지를 끊지 않아서
+       배너와 첫 섹션이 같은 페이지에 자연스럽게 이어져요. */
+    .summary-title-banner{ break-before:page; page-break-before:always; break-after:avoid; page-break-after:avoid; text-align:center; margin-bottom:20px; }
 
     /* 종합요약도 회차 카드와 똑같이 세로(A4)로, 화면과 같은 한 줄(1열) 배치로
        인쇄해요. 가로 2열 대시보드는 크롬 인쇄 엔진에서 페이지 경계 처리가
        불안정해서 내용이 어중간하게 끊기는 문제가 있었어요 — 세로 단일열이
        훨씬 안정적으로 나와요. 종합요약 전체가 새 페이지에서 시작하고, 이후는
        내용 길이에 따라 자연스럽게 여러 페이지로 이어져요(그래도 괜찮아요).*/
-    .summary-section{ break-before:page; page-break-before:always; display:block; }
+    .summary-section{ display:block; }
+    .summary-section.manual{ break-before:page; page-break-before:always; }
     .summary-section .sec-block{ break-inside:avoid; page-break-inside:avoid; margin-bottom:22px; }
     .summary-section .sec-toggle-btn, .summary-section .sec-hidden-note{ display:none !important; }
     .summary-section .wheel-card svg{ max-width:220px; }
+    .summary-section .mind-table{ font-size:9.5px; }
+    .summary-section .mind-table th, .summary-section .mind-table td{ padding:5px 6px; }
   }
 </style>
 </head>
@@ -386,7 +418,8 @@
 </div>
 
 <footer>© 2026 Forêt des Crayons</footer>
-<div class="print-footer">크레용숲 · <span class="print-footer-en">Forêt des Crayons</span> · 무단 복제 및 배포를 금합니다</div>
+<div class="print-footer">크레용숲 · <span class="print-footer-en">Forêt des Crayons</span></div>
+<div class="print-header" id="printHeader"></div>
 
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyahvBkqM7NVzHde2vdtpWTGdOhaUs8i-ewGe9WBpuyyetVIv1VEPJrhhCNy3fgrmad/exec";
@@ -438,11 +471,12 @@ function categorizeKeyword(k){
 // 각각 9각형·5각형 성장 바퀴로 집계해서 보여줘요.
 const ART_ABILITIES = ['집중,지속력','언어표현','관계,소통력','표현기술,조형력','탐구,관찰력','발상,창의력','조화감각,색채력','문제해결,도전력','응용,표현전개력'];
 const MIND_ABILITIES = ['마음 알아차림','마음표현','마음조절','마음믿기','마음나누기'];
-// 미술능력을 우뇌성장/균형성장/좌뇌성장 3갈래로 묶어서 표로도 보여줘요 (참고용 분류)
+// 미술능력을 감각·창의 성장/관계·실행 성장/표현·사고 성장 3갈래로 묶어서 표로도
+// 보여줘요 (참고용 분류)
 const ART_ABILITY_GROUPS = [
-  ['우뇌성장', ['조화감각,색채력','발상,창의력','탐구,관찰력']],
-  ['균형성장', ['관계,소통력','문제해결,도전력','응용,표현전개력']],
-  ['좌뇌성장', ['표현기술,조형력','언어표현','집중,지속력']]
+  ['감각, 창의 성장', ['조화감각,색채력','발상,창의력','탐구,관찰력']],
+  ['관계, 실행 성장', ['관계,소통력','문제해결,도전력','응용,표현전개력']],
+  ['표현, 사고 성장', ['표현기술,조형력','언어표현','집중,지속력']]
 ];
 const ART_ABILITY_DEFS = {
   '집중,지속력':'하나의 활동에 몰입해서 끝까지 이어가는 힘',
@@ -759,29 +793,25 @@ function stagesMapFor(abilityStages, type){
 // 미술능력/마음의 능력을 정N각형 성장 바퀴(레이더 차트)로 보여줘요.
 // 거미줄(칸) 하나하나가 정확히 "1회"를 뜻하도록 눈금을 실제 횟수에 맞춰 그려서,
 // 점이 눈금 사이 어중간한 곳에 걸치지 않고 항상 정확한 칸 위에 찍히게 했어요.
-function renderAbilityWheel(labels, entries, field){
-  const values = entries.map(e => e[field]).filter(v => v && labels.includes(v));
-  if(!values.length) return '';
+// 예전엔 "관찰 횟수"를 기준으로 바퀴를 그렸는데, 횟수가 많다고 그 능력이
+// 더 크게 자란 게 아니라서(자주 관찰됨 ≠ 성장), 이제는 선생님이 판정한
+// "성장단계(1~4)"를 기준으로 그려요. 아직 판정 안 된 능력은 중심 가까이(0)로
+// 표시돼요.
+function renderAbilityWheel(labels, stagesMap){
+  const stageVals = labels.map(l => (stagesMap && stagesMap[l] && stagesMap[l].stage) || 0);
+  if(!stageVals.some(v => v > 0)) return '';
   const n = labels.length;
   const cx=150, cy=150, minR=18, maxR=104;
   const angleStep = 360/n;
-
-  const countFor = label => entries.filter(e => e[field] === label).length;
-  const totalCounts = labels.map(l => countFor(l));
-  const maxCount = Math.max(1, ...totalCounts);
-  // 눈금 수는 실제 최대 횟수만큼 (너무 많으면 6개로 압축, 이땐 눈금이 근사값)
-  const ringCount = Math.min(maxCount, 6);
+  const maxStage = 4;
 
   const ringsHtml = [];
   const ringLabelsHtml = [];
-  for(let k=1; k<=ringCount; k++){
-    const frac = k/ringCount;
-    const r = minR + (maxR-minR)*frac;
-    const countVal = ringCount === maxCount ? k : Math.round(maxCount*frac);
+  for(let k=1; k<=maxStage; k++){
+    const r = minR + (maxR-minR)*(k/maxStage);
     const pts = labels.map((l,i) => polarPt(cx,cy,r,i*angleStep));
     ringsHtml.push(`<polygon points="${pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}" fill="none" stroke="#E4DBC9" stroke-width="1"/>`);
-    // 맨 위(첫 번째 축) 옆에 눈금 숫자를 작게 표시해요
-    ringLabelsHtml.push(`<text x="${cx+7}" y="${(cy-r).toFixed(1)}" font-size="8" fill="#b7ae9e" text-anchor="start" dominant-baseline="middle">${countVal}</text>`);
+    ringLabelsHtml.push(`<text x="${cx+7}" y="${(cy-r).toFixed(1)}" font-size="8" fill="#b7ae9e" text-anchor="start" dominant-baseline="middle">${k}</text>`);
   }
   const axisLines = labels.map((l,i) => {
     const p = polarPt(cx,cy,maxR,i*angleStep);
@@ -793,11 +823,11 @@ function renderAbilityWheel(labels, entries, field){
   }).join('');
 
   const pts = labels.map((l,i) => {
-    const r = minR + (totalCounts[i]/maxCount)*(maxR-minR);
+    const r = minR + (stageVals[i]/maxStage)*(maxR-minR);
     return polarPt(cx,cy,r,i*angleStep);
   });
   const poly = pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
-  const dots = pts.map((p,i) => totalCounts[i] > 0
+  const dots = pts.map((p,i) => stageVals[i] > 0
     ? `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5" fill="var(--clay)" stroke="#fff" stroke-width="1.5"/>` : '').join('');
 
   return `
@@ -809,7 +839,7 @@ function renderAbilityWheel(labels, entries, field){
         ${ringLabelsHtml.join('')}
         ${labelEls}
       </svg>
-      <div class="wheel-caption">칸 하나가 1회를 뜻해요 (최대 ${maxCount}회) · 이 바퀴는 "얼마나 자주 관찰됐는지"만 보여줘요. 실제 성장 단계(발견→시도→확장→자기화)는 아래에서 따로 확인하세요.</div>
+      <div class="wheel-caption">1단계(발견) → 2단계(시도) → 3단계(확장) → 4단계(자기화)로 표시해요 · 바깥쪽일수록 그 힘을 더 깊고 넓게 자기 것으로 사용하고 있다는 뜻이에요 · 아직 판정 안 된 능력은 중심 가까이에 있어요</div>
     </div>`;
 }
 
@@ -846,11 +876,10 @@ function renderAbilityBadges(entries, field, labels, defs, groupsDef, stagesMap)
 
 function renderAbilitySection(entries, field, labels, defs, groupsDef, noteField, stagesMap){
   const badges = renderAbilityBadges(entries, field, labels, defs, groupsDef, stagesMap);
-  const wheel = renderAbilityWheel(labels, entries, field);
+  const wheel = renderAbilityWheel(labels, stagesMap);
   const evidence = noteField ? renderAbilityEvidence(entries, field, noteField, labels) : '';
   if(!badges && !wheel) return '';
-  const note = `<div class="wheel-caption" style="text-align:left; margin-bottom:12px;">횟수는 "얼마나 자주 관찰됐는가", 성장단계는 "그 힘을 사용하는 방식이 얼마나 깊어졌는가"를 보는 거라 서로 달라요. 횟수가 많다고 그 능력이 가장 많이 자란 건 아니에요 — 성장단계는 teacher-entry.html의 "능력 성장단계" 탭에서 근거 문장을 보고 따로 판정해요.</div>`;
-  return `${note}${badges ? `<div class="freq-card" style="margin-bottom:16px;">${badges}</div>` : ''}${wheel}${evidence}`;
+  return `${wheel}${badges ? `<div class="freq-card" style="margin-top:16px;">${badges}</div>` : ''}${evidence}`;
 }
 
 // 학부모 화면용: 있는 항목만, 최대 3개까지 카드로 보여줘요. 성장단계가 판정된 능력을
@@ -901,7 +930,7 @@ function renderTopAbilityCards(entries, field, labels, defs, icons, stagesMap){
 // 있으면 그 값을 그대로 막대 길이로 쓰고, 아직 판정 전이면 관찰 횟수를 참고용으로만
 // 보여줘요(별표시 없이, "미판정"이라고 명시).
 const MIND_ABILITY_ICONS = { '마음 알아차림':'💗','마음표현':'🎨','마음조절':'💧','마음믿기':'⭐','마음나누기':'🤝' };
-function renderMindAbilityBars(entries, stagesMap){
+function renderMindAbilityBars(entries, stagesMap, isTeacher){
   const counts = {};
   MIND_ABILITIES.forEach(l => counts[l] = 0);
   entries.forEach(e => { if(e.mindAbility && counts.hasOwnProperty(e.mindAbility)) counts[e.mindAbility]++; });
@@ -922,12 +951,38 @@ function renderMindAbilityBars(entries, stagesMap){
   }).join('');
 
   const anyConfirmed = MIND_ABILITIES.some(l => stagesMap && stagesMap[l] && stagesMap[l].stage);
+  const tableHtml = renderMindAbilityTable(stagesMap || {});
+  const evidenceHtml = isTeacher ? renderAbilityEvidence(entries, 'mindAbility', 'mindAbilityNote', MIND_ABILITIES) : '';
   return `
     <div class="freq-card">
       <div class="wheel-caption" style="margin-bottom:12px; text-align:left;">발달검사나 성격평가가 아니라, 미술 수업에서 반복적으로 관찰된 마음의 사용방식입니다.</div>
       <div class="mind-bar-list">${rows}</div>
       <div class="wheel-caption" style="margin-top:12px;">1단계(발견) → 2단계(시도) → 3단계(확장) → 4단계(자기화)로 막대 길이를 표시해요${anyConfirmed ? '' : ' · 아직 선생님이 판정한 성장단계가 없어서, 지금은 관찰 횟수를 참고용으로 대신 보여주고 있어요'}</div>
-    </div>${renderAbilityEvidence(entries, 'mindAbility', 'mindAbilityNote', MIND_ABILITIES)}`;
+      <div class="wheel-caption" style="margin-top:10px; text-align:left; line-height:1.7;">지금의 단계는 나이 전체를 관통하는 발달 등급이 아니라 현재 수업에서 그 능력을 얼마나 자기 것으로 사용하고 있는지를 보는 단계입니다. 4단계 자기화 이후에는 5단계로 올라가는 것이 아니라 그 능력을 더 다양한 상황에서 더 깊고 넓게 사용하는 방향으로 성장합니다.</div>
+    </div>${tableHtml}${evidenceHtml}`;
+}
+
+// 마음의 능력별 성장방향 표: 마음능력 | 현재(단계) | 6개월 동안 보인 모습(판단근거) |
+// 다음 성장 방향. 성장단계가 판정된 능력만 표에 올라와요.
+function renderMindAbilityTable(stagesMap){
+  const rows = MIND_ABILITIES.filter(l => stagesMap[l] && stagesMap[l].stage).map(l => {
+    const st = stagesMap[l];
+    return `
+    <tr>
+      <td class="mind-table-name"><span class="mind-table-icon">${MIND_ABILITY_ICONS[l] || '💗'}</span>${l}</td>
+      <td><span class="stage-chip stage-${st.stage}">${STAGE_SHORT[st.stage] || ''}</span></td>
+      <td>${st.reason || ''}</td>
+      <td>${st.nextDirection || ''}</td>
+    </tr>`;
+  }).join('');
+  if(!rows) return '';
+  return `
+  <div class="freq-card" style="margin-top:16px; overflow-x:auto;">
+    <table class="mind-table">
+      <thead><tr><th>마음능력</th><th>현재</th><th>6개월 동안 보인 모습</th><th>다음 성장 방향</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
 }
 
 // 능력별로 남긴 "근거" 문장을 회차와 함께 모아서 보여줘요 (많이 나타난 능력부터,
@@ -1184,6 +1239,7 @@ function renderJournal(data, abilityStages){
   document.getElementById('journalView').style.display = 'block';
   document.getElementById('jChildName').textContent = `${data.name} 어린이`;
   document.getElementById('jTerm').textContent = formatTermDisplay(data.term);
+  document.getElementById('printHeader').textContent = `${data.name}의 6개월 성장카르테`;
 
   const entries = buildAutoInsights(data.entries || []);
   document.getElementById('jRegPeriod').textContent = computeRegistrationPeriod(entries);
@@ -1441,10 +1497,11 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const keywordCloudHtml = renderKeywordCloud(entries);
     const artStagesMap = stagesMapFor(abilityStages, '미술');
     const mindStagesMap = stagesMapFor(abilityStages, '마음');
+    const artBadgesHtml = isTeacher ? '' : renderAbilityBadges(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_GROUPS, artStagesMap);
     const artAbilityHtml = isTeacher
       ? renderAbilitySection(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_GROUPS, 'artAbilityNote', artStagesMap)
-      : `${renderAbilityWheel(ART_ABILITIES, entries, 'artAbility')}${renderTopAbilityCards(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_ICONS, artStagesMap)}`;
-    const mindAbilityHtml = renderMindAbilityBars(entries, mindStagesMap);
+      : `${renderAbilityWheel(ART_ABILITIES, artStagesMap)}${renderTopAbilityCards(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_ICONS, artStagesMap)}${artBadgesHtml ? `<div class="freq-card" style="margin-top:16px;">${artBadgesHtml}</div>` : ''}`;
+    const mindAbilityHtml = renderMindAbilityBars(entries, mindStagesMap, isTeacher);
     const narrativeHtml = (narrativeOverride && narrativeOverride.trim())
       ? `<div class="growth-narrative">✨ ${narrativeOverride.trim()}</div>`
       : renderGrowthNarrative(entries, childName);
@@ -1487,6 +1544,10 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const PRINT_WIDE_KEYS = new Set(['growthSentence', 'colorFlow']);
     if(visible.length){
       autoSection = `
+        <div class="summary-title-banner">
+          <span class="summary-title-eyebrow">Growth Report</span>
+          <h2>6개월 성장 카르테</h2>
+        </div>
         <div class="summary-section">
           ${visible.map((s,i) => {
             const isHidden = hiddenSet.has(s.key);
@@ -1529,14 +1590,15 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
           ${highlights ? `<div class="highlight-list">${highlights}</div>` : ''}
           ${(summary.strength || summary.direction) ? `
           <div class="split">
-            ${summary.strength ? `<div class="split-card strength"><h4>강점</h4><p>${summary.strength}</p></div>` : ''}
+            ${summary.strength ? `<div class="split-card strength"><h4>꽃밭샘의 편지</h4><p>${summary.strength}</p></div>` : ''}
             ${summary.direction ? `<div class="split-card direction"><h4>앞으로의 방향</h4><p>${summary.direction}</p></div>` : ''}
           </div>` : ''}
         </div>
       </div>`;
   }
 
-  box.innerHTML = autoSection + manualSection;
+  const copyrightHtml = `<div class="print-copyright">© ${new Date().getFullYear()} Forêt des Crayons · 크레용숲. 무단 복제 및 배포를 금합니다.</div>`;
+  box.innerHTML = autoSection + manualSection + copyrightHtml;
 }
 
 function logoutJournal(e){

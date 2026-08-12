@@ -245,9 +245,9 @@
       </div>
 
       <div class="form-card">
-        <div class="form-section-title">강점 · 방향</div>
+        <div class="form-section-title">꽃밭샘의 편지 · 방향</div>
         <div class="form-row single">
-          <div class="f-field"><label>강점</label><textarea id="s_strength" placeholder="아이의 강점을 자유롭게 적어주세요."></textarea></div>
+          <div class="f-field"><label>꽃밭샘의 편지</label><textarea id="s_strength" placeholder="아이에게 전하고 싶은 이야기를 자유롭게 적어주세요."></textarea></div>
         </div>
         <div class="form-row single">
           <div class="f-field"><label>앞으로의 방향</label><textarea id="s_direction" placeholder="앞으로 어떤 방향으로 성장시켜주면 좋을지 적어주세요."></textarea></div>
@@ -941,7 +941,10 @@ function stageRowHtml(type, ability, count, existing){
       <div class="f-field"><label>성장단계</label><select class="stage-select">${opts}</select></div>
     </div>
     <div class="form-row single">
-      <div class="f-field"><label>판단근거</label><textarea class="stage-reason" placeholder="예: 재료가 뜻대로 안 되자 스스로 다른 방법을 찾아 시도함">${existing ? (existing.reason||'') : ''}</textarea></div>
+      <div class="f-field"><label>판단근거 <span class="hint">(6개월 동안 보인 모습)</span></label><textarea class="stage-reason" placeholder="예: 재료가 뜻대로 안 되자 스스로 다른 방법을 찾아 시도함">${existing ? (existing.reason||'') : ''}</textarea></div>
+    </div>
+    <div class="form-row single">
+      <div class="f-field"><label>다음 성장 방향</label><textarea class="stage-next" placeholder="예: 더 다양한 재료와 상황에서도 스스로 해결책을 찾아보기">${existing ? (existing.nextDirection||'') : ''}</textarea></div>
     </div>
   </div>`;
 }
@@ -1013,10 +1016,11 @@ function saveAllStages(){
     const ability = row.getAttribute('data-ability');
     const stage = row.querySelector('.stage-select').value;
     const reason = row.querySelector('.stage-reason').value.trim();
-    if(!stage && !reason) return; // 아무것도 입력 안 한 능력은 건너뛰어요
+    const nextDirection = row.querySelector('.stage-next').value.trim();
+    if(!stage && !reason && !nextDirection) return; // 아무것도 입력 안 한 능력은 건너뛰어요
     jobsParams.push(new URLSearchParams({
       action:'saveAbilityStage', name:_stageState.name, phone4:_stageState.phone4,
-      type, ability, stage, reason
+      type, ability, stage, reason, nextDirection
     }));
   });
 

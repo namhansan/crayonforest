@@ -88,8 +88,8 @@
  * 맨 마지막의 "종합 요약" 부분(색채 차트+강점+성장방향)뿐입니다 — 체크 전에는
  * 그 부분만 화면에서 생략되고, 체크하면 그때부터 나타납니다.
  * (선택) 능력 성장단계 시트 준비 — 횟수(빈도)와 성장단계(질적 판단)를 분리해서 관리:
- * "능력성장단계"라는 이름의 시트 탭을 만들고, 첫 줄에 다음 7개를 순서대로 넣어주세요:
- * 이름 | 전화번호뒷4자리 | 능력유형 | 능력명 | 단계 | 판단근거 | 업데이트일시
+ * "능력성장단계"라는 이름의 시트 탭을 만들고, 첫 줄에 다음 8개를 순서대로 넣어주세요:
+ * 이름 | 전화번호뒷4자리 | 능력유형 | 능력명 | 단계 | 판단근거 | 업데이트일시 | 다음성장방향
  *
  * 이 시트는 teacher-entry.html의 "능력 성장단계" 탭에서 자동으로 만들고 채워줘서
  * 손으로 직접 만들지 않아도 됩니다. 왜 이 시트가 따로 필요한지 설명하면:
@@ -454,12 +454,13 @@ function getAbilityStages(name, phone4) {
   const nameTrim = String(name).trim(), phoneTrim = normalizePhone4(phone4);
   return data
     .filter(r => String(r[0]).trim() === nameTrim && normalizePhone4(r[1]) === phoneTrim)
-    .map(r => ({ type: String(r[2] || '').trim(), ability: String(r[3] || '').trim(), stage: Number(r[4]) || 0, reason: String(r[5] || ''), updatedAt: r[6] || '' }))
+    .map(r => ({ type: String(r[2] || '').trim(), ability: String(r[3] || '').trim(), stage: Number(r[4]) || 0, reason: String(r[5] || ''), updatedAt: r[6] || '', nextDirection: String(r[7] || '') }))
     .filter(s => s.type && s.ability);
 }
 
-// 능력 하나의 성장단계(1~4)와 판단근거를 저장해요. 같은 아이+같은 능력이면 새로 쌓지
-// 않고 그 줄을 덮어써서, 시트가 무한히 늘어나지 않고 항상 최신 판단만 남아요.
+// 능력 하나의 성장단계(1~4)·판단근거·다음 성장 방향을 저장해요. 같은 아이+같은
+// 능력이면 새로 쌓지 않고 그 줄을 덮어써서, 시트가 무한히 늘어나지 않고 항상
+// 최신 판단만 남아요.
 function saveAbilityStage(p) {
   if (!p.name || !p.phone4 || !p.type || !p.ability) {
     throw new Error('이름/전화번호/능력유형(미술 또는 마음)/능력명이 모두 필요해요.');
@@ -474,7 +475,7 @@ function saveAbilityStage(p) {
     let sheet = ss.getSheetByName(ABILITY_STAGE_SHEET_NAME);
     if (!sheet) {
       sheet = ss.insertSheet(ABILITY_STAGE_SHEET_NAME);
-      sheet.appendRow(['이름', '전화번호뒷4자리', '능력유형', '능력명', '단계', '판단근거', '업데이트일시']);
+      sheet.appendRow(['이름', '전화번호뒷4자리', '능력유형', '능력명', '단계', '판단근거', '업데이트일시', '다음성장방향']);
     }
     const data = sheet.getDataRange().getValues();
     let rowIdx = -1;
@@ -488,7 +489,7 @@ function saveAbilityStage(p) {
       }
     }
     const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Seoul', 'yyyy-MM-dd HH:mm');
-    const row = [p.name, normalizePhone4(p.phone4), p.type, p.ability, p.stage || '', p.reason || '', now];
+    const row = [p.name, normalizePhone4(p.phone4), p.type, p.ability, p.stage || '', p.reason || '', now, p.nextDirection || ''];
     if (rowIdx === -1) {
       sheet.appendRow(row);
       sheet.getRange(sheet.getLastRow(), 2).setNumberFormat('@');
