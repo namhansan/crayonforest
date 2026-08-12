@@ -53,11 +53,11 @@
   .carte-cover h2{font-family:'Noto Serif KR',serif; font-size:clamp(26px,4vw,36px); color:var(--forest); margin:14px 0 6px;}
   .carte-cover .sub{font-size:13.5px; color:#8a8378; margin-bottom:26px;}
   .cover-photo-ring{
-    width:150px; height:150px; border-radius:50%; margin:0 auto 22px; overflow:hidden;
+    width:150px; height:150px; border-radius:50%; margin:0 auto 10px; overflow:hidden;
     border:6px solid var(--paper); box-shadow:0 14px 30px -14px rgba(44,74,59,.4); background:var(--ivory-deep);
   }
   .cover-photo-ring img{width:100%; height:100%; object-fit:cover;}
-  .carte-cover .child-name{font-family:'Noto Serif KR',serif; font-size:22px; color:var(--forest); margin-bottom:6px;}
+  .carte-cover .child-name{font-family:'Noto Serif KR',serif; font-size:22px; color:var(--forest); margin-bottom:10px;}
   .carte-cover .term{font-size:13.5px; color:var(--clay); font-weight:600;}
   .carte-cover .reg-period{font-size:12px; color:#9a9285; margin-top:2px;}
   .stat-row{display:flex; justify-content:center; gap:26px; margin-top:26px; flex-wrap:wrap;}
@@ -210,7 +210,7 @@
   .tone-row-label{font-size:12px; font-weight:700; color:var(--forest); text-align:right; padding-right:4px;}
   .tone-cell{height:32px; border-radius:8px; border:1px solid rgba(0,0,0,.06); display:flex; align-items:center; justify-content:center; opacity:.32; transition:opacity .2s;}
   .tone-cell.picked{opacity:1; box-shadow:0 0 0 2px var(--paper), 0 0 0 3.5px var(--clay);}
-  .tone-mark{color:#fff; font-size:11.5px; font-weight:800; text-shadow:0 1px 2px rgba(0,0,0,.45);}
+  .tone-mark{color:#fff; font-size:11.5px; font-weight:800; text-shadow:-1px -1px 0 rgba(0,0,0,.55), 1px -1px 0 rgba(0,0,0,.55), -1px 1px 0 rgba(0,0,0,.55), 1px 1px 0 rgba(0,0,0,.55);}
   .mood-color-row{display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid var(--line);}
   .mood-color-row:last-child{border-bottom:none;}
   .mood-color-name{font-weight:700; color:var(--forest); font-size:12.5px; min-width:34px; flex-shrink:0; padding-top:1px;}
@@ -253,6 +253,10 @@
 
   /* 학부모 화면: 가장 크게 자란 힘 TOP 카드 */
   .top-ability-list{display:flex; flex-direction:column; gap:10px;}
+  .ability-top-row{display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;}
+  .ability-top-wheel{flex:0 0 auto;}
+  .ability-top-wheel .wheel-card{max-width:290px;}
+  .ability-top-cards{flex:1; min-width:240px;}
   .top-ability-card{display:flex; align-items:flex-start; gap:12px; background:#F7F3EA; border:1px solid var(--line); border-radius:14px; padding:14px 16px;}
   .top-ability-icon{width:34px; height:34px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; box-shadow:0 2px 5px rgba(0,0,0,.06);}
   .top-ability-body{flex:1; min-width:0;}
@@ -307,7 +311,7 @@
   .split-card h4{font-family:'Noto Serif KR',serif; font-size:14px; color:var(--forest); margin-bottom:8px;}
 
   /* ---------- 인쇄 (개인 책자용) ---------- */
-  @page{ size:A4; margin:18mm 16mm; }
+  @page{ size:A4; margin:24mm 16mm 20mm; }
   @media print{
     header, .privacy-note, .logout-link, .print-btn, .teacher-badge, #jSummaryFilter, #jGallery, .hero, .auto-insight{ display:none !important; }
     body{ background:#fff; }
@@ -320,20 +324,21 @@
     /* vh(뷰포트 높이) 단위는 실제 인쇄 페이지 크기와 안 맞아서 표지·회차 카드가
        어중간하게 다음 장으로 넘어가는 원인이라 안 쓰고, mm 단위로 페이지 높이를
        정확히 계산해서 표지가 한 페이지 안에 예쁘게 가운데 정렬되게 했어요.
-       (A4 297mm - 위아래 여백 18mm×2 = 261mm) */
-    .carte-cover{ display:flex; flex-direction:column; align-items:center; justify-content:center; break-after:page; page-break-after:always; border-radius:0; height:261mm; box-sizing:border-box; padding:0 10mm; }
+       (A4 297mm - 위아래 여백 24mm+20mm = 253mm) */
+    .carte-cover{ display:flex; flex-direction:column; align-items:center; justify-content:center; break-after:page; page-break-after:always; border-radius:0; height:253mm; box-sizing:border-box; padding:0 10mm; }
     .month-card{ break-after:page; page-break-after:always; break-inside:avoid; box-shadow:none; }
     .month-card:last-child{ break-after:auto; page-break-after:auto; }
     footer{ display:none; }
 
     /* 매 페이지 위/아래에 작게 브랜드·이름 표시 (position:fixed는 인쇄 시
-       페이지마다 반복해서 찍혀요) */
+       페이지마다 반복해서 찍혀요). 위쪽 여백을 24mm로 넉넉히 잡고 헤더는
+       6mm에 둬서, 본문 첫 줄과 절대 겹치지 않을 만큼 간격을 확보했어요. */
     .print-header{
-      display:block; position:fixed; top:8mm; left:0; right:0;
+      display:block; position:fixed; top:6mm; left:0; right:0;
       text-align:right; font-size:8.5px; color:#b7ae9e; padding-right:2mm;
     }
     .print-footer{
-      display:block; position:fixed; bottom:8mm; left:0; right:0;
+      display:block; position:fixed; bottom:7mm; left:0; right:0;
       text-align:center; font-size:8.5px; color:#9a9285; letter-spacing:0.2px;
     }
     /* 무단복제 금지 문구는 매 페이지가 아니라, 인쇄되는 내용의 맨 끝(보통
@@ -358,8 +363,18 @@
     .summary-section .sec-block{ break-inside:avoid; page-break-inside:avoid; margin-bottom:22px; }
     .summary-section .sec-toggle-btn, .summary-section .sec-hidden-note{ display:none !important; }
     .summary-section .wheel-card svg{ max-width:220px; }
+    .summary-section .ability-top-row{ flex-wrap:nowrap; gap:14px; }
+    .summary-section .ability-top-wheel .wheel-card{ max-width:200px; }
+    .summary-section .ability-top-cards{ min-width:0; }
     .summary-section .mind-table{ font-size:9.5px; }
     .summary-section .mind-table th, .summary-section .mind-table td{ padding:5px 6px; }
+    /* D 섹션(마음색 체크판)을 압축해서 한 페이지에 더 잘 들어가게 */
+    .summary-section .tone-cell{ height:20px; border-radius:5px; }
+    .summary-section .tone-row{ margin-bottom:4px; gap:4px; }
+    .summary-section .tone-grid-head{ margin-bottom:5px; gap:4px; font-size:9px; }
+    .summary-section .tone-row-label{ font-size:10px; }
+    .summary-section .tone-mark{ font-size:9px; }
+    .summary-section .mood-color-row{ padding:5px 0; }
   }
 </style>
 </head>
@@ -1500,7 +1515,7 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const artBadgesHtml = isTeacher ? '' : renderAbilityBadges(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_GROUPS, artStagesMap);
     const artAbilityHtml = isTeacher
       ? renderAbilitySection(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_GROUPS, 'artAbilityNote', artStagesMap)
-      : `${renderAbilityWheel(ART_ABILITIES, artStagesMap)}${renderTopAbilityCards(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_ICONS, artStagesMap)}${artBadgesHtml ? `<div class="freq-card" style="margin-top:16px;">${artBadgesHtml}</div>` : ''}`;
+      : `<div class="ability-top-row"><div class="ability-top-wheel">${renderAbilityWheel(ART_ABILITIES, artStagesMap)}</div><div class="ability-top-cards">${renderTopAbilityCards(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_ICONS, artStagesMap)}</div></div>${artBadgesHtml ? `<div class="freq-card" style="margin-top:16px;">${artBadgesHtml}</div>` : ''}`;
     const mindAbilityHtml = renderMindAbilityBars(entries, mindStagesMap, isTeacher);
     const narrativeHtml = (narrativeOverride && narrativeOverride.trim())
       ? `<div class="growth-narrative">✨ ${narrativeOverride.trim()}</div>`
