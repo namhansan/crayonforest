@@ -444,7 +444,10 @@
       <div class="term" id="jTerm"></div>
       <div class="reg-period" id="jRegPeriod"></div>
       <div class="stat-row" id="jStatRow"></div>
-      <div><button class="print-btn" onclick="window.print()">🖨️ 개인 책자로 인쇄 / PDF 저장</button></div>
+      <div>
+        <button class="print-btn" onclick="window.print()">🖨️ 개인 책자로 인쇄 / PDF 저장</button>
+        <button class="print-btn" id="printParentBtn" style="display:none; background:var(--clay); margin-top:8px;" onclick="printAsParent()">👨‍👩‍👧 학부모용으로 인쇄 / PDF 저장 <span style="font-weight:400; opacity:.85;">(숨긴 섹션·선생님 전용 내용 제외)</span></button>
+      </div>
     </div>
     <div id="jGallery"></div>
     <div id="jEntries"></div>
@@ -1440,6 +1443,7 @@ function renderJournal(data, abilityStages){
 let _journalState = null;
 function renderSummaryFilter(total, savedRange){
   document.getElementById('jTeacherBadge').style.display = isTeacher ? 'inline-block' : 'none';
+  document.getElementById('printParentBtn').style.display = isTeacher ? 'inline-flex' : 'none';
   const el = document.getElementById('jSummaryFilter');
   if(!el) return;
   if(!isTeacher || total < 2){ el.innerHTML = ''; return; }
@@ -1474,6 +1478,27 @@ function resetSummaryFilter(){
 }
 // 선생님 모드에서 B/E/F/G/H 섹션을 학부모 화면에 보일지 숨길지 전환하고,
 // 즉시 화면에 반영한 뒤 시트에도 저장해요.
+// 선생님 화면에서 나가지 않고도 "학부모 눈에 보이는 그대로" 인쇄/PDF 저장을
+// 할 수 있게, 잠깐 학부모 모드로 다시 그려서 인쇄한 다음 원래대로 되돌려요.
+// (숨긴 섹션은 실제로 빠지고, 근거 문장·능력 배지 같은 선생님 전용 내용도 빠져요.)
+function printAsParent(){
+  if(!_journalState) return;
+  const wasTeacher = isTeacher;
+  isTeacher = false;
+  renderSummarySection(_journalState.entries, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedback, _journalState.hiddenSections, _journalState.abilityStages);
+  document.getElementById('jTeacherBadge').style.display = 'none';
+
+  const restore = () => {
+    isTeacher = wasTeacher;
+    renderSummarySection(_journalState.entries, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedback, _journalState.hiddenSections, _journalState.abilityStages);
+    document.getElementById('jTeacherBadge').style.display = wasTeacher ? 'inline-block' : 'none';
+    window.removeEventListener('afterprint', restore);
+  };
+  window.addEventListener('afterprint', restore);
+  // 화면이 학부모 모드로 다시 그려질 시간을 살짝 주고 인쇄 창을 띄워요.
+  setTimeout(() => window.print(), 60);
+}
+
 function toggleSectionVisibility(key){
   if(!_journalState) return;
   const hidden = new Set(_journalState.hiddenSections || []);
