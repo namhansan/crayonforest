@@ -146,7 +146,6 @@
   footer{text-align:center; padding:40px 0; font-size:12.5px; color:#8a8378;}
   .print-footer{display:none;}
   .print-footer-en{font-family:'Playfair Display',serif; font-style:italic;}
-  .print-header{display:none;}
   .print-copyright{display:none;}
 
   /* ---------- 종합 요약 (색채 차트 + 원장님 해석) ---------- */
@@ -312,7 +311,7 @@
   .split-card h4{font-family:'Noto Serif KR',serif; font-size:14px; color:var(--forest); margin-bottom:8px;}
 
   /* ---------- 인쇄 (개인 책자용) ---------- */
-  @page{ size:A4; margin:28mm 22mm 20mm; }
+  @page{ size:A4; margin:22mm; }
   @media print{
     header, .privacy-note, .logout-link, .print-btn, .teacher-badge, #jSummaryFilter, #jGallery, .hero, .auto-insight{ display:none !important; }
     body{ background:#fff; }
@@ -327,20 +326,16 @@
     /* vh(뷰포트 높이) 단위는 실제 인쇄 페이지 크기와 안 맞아서 표지·회차 카드가
        어중간하게 다음 장으로 넘어가는 원인이라 안 쓰고, mm 단위로 페이지 높이를
        정확히 계산해서 표지가 한 페이지 안에 예쁘게 가운데 정렬되게 했어요.
-       (A4 297mm - 위아래 여백 28mm+20mm = 249mm) */
-    .carte-cover{ display:flex; flex-direction:column; align-items:center; justify-content:center; break-after:page; page-break-after:always; border-radius:0; height:249mm; box-sizing:border-box; padding:0 10mm; }
+       (A4 297mm - 위아래 여백 22mm×2 = 253mm) */
+    .carte-cover{ display:flex; flex-direction:column; align-items:center; justify-content:center; break-after:page; page-break-after:always; border-radius:0; height:253mm; box-sizing:border-box; padding:0 10mm; }
     .month-card{ break-after:page; page-break-after:always; break-inside:avoid; box-shadow:none; }
     .month-card:last-child{ break-after:auto; page-break-after:auto; }
     footer{ display:none; }
 
-    /* 매 페이지 위/아래에 작게 브랜드·이름 표시 (position:fixed는 인쇄 시
-       페이지마다 반복해서 찍혀요). 위쪽 여백을 28mm로 더 넉넉히 잡고 헤더는
-       4mm에 둬서, 회차 카드의 큰 장식 번호(01, 02...)와도 절대 안 겹치도록
-       간격을 넓게 확보했어요. */
-    .print-header{
-      display:block; position:fixed; top:4mm; left:0; right:0;
-      text-align:right; font-size:8px; color:#c9c0b0; padding-right:2mm;
-    }
+    /* 페이지 아래에 작게 브랜드·이름 표시 (position:fixed는 인쇄 시 페이지마다
+       반복해서 찍혀요). 예전엔 상단에도 고정 헤더를 뒀는데, 회차 카드의 큰
+       장식 번호(01, 02...)와 자꾸 겹치는 문제가 있어서 하단 푸터 한 곳으로
+       합쳤어요 — 푸터는 겹칠 콘텐츠가 없는 여백 자리라 훨씬 안전해요. */
     .print-footer{
       display:block; position:fixed; bottom:7mm; left:0; right:0;
       text-align:center; font-size:8.5px; color:#9a9285; letter-spacing:0.2px;
@@ -460,8 +455,7 @@
 </div>
 
 <footer>© 2026 Forêt des Crayons</footer>
-<div class="print-footer">크레용숲 · <span class="print-footer-en">Forêt des Crayons</span></div>
-<div class="print-header" id="printHeader"></div>
+<div class="print-footer">크레용숲 · <span class="print-footer-en">Forêt des Crayons</span><span id="printFooterName"></span></div>
 
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyahvBkqM7NVzHde2vdtpWTGdOhaUs8i-ewGe9WBpuyyetVIv1VEPJrhhCNy3fgrmad/exec";
@@ -1278,12 +1272,26 @@ function computeRegistrationPeriod(entries){
   return '등록기간 ' + (min.getTime()===max.getTime() ? fmt(min) : `${fmt(min)} — ${fmt(max)}`);
 }
 
+// F(마음색 여정)/G(재료 효과 바퀴)/H(재료 효과 비율)는 선생님이 회차마다 굳이
+// 안 켜셔도 되게 기본값을 "숨김"으로 둬요. 한 번이라도 숨기기/보이기 버튼을
+// 눌러서 실제로 저장이 된 아이는 그 저장된 값을 그대로 쓰고, 저장 이력이
+// 아예 없는(빈 배열인) 아이만 이 기본값이 적용돼요. 선생님이 전부 다시 보이게
+// 켜서 "숨긴 게 하나도 없는" 상태로 만들면 __none__ 표시를 따로 저장해서,
+// "한 번도 안 건드림"과 구분해요 — 안 그러면 둘 다 빈 배열이라 구별이 안 되고
+// 다음에 열 때마다 자꾸 다시 숨겨져 버려요.
+const DEFAULT_HIDDEN_SECTIONS = ['colorJourney', 'materialWheel', 'effectBalance'];
+const HIDDEN_NONE_MARKER = '__none__';
+function withDefaultHidden(raw){
+  if(raw && raw.length === 1 && raw[0] === HIDDEN_NONE_MARKER) return [];
+  return (raw && raw.length) ? raw : DEFAULT_HIDDEN_SECTIONS.slice();
+}
+
 function renderJournal(data, abilityStages){
   document.getElementById('loginView').style.display = 'none';
   document.getElementById('journalView').style.display = 'block';
   document.getElementById('jChildName').textContent = `${data.name} 어린이`;
   document.getElementById('jTerm').textContent = formatTermDisplay(data.term);
-  document.getElementById('printHeader').textContent = `${data.name}의 6개월 성장카르테`;
+  document.getElementById('printFooterName').textContent = ` · ${data.name}의 6개월 성장카르테`;
 
   const entries = buildAutoInsights(data.entries || []);
   document.getElementById('jRegPeriod').textContent = computeRegistrationPeriod(entries);
@@ -1413,7 +1421,7 @@ function renderJournal(data, abilityStages){
   // 종합요약(색채 여정 등)은 흐름이 이어지는 정규반 기록만으로 계산해요 — 특강은
   // 기간이 짧고 별개 활동이라 성장 흐름 계산에 섞이면 오히려 왜곡될 수 있어서예요.
   const summaryEntries = hasIntensive ? entries.filter(e => !isIntensive(e)) : entries;
-  _journalState = { entries: summaryEntries, summary: data.summary, name: data.name, narrativeOverride: data.narrativeOverride, hintsOverride: data.hintsOverride, feedback: { A: data.feedbackA||'', B: data.feedbackB||'', C: data.feedbackC||'', D: data.feedbackD||'' }, hiddenSections: data.hiddenSections || [], abilityStages: abilityStages || [] };
+  _journalState = { entries: summaryEntries, summary: data.summary, name: data.name, narrativeOverride: data.narrativeOverride, hintsOverride: data.hintsOverride, feedback: { A: data.feedbackA||'', B: data.feedbackB||'', C: data.feedbackC||'', D: data.feedbackD||'' }, hiddenSections: withDefaultHidden(data.hiddenSections), abilityStages: abilityStages || [] };
   if(hasIntensive){
     wrap.insertAdjacentHTML('beforeend', `<div class="class-note">ℹ️ 특강 ${entries.length - summaryEntries.length}회는 별도 활동이라 아래 종합요약(색채 여정 등) 계산에는 포함하지 않았어요. 위 기록에서는 그대로 확인할 수 있어요.</div>`);
   }
@@ -1423,7 +1431,7 @@ function renderJournal(data, abilityStages){
   const savedFrom = (data.range && data.range.from) ? Math.max(1, Math.min(data.range.from, total)) : 1;
   const savedTo = (data.range && data.range.to) ? Math.max(1, Math.min(data.range.to, total)) : total;
   const initialSlice = summaryEntries.slice(savedFrom - 1, savedTo);
-  renderSummarySection(initialSlice, data.summary, data.name, data.narrativeOverride, data.hintsOverride, { A: data.feedbackA||'', B: data.feedbackB||'', C: data.feedbackC||'', D: data.feedbackD||'' }, data.hiddenSections, abilityStages || []);
+  renderSummarySection(initialSlice, data.summary, data.name, data.narrativeOverride, data.hintsOverride, { A: data.feedbackA||'', B: data.feedbackB||'', C: data.feedbackC||'', D: data.feedbackD||'' }, withDefaultHidden(data.hiddenSections), abilityStages || []);
 }
 
 // 종합요약(자동 생성 부분)만 원하는 회차 범위로 좁혀볼 수 있는 필터.
@@ -1479,7 +1487,7 @@ function toggleSectionVisibility(key){
     renderSummarySection(_journalState.entries, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedback, _journalState.hiddenSections, _journalState.abilityStages);
   }
 
-  const params = new URLSearchParams({ action:'saveSectionVisibility', name:_lastName, phone4:_lastPhone4, hiddenSections: _journalState.hiddenSections.join(',') });
+  const params = new URLSearchParams({ action:'saveSectionVisibility', name:_lastName, phone4:_lastPhone4, hiddenSections: _journalState.hiddenSections.length ? _journalState.hiddenSections.join(',') : HIDDEN_NONE_MARKER });
   fetch(GAS_URL + '?' + params.toString()).catch(()=>{});
 }
 
@@ -1553,7 +1561,12 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
       ? `<div class="highlight-list">${hintsOverride.map(h=>`<div><span class="check">✔</span>${h}</div>`).join('')}</div>`
       : renderParentingHints(entries);
 
-    const colorFlowHtml = (wheelHtml || timelineHtml || freqHtml) ? `<div class="color-flow-wrap">${wheelHtml}${timelineHtml}${freqHtml}</div>` : '';
+    // 바퀴(왼쪽)+빈도바(오른쪽)만 나란히 배치하고, 회차별 색 타임라인은 원래
+    // 방식대로 전체 너비를 쓰는 가로 한 줄로 따로 둬요 (타임라인은 항목 수가
+    // 많아서 좁은 칸에 욱여넣으면 세로로 아주 길어졌었어요).
+    const colorFlowHtml = (wheelHtml || timelineHtml || freqHtml)
+      ? `${(wheelHtml || freqHtml) ? `<div class="color-flow-wrap">${wheelHtml}${freqHtml}</div>` : ''}${timelineHtml}`
+      : '';
     // 꽃밭샘 피드백 박스 — B/C/D/E 섹션 각각에 자기 것만 따로 붙어요.
     const buildFeedbackBox = (text) => {
       const t = (text || '').trim();
