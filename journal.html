@@ -1342,7 +1342,7 @@ function renderJournal(data, abilityStages){
         <div>
           ${(e.beforeColor || e.afterColor) ? `
           <div class="info-block">
-            <span class="info-label">수업 전 → 수업 후 마음</span>
+            <span class="info-label">🌈 수업 전 → 수업 후 마음</span>
             <div class="mood-flow">
               <div class="mood-swatch-wrap"><span class="swatch-lg" style="background:${toneHex(e.beforeColor, e.beforeTone)}"></span><span>${e.beforeColor || '-'}</span>${e.beforeMoodNote ? `<span class="mood-note">"${e.beforeMoodNote}"</span>` : ''}</div>
               <span class="mood-arrow">→</span>
@@ -1351,7 +1351,7 @@ function renderJournal(data, abilityStages){
           </div>` : ''}
           ${e.selfColor ? `
           <div class="info-block">
-            <span class="info-label">자신을 나타내는 색</span>
+            <span class="info-label">🎨 자신을 나타내는 색</span>
             <div class="color-row">
               <span class="swatch" style="background:${toneHex(e.selfColor, null)}"></span>
               <span>${e.selfColor}</span>
@@ -1359,7 +1359,7 @@ function renderJournal(data, abilityStages){
           </div>` : ''}
           ${(e.color1 || e.color2 || e.color3) ? `
           <div class="info-block">
-            <span class="info-label">작품색</span>
+            <span class="info-label">🖍️ 작품색</span>
             <div class="color-chip-row">
               ${[e.color1,e.color2,e.color3].filter(Boolean).map(c=>`
               <div class="color-chip"><span class="swatch" style="background:${toneHex(c,null)}"></span><span>${c}</span></div>`).join('')}
@@ -1367,37 +1367,37 @@ function renderJournal(data, abilityStages){
           </div>` : ''}
           ${e.materials ? `
           <div class="info-block">
-            <span class="info-label">사용 재료</span>
+            <span class="info-label">🧰 사용 재료</span>
             <div class="material-pills">${e.materials.split(/[,、]/).map(m=>`<span class="pill">${m.trim()}</span>`).join('')}</div>
           </div>` : ''}
           ${(e.emotionKeywords && e.emotionKeywords.length) ? `
           <div class="info-block">
-            <span class="info-label">감정 키워드</span>
+            <span class="info-label">💛 감정 키워드</span>
             <div class="material-pills">${e.emotionKeywords.map(k=>`<span class="pill">${k}</span>`).join('')}</div>
           </div>` : ''}
           ${e.engagement ? `
           <div class="info-block">
-            <span class="info-label">몰입도</span>
+            <span class="info-label">🔥 몰입도</span>
             <div class="material-pills"><span class="pill">${e.engagement}</span></div>
           </div>` : ''}
           ${e.materialTendency ? `
           <div class="info-block">
-            <span class="info-label">재료 선택의 경향</span>
+            <span class="info-label">🧭 재료 선택의 경향</span>
             <p class="info-note">${e.materialTendency}</p>
           </div>` : ''}
           ${(e.artAbility || e.mindAbility) ? `
           <div class="info-block">
-            <span class="info-label">이번 수업에서 발견한 힘</span>
+            <span class="info-label">✨ 이번 수업에서 발견한 힘</span>
             ${renderEntryAbilities(e)}
           </div>` : ''}
           ${e.styleNotes ? `
           <div class="info-block">
-            <span class="info-label">그림 스타일 특징</span>
+            <span class="info-label">🖼️ 그림 스타일 특징</span>
             <p class="info-note">${e.styleNotes}</p>
           </div>` : ''}
           ${(e.goalTags && e.goalTags.length) ? `
           <div class="info-block">
-            <span class="info-label">이번 회차 목표행동</span>
+            <span class="info-label">🎯 이번 회차 목표행동</span>
             <div class="material-pills">${e.goalTags.map(t=>`<span class="pill" style="background:#EFF4EC; border-color:#D7E3CF; color:var(--forest);">${t}</span>`).join('')}</div>
           </div>` : ''}
         </div>
