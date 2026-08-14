@@ -51,6 +51,7 @@
   .summary-title-banner .summary-title-eyebrow{display:block; font-family:'Playfair Display',serif; font-style:italic; color:var(--clay); font-size:13px; letter-spacing:1px; margin-bottom:6px;}
   .summary-title-banner h2{font-family:'Noto Serif KR',serif; font-size:24px; color:var(--forest);}
   .carte-cover h2{font-family:'Noto Serif KR',serif; font-size:clamp(26px,4vw,36px); color:var(--forest); margin:14px 0 6px;}
+  .carte-cover .sub-en{font-family:'Playfair Display',serif; font-style:italic; color:var(--clay); font-size:12.5px; margin-bottom:6px;}
   .carte-cover .sub{font-size:13.5px; color:#8a8378; margin-bottom:26px;}
   .cover-photo-ring{
     width:150px; height:150px; border-radius:50%; margin:0 auto 10px; overflow:hidden;
@@ -243,6 +244,7 @@
   .ability-name{display:block; font-weight:700; color:var(--forest); font-size:12.5px; margin-bottom:2px;}
   .ability-count{display:block; color:#9a9285; font-size:11px; margin-bottom:6px;}
   .ability-desc{display:block; color:#6b6459; font-size:11.5px; line-height:1.5;}
+  .ability-def{display:block; color:var(--forest); font-size:11.5px; line-height:1.5; font-weight:700; margin-bottom:2px;}
   .stage-chip{display:inline-block; margin-top:4px; margin-bottom:4px; padding:2px 8px; border-radius:20px; font-size:10.5px; font-weight:700; color:#fff;}
   .stage-chip.stage-1{background:#B7AE9E;}
   .stage-chip.stage-2{background:#D9A756;}
@@ -268,7 +270,9 @@
   .mind-bar-list{display:flex; flex-direction:column; gap:14px;}
   .mind-bar-row{display:flex; align-items:center; gap:10px;}
   .mind-bar-icon{font-size:18px; width:22px; text-align:center; flex-shrink:0;}
-  .mind-bar-label{width:88px; font-size:12.5px; color:var(--forest); font-weight:600; flex-shrink:0;}
+  .mind-bar-label-wrap{width:108px; flex-shrink:0;}
+  .mind-bar-label{display:block; font-size:12.5px; color:var(--forest); font-weight:600;}
+  .mind-bar-def{display:block; font-size:9.5px; color:#9a9285; font-weight:400; margin-top:1px;}
   .mind-bar-track{flex:1; height:14px; background:var(--ivory-deep); border-radius:8px; overflow:hidden;}
   .mind-bar-fill{height:100%; background:linear-gradient(90deg, #C9DDB9, #8CA37A); border-radius:8px;}
   .mind-bar-fill.unconfirmed{background:repeating-linear-gradient(45deg, #E4DBC9, #E4DBC9 6px, #ECE4D4 6px, #ECE4D4 12px);}
@@ -280,6 +284,7 @@
   .mind-table td{padding:10px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.6; color:#4b463f;}
   .mind-table tr:last-child td{border-bottom:none;}
   .mind-table-name{white-space:nowrap; font-weight:600; color:var(--forest);}
+  .mind-table-def{display:block; font-size:9.5px; font-weight:400; color:#9a9285; margin-top:2px; white-space:normal;}
   .mind-table-icon{margin-right:6px;}
 
   .growth-narrative{
@@ -412,7 +417,7 @@
 <div class="wrap">
   <div class="hero">
     <div class="eyebrow">Growth Journal</div>
-    <h1>우리 아이 성장카르테</h1>
+    <h1>아이결 성장기록</h1>
     <p>그림을 통해 본 우리 아이 마음의 성장 이야기를 확인해보세요.</p>
   </div>
 
@@ -436,7 +441,8 @@
   <div id="journalView">
     <div class="carte-cover">
       <div class="brand-mark">Forêt des Crayons</div>
-      <h2 id="jCarteTitle">성장카르테</h2>
+      <h2 id="jCarteTitle">아이결 성장기록</h2>
+      <p class="sub-en">A Record of Artistic Becoming</p>
       <p class="sub">그림을 통해 본 어린이 마음의 성장 이야기</p>
       <div class="cover-photo-ring" id="coverPhotoRing"><div style="width:100%;height:100%;"></div></div>
       <div class="child-name" id="jChildName"></div>
@@ -529,11 +535,11 @@ const ART_ABILITY_DEFS = {
   '응용,표현전개력':'배운 것을 새로운 장면으로 넓혀가는 힘'
 };
 const MIND_ABILITY_DEFS = {
-  '마음 알아차림':'자신의 감정을 알아채고 색이나 말로 연결하는 힘',
-  '마음표현':'느낀 마음을 그림이나 말로 표현하는 힘',
-  '마음조절':'하고 싶은 것을 조절하고 기다리는 힘',
-  '마음믿기':'예상 밖의 결과도 스스로 받아들이는 힘',
-  '마음나누기':'친구의 마음과 표현을 받아들이는 힘'
+  '마음 알아차림':'내 마음을 알아가는 힘',
+  '마음표현':'내 마음을 꺼내는 힘',
+  '마음조절':'내 마음을 다시 다루는 힘',
+  '마음믿기':'내 선택을 믿는 힘',
+  '마음나누기':'너와 나를 이어가는 힘'
 };
 // 수업전/후 마음색·톤은 아이의 "마음 상태"를 색으로 표현한 거예요. 작품 만들 때
 // 고른 선택색상1~3(작품색)과는 다를 수도, 같을 수도 있어요. 톤(deep/vivid/pastel)은
@@ -900,7 +906,7 @@ function renderAbilityBadges(entries, field, labels, defs, groupsDef, stagesMap)
       <span class="ability-name">${l}</span>
       <span class="ability-count">관찰 ${counts[l]}회</span>
       ${st && st.stage ? `<span class="stage-chip stage-${st.stage}">${STAGE_LABELS[st.stage] || ''}</span>` : `<span class="stage-chip stage-none">성장단계 미판정</span>`}
-      ${defs[l] ? `<span class="ability-desc">${defs[l]}</span>` : ''}
+      ${defs[l] ? `<span class="ability-def">${defs[l]}</span>` : ''}
       ${st && st.reason ? `<span class="ability-desc" style="margin-top:4px;">"${st.reason}"</span>` : ''}
     </div>`;
   };
@@ -985,7 +991,7 @@ function renderMindAbilityBars(entries, stagesMap, isTeacher){
     return `
     <div class="mind-bar-row">
       <span class="mind-bar-icon">${MIND_ABILITY_ICONS[l] || '💗'}</span>
-      <span class="mind-bar-label">${l}</span>
+      <div class="mind-bar-label-wrap"><span class="mind-bar-label">${l}</span><span class="mind-bar-def">${MIND_ABILITY_DEFS[l] || ''}</span></div>
       <div class="mind-bar-track"><div class="mind-bar-fill${hasStage?'':' unconfirmed'}" style="width:${pct}%;"></div></div>
       <span class="mind-bar-count">${hasStage ? STAGE_SHORT[st.stage] : `관찰 ${counts[l]}회`}</span>
     </div>`;
@@ -1010,7 +1016,7 @@ function renderMindAbilityTable(stagesMap){
     const st = stagesMap[l];
     return `
     <tr>
-      <td class="mind-table-name"><span class="mind-table-icon">${MIND_ABILITY_ICONS[l] || '💗'}</span>${l}</td>
+      <td class="mind-table-name"><span class="mind-table-icon">${MIND_ABILITY_ICONS[l] || '💗'}</span>${l}<span class="mind-table-def">${MIND_ABILITY_DEFS[l] || ''}</span></td>
       <td><span class="stage-chip stage-${st.stage}">${STAGE_SHORT[st.stage] || ''}</span></td>
       <td>${st.reason || ''}</td>
       <td>${st.nextDirection || ''}</td>
@@ -1294,7 +1300,7 @@ function renderJournal(data, abilityStages){
   document.getElementById('journalView').style.display = 'block';
   document.getElementById('jChildName').textContent = `${data.name} 어린이`;
   document.getElementById('jTerm').textContent = formatTermDisplay(data.term);
-  document.getElementById('printFooterName').textContent = ` · ${data.name}의 6개월 성장카르테`;
+  document.getElementById('printFooterName').textContent = ` · ${data.name}의 6개월 성장기록`;
 
   const entries = buildAutoInsights(data.entries || []);
   document.getElementById('jRegPeriod').textContent = computeRegistrationPeriod(entries);
@@ -1563,6 +1569,10 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     freqHtml = `<div class="freq-card">${rows}</div>`;
   }
 
+  const narrativeHtml = (narrativeOverride && narrativeOverride.trim())
+    ? `<div class="growth-narrative">✨ ${narrativeOverride.trim()}</div>`
+    : renderGrowthNarrative(entries, childName);
+
   let autoSection = '';
   {
     const wheelHtml = renderColorWheel(entries);
@@ -1579,9 +1589,6 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
       ? renderAbilitySection(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_GROUPS, 'artAbilityNote', artStagesMap)
       : `<div class="ability-top-row"><div class="ability-top-wheel">${renderAbilityWheel(ART_ABILITIES, artStagesMap)}</div><div class="ability-top-cards">${renderTopAbilityCards(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_ICONS, artStagesMap)}</div></div>${artBadgesHtml ? `<div class="freq-card" style="margin-top:16px;">${artBadgesHtml}</div>` : ''}`;
     const mindAbilityHtml = renderMindAbilityBars(entries, mindStagesMap, isTeacher);
-    const narrativeHtml = (narrativeOverride && narrativeOverride.trim())
-      ? `<div class="growth-narrative">✨ ${narrativeOverride.trim()}</div>`
-      : renderGrowthNarrative(entries, childName);
     const hintsHtml = (hintsOverride && hintsOverride.length)
       ? `<div class="highlight-list">${hintsOverride.map(h=>`<div><span class="check">✔</span>${h}</div>`).join('')}</div>`
       : renderParentingHints(entries);
@@ -1598,7 +1605,7 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
       if(!t && !isTeacher) return '';
       return `
       <div class="feedback-box">
-        <div class="feedback-label">🌸 꽃밭샘 피드백</div>
+        <div class="feedback-label">🌸 꽃밭샘이 발견한 씨앗</div>
         ${t
           ? `<div class="feedback-text">${t}</div>`
           : `<div class="feedback-empty">아직 작성된 피드백이 없어요. teacher-entry.html의 "6개월 종합요약 입력" 탭에서 입력할 수 있어요.</div>`}
@@ -1607,7 +1614,6 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const fb = feedback || {};
 
     const sections = [
-      { key:'growthSentence', title:'성장 한 문장', html: narrativeHtml, toggle:false },
       { key:'artAbilityWheel', title:'미술에서 자라고 있는 힘', html: artAbilityHtml, toggle:true, extra: buildFeedbackBox(fb.B) },
       { key:'mindAbilityWheel', title:'마음의 능력', html: mindAbilityHtml, toggle:true, extra: buildFeedbackBox(fb.C) },
       { key:'toneGrid', title:'수업전후 마음색 키워드', html: toneGridHtml, toggle:false, extra: moodColorNotesHtml + buildFeedbackBox(fb.D) },
@@ -1616,19 +1622,19 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
       { key:'materialWheel', title:'재료 효과 바퀴 (사고·감정·뉴트럴)', html: materialWheelHtml, toggle:true },
       { key:'effectBalance', title:'재료 효과 비율', html: effectBalanceHtml, toggle:true },
       { key:'keywordCloud', title:'자주 나온 감정 · 성장 키워드', html: keywordCloudHtml, toggle:true },
-      { key:'parentingHints', title:'양육 힌트', html: hintsHtml, toggle:true }
+      { key:'parentingHints', title:'가정에서 함께 지켜보면 좋은 점', html: hintsHtml, toggle:true }
     ].filter(s => s.html || s.extra);
 
     const hiddenSet = new Set(hiddenSections || []);
     const visible = isTeacher ? sections : sections.filter(s => !hiddenSet.has(s.key));
 
     const LETTERS = 'ABCDEFGHIJ';
-    const PRINT_WIDE_KEYS = new Set(['growthSentence', 'colorFlow']);
+    const PRINT_WIDE_KEYS = new Set(['colorFlow']);
     if(visible.length){
       autoSection = `
         <div class="summary-title-banner">
           <span class="summary-title-eyebrow">Growth Report</span>
-          <h2>6개월 성장 카르테</h2>
+          <h2>크레용숲 아이결 성장 기록</h2>
         </div>
         <div class="summary-section">
           ${visible.map((s,i) => {
@@ -1639,7 +1645,7 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
             const wideClass = PRINT_WIDE_KEYS.has(s.key) ? ' print-wide' : '';
             return `
             <div class="sec-block${wideClass}">
-              <div class="sec-label" style="${i>0?'margin-top:24px;':''}"><span class="sec-letter">${LETTERS[i] || '•'}</span><h3>${s.title}</h3>${toggleBtn}</div>
+              <div class="sec-label" style="${i>0?'margin-top:24px;':''}"><span class="sec-letter">${LETTERS[i+1] || '•'}</span><h3>${s.title}</h3>${toggleBtn}</div>
               ${(isHidden && isTeacher) ? `<div class="sec-hidden-note">🙈 지금 학부모 화면에는 숨겨져 있어요 (선생님만 보는 중)</div>` : ''}
               ${s.html}
               ${s.extra || ''}
@@ -1649,29 +1655,38 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     }
   }
 
-  // 원장님 작성: 카테고리 요약 + 강점/방향
+  // 원장님 작성: 카테고리 요약 + 강점/방향. "A 성장 한 문장"도 여기로 옮겨서
+  // 같은 페이지에 함께 나오게 했어요(둘 다 짧은 요약형 텍스트라 한 장에 묶는
+  // 게 더 자연스러워요).
   let manualSection = '';
-  if(summary){
+  if(summary || (narrativeHtml && narrativeHtml.trim())){
     const cat = (icon, name, before, after) => (before || after) ? `
       <div class="cat-card"><div class="name">${icon} ${name}</div><div class="flow">${before||'-'} <span class="arrow">→</span> ${after||'-'}</div></div>` : '';
 
-    const cats = [
+    const cats = summary ? [
       cat('🔵','표현', summary.expression?.before, summary.expression?.after),
       cat('🟢','색채', summary.color?.before, summary.color?.after),
       cat('🟡','정서', summary.psychology?.before, summary.psychology?.after),
       cat('🔴','사고', summary.thinking?.before, summary.thinking?.after),
-    ].filter(Boolean).join('');
+    ].filter(Boolean).join('') : '';
 
-    const highlights = (summary.highlights||[]).map(h => `<div><span class="check">✔</span>${h}</div>`).join('');
+    const highlights = summary ? (summary.highlights||[]).map(h => `<div><span class="check">✔</span>${h}</div>`).join('') : '';
+
+    const narrativeBlock = (narrativeHtml && narrativeHtml.trim()) ? `
+      <div class="sec-block" style="margin-bottom:24px;">
+        <div class="sec-label"><span class="sec-letter">A</span><h3>성장 한 문장</h3></div>
+        ${narrativeHtml}
+      </div>` : '';
 
     manualSection = `
       <div class="summary-section manual">
+        ${narrativeBlock}
         <div class="sec-block print-wide">
           <div class="sec-label"><span class="tag tag-manual">꽃밭샘 종합 관찰</span><h3>성장 카테고리 요약</h3></div>
           ${cats ? `<div class="cat-grid">${cats}</div>` : ''}
           ${highlights ? `<div class="highlight-list">${highlights}</div>` : ''}
-          ${summary.strength ? `<div class="split-card strength" style="margin-bottom:14px;"><h4>꽃밭샘의 편지</h4><p>${summary.strength}</p></div>` : ''}
-          ${summary.direction ? `<div class="split-card direction"><h4>앞으로의 방향</h4><p>${summary.direction}</p></div>` : ''}
+          ${summary && summary.strength ? `<div class="split-card strength" style="margin-bottom:14px;"><h4>꽃밭샘의 편지</h4><p>${summary.strength}</p></div>` : ''}
+          ${summary && summary.direction ? `<div class="split-card direction"><h4>앞으로의 방향</h4><p>${summary.direction}</p></div>` : ''}
         </div>
       </div>`;
   }
