@@ -49,7 +49,10 @@
   .carte-cover .brand-mark{font-family:'Playfair Display',serif; font-style:italic; color:var(--clay); font-size:18px;}
   .summary-title-banner{text-align:center; margin:48px 0 28px; padding-top:36px; border-top:2px solid var(--line);}
   .summary-title-banner .summary-title-eyebrow{display:block; font-family:'Playfair Display',serif; font-style:italic; color:var(--clay); font-size:13px; letter-spacing:1px; margin-bottom:6px;}
-  .summary-title-banner h2{font-family:'Noto Serif KR',serif; font-size:24px; color:var(--forest);}
+  .summary-title-banner h2{
+    font-family:'Noto Serif KR',serif; font-size:24px; color:var(--forest);
+    display:inline-block; padding-bottom:10px; border-bottom:3px solid var(--clay);
+  }
   .carte-cover h2{font-family:'Noto Serif KR',serif; font-size:clamp(26px,4vw,36px); color:var(--forest); margin:14px 0 6px;}
   .carte-cover .sub-en{font-family:'Playfair Display',serif; font-style:italic; color:var(--clay); font-size:12.5px; margin-bottom:6px;}
   .carte-cover .sub{font-size:13.5px; color:#8a8378; margin-bottom:26px;}
@@ -355,15 +358,14 @@
     /* 회차 카드와 종합요약 사이 구분을 위한 타이틀 배너 — 여기서 새 페이지가
        시작되고, 뒤따르는 .summary-section은 별도로 페이지를 끊지 않아서
        배너와 첫 섹션이 같은 페이지에 자연스럽게 이어져요. */
-    .summary-title-banner{ break-before:page; page-break-before:always; break-after:avoid; page-break-after:avoid; text-align:center; margin-bottom:20px; }
+    .summary-title-banner{ break-after:avoid; page-break-after:avoid; text-align:center; margin-bottom:20px; }
 
     /* 종합요약도 회차 카드와 똑같이 세로(A4)로, 화면과 같은 한 줄(1열) 배치로
        인쇄해요. 가로 2열 대시보드는 크롬 인쇄 엔진에서 페이지 경계 처리가
        불안정해서 내용이 어중간하게 끊기는 문제가 있었어요 — 세로 단일열이
        훨씬 안정적으로 나와요. 종합요약 전체가 새 페이지에서 시작하고, 이후는
        내용 길이에 따라 자연스럽게 여러 페이지로 이어져요(그래도 괜찮아요).*/
-    .summary-section{ display:block; padding:0 4mm; }
-    .summary-section.manual{ break-before:page; page-break-before:always; }
+    .summary-section{ display:block; padding:0 4mm; break-before:page; page-break-before:always; }
     .summary-section .sec-block{ break-inside:avoid; page-break-inside:avoid; margin-bottom:22px; }
     .summary-section .sec-toggle-btn, .summary-section .sec-hidden-note{ display:none !important; }
     .summary-section .wheel-card svg{ max-width:220px; }
@@ -1632,10 +1634,6 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const PRINT_WIDE_KEYS = new Set(['colorFlow']);
     if(visible.length){
       autoSection = `
-        <div class="summary-title-banner">
-          <span class="summary-title-eyebrow">Growth Report</span>
-          <h2>크레용숲 아이결 성장 기록</h2>
-        </div>
         <div class="summary-section">
           ${visible.map((s,i) => {
             const isHidden = hiddenSet.has(s.key);
@@ -1655,9 +1653,9 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     }
   }
 
-  // 원장님 작성: 카테고리 요약 + 강점/방향. "A 성장 한 문장"도 여기로 옮겨서
-  // 같은 페이지에 함께 나오게 했어요(둘 다 짧은 요약형 텍스트라 한 장에 묶는
-  // 게 더 자연스러워요).
+  // 종합리포트의 첫 페이지: 타이틀 배너 + "A 성장 한 문장" + 꽃밭샘 종합 관찰
+  // (성장 카테고리 요약)을 전부 한 페이지에 묶었어요. B(미술능력)부터는
+  // 별도 페이지로 이어져요.
   let manualSection = '';
   if(summary || (narrativeHtml && narrativeHtml.trim())){
     const cat = (icon, name, before, after) => (before || after) ? `
@@ -1680,6 +1678,10 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
 
     manualSection = `
       <div class="summary-section manual">
+        <div class="summary-title-banner">
+          <span class="summary-title-eyebrow">Growth Report</span>
+          <h2>크레용숲 아이결 성장 기록</h2>
+        </div>
         ${narrativeBlock}
         <div class="sec-block print-wide">
           <div class="sec-label"><span class="tag tag-manual">꽃밭샘 종합 관찰</span><h3>성장 카테고리 요약</h3></div>
@@ -1692,7 +1694,7 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
   }
 
   const copyrightHtml = `<div class="print-copyright">© ${new Date().getFullYear()} Forêt des Crayons · 크레용숲. 무단 복제 및 배포를 금합니다.</div>`;
-  box.innerHTML = autoSection + manualSection + copyrightHtml;
+  box.innerHTML = manualSection + autoSection + copyrightHtml;
 }
 
 function logoutJournal(e){
