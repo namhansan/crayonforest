@@ -1341,7 +1341,7 @@ function renderJournal(data, abilityStages){
             <span class="observation-label">꽃밭샘 관찰</span>
             ${e.note || '이 달의 관찰 기록이 아직 입력되지 않았어요.'}
           </div>
-          ${e.autoInsight ? `
+          ${(e.autoInsight && isTeacher) ? `
           <div class="auto-insight">
             <span class="observation-label" style="color:var(--sage);">✨ 지난 회차와 비교</span>
             ${e.autoInsight}
