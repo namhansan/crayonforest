@@ -540,21 +540,27 @@ function saveSummaryForm(){
   const btn = document.getElementById('summarySubmitBtn');
   btn.disabled = true; btn.textContent = '저장 중...';
   fetch(GAS_URL + '?' + params.toString())
-    .then(r => r.json())
-    .then(data => {
+    .then(r => r.text())
+    .then(text => {
       btn.disabled = false; btn.textContent = '성장요약 저장하기';
+      let data = null;
+      try { data = JSON.parse(text); } catch(e) { /* JSON이 아님 — 아래에서 원문을 그대로 보여줌 */ }
       if(data && data.ok){
         msg.className = 'submit-msg ok';
         msg.textContent = '✔ 저장했어요!' + (document.getElementById('s_published').checked ? ' 학부모 화면에도 바로 반영돼요.' : ' (공개 체크를 안 하셔서 학부모 화면엔 아직 안 보여요.)');
-      } else {
+      } else if(data && data.message) {
         msg.className = 'submit-msg err';
-        msg.textContent = data && data.message ? data.message : '저장에 실패했어요.';
+        msg.textContent = data.message;
+      } else {
+        // 서버가 JSON이 아닌 응답(에러 페이지 등)을 돌려준 경우 — 원문을 그대로 화면에 보여줘요.
+        msg.className = 'submit-msg err';
+        msg.innerHTML = '저장에 실패했어요. 서버 응답:<br><span style="font-size:11px; word-break:break-all;">' + text.replace(/</g,'&lt;').slice(0, 800) + '</span>';
       }
     })
-    .catch(() => {
+    .catch((err) => {
       btn.disabled = false; btn.textContent = '성장요약 저장하기';
       msg.className = 'submit-msg err';
-      msg.textContent = '저장 중 문제가 발생했어요.';
+      msg.textContent = '저장 중 문제가 발생했어요: ' + (err && err.message ? err.message : String(err));
     });
 }
 
