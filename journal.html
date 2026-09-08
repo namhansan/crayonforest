@@ -179,6 +179,14 @@
   .feedback-text{font-size:13.5px; color:#3f3b34; line-height:1.8; white-space:pre-wrap;}
   .feedback-empty{font-size:12.5px; color:#b7ae9e; font-style:italic;}
 
+  .structured-hints{display:flex; flex-direction:column; gap:14px;}
+  .hint-block{background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:18px 22px;}
+  .hint-block-head{font-family:'Noto Serif KR',serif; font-size:14.5px; color:var(--forest); font-weight:700; margin-bottom:8px;}
+  .hint-sub{font-family:'Noto Sans KR',sans-serif; font-weight:600; color:#5c5648;}
+  .hint-block-body{font-size:13.5px; color:#3f3b34; line-height:1.85; white-space:pre-wrap;}
+  .hint-art{background:#F7EFE4; border-color:#EAD9BE;}
+  .hint-art .hint-block-head{color:var(--clay);}
+
   .timeline-card, .freq-card, .wheel-card{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:28px 26px; margin-bottom:16px;}
   .wheel-card{text-align:center;}
   .wheel-card svg{max-width:280px; margin:0 auto;}
@@ -1179,6 +1187,38 @@ function renderGrowthNarrative(entries, childName){
 }
 
 // 데이터 패턴을 바탕으로 양육 힌트 초안을 자동 제안해요 (선생님 확인·첨삭 필요).
+// 원장님이 "살려줄 힘 / 집에서 해볼 말 / 기다려줄 부분 / CRAYON FOREST 경험"을
+// 구조화해서 입력했으면, 그 내용을 정해진 형식으로 보여줘요. 각 텍스트는 첫 줄이
+// 소제목, 그 아래가 본문이에요. 넷 다 비어있으면 null을 돌려줘서 다른(구식/자동)
+// 힌트 표시로 넘어가게 해요.
+function renderStructuredHints(gh){
+  if(!gh || !(gh.power || gh.talk || gh.wait || gh.art)) return null;
+  const block = (icon, label, raw) => {
+    const text = (raw || '').trim();
+    if(!text) return '';
+    const lines = text.split('\n');
+    const title = lines[0] ? lines[0].trim() : '';
+    const body = lines.slice(1).join('\n').trim();
+    return `
+      <div class="hint-block">
+        <div class="hint-block-head">${icon} ${label}${title ? ` · <span class="hint-sub">${title}</span>` : ''}</div>
+        ${body ? `<p class="hint-block-body">${body}</p>` : ''}
+      </div>`;
+  };
+  const artText = (gh.art || '').trim();
+  const artHtml = artText ? `
+    <div class="hint-block hint-art">
+      <div class="hint-block-head">🎨 CRAYON FOREST | 미술에서는 이렇게 경험합니다</div>
+      <p class="hint-block-body">${artText}</p>
+    </div>` : '';
+  return `<div class="structured-hints">
+    ${block('🌱','살려줄 힘', gh.power)}
+    ${block('💬','집에서 해볼 말', gh.talk)}
+    ${block('⏳','기다려줄 부분', gh.wait)}
+    ${artHtml}
+  </div>`;
+}
+
 function renderParentingHints(entries){
   if(entries.length < 2) return '';
   const hints = [];
@@ -1473,7 +1513,7 @@ function renderJournal(data, abilityStages){
   // 종합요약(색채 여정 등)은 흐름이 이어지는 정규반 기록만으로 계산해요 — 특강은
   // 기간이 짧고 별개 활동이라 성장 흐름 계산에 섞이면 오히려 왜곡될 수 있어서예요.
   const summaryEntries = hasIntensive ? entries.filter(e => !isIntensive(e)) : entries;
-  _journalState = { entries: summaryEntries, summary: data.summary, name: data.name, narrativeOverride: data.narrativeOverride, hintsOverride: data.hintsOverride, feedback: { A: data.feedbackA||'', B: data.feedbackB||'', C: data.feedbackC||'', D: data.feedbackD||'' }, hiddenSections: withDefaultHidden(data.hiddenSections), abilityStages: abilityStages || [] };
+  _journalState = { entries: summaryEntries, summary: data.summary, name: data.name, narrativeOverride: data.narrativeOverride, hintsOverride: data.hintsOverride, feedback: { A: data.feedbackA||'', B: data.feedbackB||'', C: data.feedbackC||'', D: data.feedbackD||'' }, hiddenSections: withDefaultHidden(data.hiddenSections), abilityStages: abilityStages || [], growthHint: { power: data.growthHintPower||'', talk: data.growthHintTalk||'', wait: data.growthHintWait||'', art: data.growthHintArt||'' } };
   if(hasIntensive){
     wrap.insertAdjacentHTML('beforeend', `<div class="class-note">ℹ️ 특강 ${entries.length - summaryEntries.length}회는 별도 활동이라 아래 종합요약(색채 여정 등) 계산에는 포함하지 않았어요. 위 기록에서는 그대로 확인할 수 있어요.</div>`);
   }
@@ -1483,7 +1523,7 @@ function renderJournal(data, abilityStages){
   const savedFrom = (data.range && data.range.from) ? Math.max(1, Math.min(data.range.from, total)) : 1;
   const savedTo = (data.range && data.range.to) ? Math.max(1, Math.min(data.range.to, total)) : total;
   const initialSlice = summaryEntries.slice(savedFrom - 1, savedTo);
-  renderSummarySection(initialSlice, data.summary, data.name, data.narrativeOverride, data.hintsOverride, { A: data.feedbackA||'', B: data.feedbackB||'', C: data.feedbackC||'', D: data.feedbackD||'' }, withDefaultHidden(data.hiddenSections), abilityStages || []);
+  renderSummarySection(initialSlice, data.summary, data.name, data.narrativeOverride, data.hintsOverride, { A: data.feedbackA||'', B: data.feedbackB||'', C: data.feedbackC||'', D: data.feedbackD||'' }, withDefaultHidden(data.hiddenSections), abilityStages || [], { power: data.growthHintPower||'', talk: data.growthHintTalk||'', wait: data.growthHintWait||'', art: data.growthHintArt||'' });
 }
 
 // 종합요약(자동 생성 부분)만 원하는 회차 범위로 좁혀볼 수 있는 필터.
@@ -1516,7 +1556,7 @@ function applySummaryFilter(){
   const to = parseInt(document.getElementById('jToSel').value, 10);
   const lo = Math.min(from, to) - 1, hi = Math.max(from, to);
   const subset = _journalState.entries.slice(lo, hi);
-  renderSummarySection(subset, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedback, _journalState.hiddenSections, _journalState.abilityStages);
+  renderSummarySection(subset, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedback, _journalState.hiddenSections, _journalState.abilityStages, _journalState.growthHint);
 }
 function resetSummaryFilter(){
   if(!_journalState) return;
@@ -1534,12 +1574,12 @@ function printAsParent(){
   if(!_journalState) return;
   const wasTeacher = isTeacher;
   isTeacher = false;
-  renderSummarySection(_journalState.entries, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedback, _journalState.hiddenSections, _journalState.abilityStages);
+  renderSummarySection(_journalState.entries, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedback, _journalState.hiddenSections, _journalState.abilityStages, _journalState.growthHint);
   document.getElementById('jTeacherBadge').style.display = 'none';
 
   const restore = () => {
     isTeacher = wasTeacher;
-    renderSummarySection(_journalState.entries, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedback, _journalState.hiddenSections, _journalState.abilityStages);
+    renderSummarySection(_journalState.entries, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedback, _journalState.hiddenSections, _journalState.abilityStages, _journalState.growthHint);
     document.getElementById('jTeacherBadge').style.display = wasTeacher ? 'inline-block' : 'none';
     window.removeEventListener('afterprint', restore);
   };
@@ -1558,7 +1598,7 @@ function toggleSectionVisibility(key){
   if(fromSel){
     applySummaryFilter();
   } else {
-    renderSummarySection(_journalState.entries, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedback, _journalState.hiddenSections, _journalState.abilityStages);
+    renderSummarySection(_journalState.entries, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedback, _journalState.hiddenSections, _journalState.abilityStages, _journalState.growthHint);
   }
 
   const params = new URLSearchParams({ action:'saveSectionVisibility', name:_lastName, phone4:_lastPhone4, hiddenSections: _journalState.hiddenSections.length ? _journalState.hiddenSections.join(',') : HIDDEN_NONE_MARKER });
@@ -1577,7 +1617,7 @@ function saveSummaryFilter(){
     .catch(() => { msg.textContent = '저장에 실패했어요. 다시 시도해주세요.'; });
 }
 
-function renderSummarySection(entries, summary, childName, narrativeOverride, hintsOverride, feedback, hiddenSections, abilityStages){
+function renderSummarySection(entries, summary, childName, narrativeOverride, hintsOverride, feedback, hiddenSections, abilityStages, growthHint){
   const box = document.getElementById('jSummary');
   const colored = entries.filter(e => e.mainColor);
 
@@ -1632,9 +1672,13 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
       ? renderAbilitySection(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_GROUPS, 'artAbilityNote', artStagesMap)
       : `<div class="ability-top-row"><div class="ability-top-wheel">${renderAbilityWheel(ART_ABILITIES, artStagesMap)}</div><div class="ability-top-cards">${renderTopAbilityCards(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_ICONS, artStagesMap)}</div></div>${artBadgesHtml ? `<div class="freq-card" style="margin-top:16px;">${artBadgesHtml}</div>` : ''}`;
     const mindAbilityHtml = renderMindAbilityBars(entries, mindStagesMap, isTeacher);
-    const hintsHtml = (hintsOverride && hintsOverride.length)
-      ? `<div class="highlight-list">${hintsOverride.map(h=>`<div><span class="check">✔</span>${h}</div>`).join('')}</div>`
-      : renderParentingHints(entries);
+    const structuredHintsHtml = renderStructuredHints(growthHint);
+    const hintsHtml = structuredHintsHtml
+      ? structuredHintsHtml
+      : (isTeacher ? `<div class="feedback-empty" style="padding:6px 4px 14px;">아직 구조화된 양육 힌트(살려줄 힘/집에서 해볼 말/기다려줄 부분/CRAYON FOREST 경험)가 입력되지 않았어요 — teacher-entry.html에서 입력하면 아래 대신 이 형식으로 나와요.</div>` : '')
+        + ((hintsOverride && hintsOverride.length)
+          ? `<div class="highlight-list">${hintsOverride.map(h=>`<div><span class="check">✔</span>${h}</div>`).join('')}</div>`
+          : renderParentingHints(entries));
 
     // 바퀴(왼쪽)+빈도바(오른쪽)만 나란히 배치하고, 회차별 색 타임라인은 원래
     // 방식대로 전체 너비를 쓰는 가로 한 줄로 따로 둬요 (타임라인은 항목 수가
@@ -1665,7 +1709,7 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
       { key:'materialWheel', title:'재료 효과 여정 (사고·감정·뉴트럴)', html: materialWheelHtml, toggle:true },
       { key:'effectBalance', title:'재료 효과 비율', html: effectBalanceHtml, toggle:true },
       { key:'keywordCloud', title:'자주 나온 감정 · 성장 키워드', html: keywordCloudHtml, toggle:true },
-      { key:'parentingHints', title:'가정에서 함께 지켜보면 좋은 점', html: hintsHtml, toggle:true }
+      { key:'parentingHints', title:'집에서는 이렇게 도와주세요. 크레용숲에서는 그 힘을 미술로 표현합니다', html: hintsHtml, toggle:true }
     ].filter(s => s.html || s.extra);
 
     const hiddenSet = new Set(hiddenSections || []);

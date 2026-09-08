@@ -64,10 +64,11 @@
  * 함수 위 주석 참고)
  *
  * (선택) 종합 요약 시트 준비 — 6개월 마지막에 한 번만 작성:
- * "성장요약"이라는 이름의 시트 탭을 만들고, 첫 줄에 다음 20개를 순서대로 넣어주세요:
+ * "성장요약"이라는 이름의 시트 탭을 만들고, 첫 줄에 다음 27개를 순서대로 넣어주세요:
  * 이름 | 전화번호뒷4자리 | 강점 | 성장방향 | 표현_전 | 표현_후 | 색채_전 | 색채_후 | 심리_전 | 심리_후 | 사고_전 | 사고_후 | 눈에띄는성장 | 공개여부 |
  * 한줄요약(직접입력) | 양육힌트(직접입력) | 요약범위시작 | 요약범위끝 | 꽃밭샘피드백 | 숨김섹션 |
- * 꽃밭샘피드백B | 꽃밭샘피드백C | 꽃밭샘피드백D
+ * 꽃밭샘피드백B | 꽃밭샘피드백C | 꽃밭샘피드백D |
+ * 양육힌트-살려줄힘 | 양육힌트-집에서해볼말 | 양육힌트-기다려줄부분 | 양육힌트-크레용숲경험
  *
  * "요약범위시작"/"요약범위끝"과 "꽃밭샘피드백"/"숨김섹션"은 전부 teacher-entry.html
  * (선생님 화면)에서 조작하면 자동으로 채워져요 — 손으로 직접 안 쓰셔도 됩니다.
@@ -75,6 +76,13 @@
  * 각각 B(미술에서 자라고 있는 힘)/C(마음의 능력)/D(수업전후 마음색 키워드) 아래에
  * 표시돼요.
  * "숨김섹션"은 콤마로 구분된 값(예: "colorJourney,keywordCloud")이 들어가요.
+ *
+ * "양육힌트-살려줄힘"/"양육힌트-집에서해볼말"/"양육힌트-기다려줄부분"은 각각 첫 줄에
+ * 짧은 소제목, 그 아래 줄부터 본문 문단을 적으면 돼요 (teacher-entry.html에서 그렇게
+ * 입력하도록 안내돼 있어요). "양육힌트-크레용숲경험"은 소제목 없이 2~3문장만 적으면
+ * 돼요. 이 4칸에 뭔가 적으면, 학부모 화면의 H(집에서는 이렇게 도와주세요) 섹션이
+ * 이 구조화된 내용으로 나오고, 비워두면 예전 방식(한 줄씩 직접 쓰기 또는 자동 생성)
+ * 으로 대체돼요.
  *
  * 마지막 2개(한줄요약/양육힌트 직접입력)는 선택 입력이에요. 성장카르테 화면의
  * "성장 한 줄 요약"과 "양육 힌트"는 원래 성장일지 데이터로 자동 생성되는데,
@@ -436,7 +444,11 @@ function getJournal(name, phone4) {
     feedbackB: summary ? summary.feedbackB : '',
     feedbackC: summary ? summary.feedbackC : '',
     feedbackD: summary ? summary.feedbackD : '',
-    hiddenSections: summary ? summary.hiddenSections : []
+    hiddenSections: summary ? summary.hiddenSections : [],
+    growthHintPower: summary ? summary.growthHintPower : '',
+    growthHintTalk: summary ? summary.growthHintTalk : '',
+    growthHintWait: summary ? summary.growthHintWait : '',
+    growthHintArt: summary ? summary.growthHintArt : ''
   };
 }
 
@@ -634,7 +646,7 @@ function saveSummaryRange(name, phone4, from, to) {
   let sheet = ss.getSheetByName(SUMMARY_SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SUMMARY_SHEET_NAME);
-    sheet.appendRow(['이름','전화번호뒷4자리','강점(꽃밭샘의 편지)','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약-A성장한문장(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝','꽃밭샘피드백-E색채흐름','숨김섹션','꽃밭샘피드백-B미술능력','꽃밭샘피드백-C마음의능력','꽃밭샘피드백-D마음색키워드']);
+    sheet.appendRow(['이름','전화번호뒷4자리','강점(꽃밭샘의 편지)','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약-A성장한문장(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝','꽃밭샘피드백-E색채흐름','숨김섹션','꽃밭샘피드백-B미술능력','꽃밭샘피드백-C마음의능력','꽃밭샘피드백-D마음색키워드','양육힌트-살려줄힘','양육힌트-집에서해볼말','양육힌트-기다려줄부분','양육힌트-크레용숲경험']);
   }
   const data = sheet.getDataRange().getValues();
   let rowIdx = -1;
@@ -798,7 +810,7 @@ function saveSummary(p) {
   let sheet = ss.getSheetByName(SUMMARY_SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SUMMARY_SHEET_NAME);
-    sheet.appendRow(['이름','전화번호뒷4자리','강점(꽃밭샘의 편지)','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약-A성장한문장(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝','꽃밭샘피드백-E색채흐름','숨김섹션','꽃밭샘피드백-B미술능력','꽃밭샘피드백-C마음의능력','꽃밭샘피드백-D마음색키워드']);
+    sheet.appendRow(['이름','전화번호뒷4자리','강점(꽃밭샘의 편지)','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약-A성장한문장(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝','꽃밭샘피드백-E색채흐름','숨김섹션','꽃밭샘피드백-B미술능력','꽃밭샘피드백-C마음의능력','꽃밭샘피드백-D마음색키워드','양육힌트-살려줄힘','양육힌트-집에서해볼말','양육힌트-기다려줄부분','양육힌트-크레용숲경험']);
   }
   const data = sheet.getDataRange().getValues();
   let rowIdx = -1;
@@ -816,12 +828,16 @@ function saveSummary(p) {
     p.highlights || '', published,
     p.narrativeOverride || '', p.hintsOverride || ''
   ];
+  const tail19to27 = [
+    p.feedbackA || '', p.hiddenSections || '', p.feedbackB || '', p.feedbackC || '', p.feedbackD || '',
+    p.growthHintPower || '', p.growthHintTalk || '', p.growthHintWait || '', p.growthHintArt || ''
+  ];
   if (rowIdx === -1) {
     // 새 줄이라 요약범위(17,18열)는 비워서 시작 (필요하면 나중에 journal.html에서 지정)
-    sheet.appendRow(values.concat(['', '', p.feedbackA || '', p.hiddenSections || '', p.feedbackB || '', p.feedbackC || '', p.feedbackD || '']));
+    sheet.appendRow(values.concat(['', '']).concat(tail19to27));
   } else {
     sheet.getRange(rowIdx, 1, 1, 16).setValues([values]); // 17,18열(요약범위)은 그대로 둠
-    sheet.getRange(rowIdx, 19, 1, 5).setValues([[p.feedbackA || '', p.hiddenSections || '', p.feedbackB || '', p.feedbackC || '', p.feedbackD || '']]);
+    sheet.getRange(rowIdx, 19, 1, tail19to27.length).setValues([tail19to27]);
   }
   return { ok: true };
 }
@@ -833,7 +849,7 @@ function saveSectionVisibility(name, phone4, hiddenSections) {
   let sheet = ss.getSheetByName(SUMMARY_SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SUMMARY_SHEET_NAME);
-    sheet.appendRow(['이름','전화번호뒷4자리','강점(꽃밭샘의 편지)','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약-A성장한문장(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝','꽃밭샘피드백-E색채흐름','숨김섹션','꽃밭샘피드백-B미술능력','꽃밭샘피드백-C마음의능력','꽃밭샘피드백-D마음색키워드']);
+    sheet.appendRow(['이름','전화번호뒷4자리','강점(꽃밭샘의 편지)','성장방향','표현_전','표현_후','색채_전','색채_후','심리_전','심리_후','사고_전','사고_후','눈에띄는성장','공개여부','한줄요약-A성장한문장(직접입력)','양육힌트(직접입력)','요약범위시작','요약범위끝','꽃밭샘피드백-E색채흐름','숨김섹션','꽃밭샘피드백-B미술능력','꽃밭샘피드백-C마음의능력','꽃밭샘피드백-D마음색키워드','양육힌트-살려줄힘','양육힌트-집에서해볼말','양육힌트-기다려줄부분','양육힌트-크레용숲경험']);
   }
   const data = sheet.getDataRange().getValues();
   let rowIdx = -1;
@@ -841,7 +857,7 @@ function saveSectionVisibility(name, phone4, hiddenSections) {
     if (String(data[i][0]).trim() === String(name).trim() && normalizePhone4(data[i][1]) === normalizePhone4(phone4)) { rowIdx = i + 1; break; }
   }
   if (rowIdx === -1) {
-    sheet.appendRow([name, phone4, '', '', '', '', '', '', '', '', '', '', '', false, '', '', '', '', '', hiddenSections || '', '', '', '']);
+    sheet.appendRow([name, phone4, '', '', '', '', '', '', '', '', '', '', '', false, '', '', '', '', '', hiddenSections || '', '', '', '', '', '', '', '']);
   } else {
     sheet.getRange(rowIdx, 20, 1, 1).setValue(hiddenSections || '');
   }
@@ -872,7 +888,11 @@ function getSummary(name, phone4) {
     hiddenSections: String(row[19] || '').split(',').map(s => s.trim()).filter(Boolean),
     feedbackB: row[20] || '',
     feedbackC: row[21] || '',
-    feedbackD: row[22] || ''
+    feedbackD: row[22] || '',
+    growthHintPower: row[23] || '',
+    growthHintTalk: row[24] || '',
+    growthHintWait: row[25] || '',
+    growthHintArt: row[26] || ''
   };
 }
 

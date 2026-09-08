@@ -287,7 +287,35 @@
           <div class="f-field"><label>성장 한 줄 요약 직접 쓰기</label><input type="text" id="s_narrativeOverride"></div>
         </div>
         <div class="form-row single">
-          <div class="f-field"><label>가정에서 함께 지켜보면 좋은 점 직접 쓰기 <span class="hint">(한 줄에 하나씩)</span></label><textarea id="s_hintsOverride"></textarea></div>
+          <div class="f-field"><label>가정에서 함께 지켜보면 좋은 점 (옛 방식 — 한 줄에 하나씩) <span class="hint">아래 "집에서는 이렇게 도와주세요" 카드를 채우면 이건 안 쓰여요</span></label><textarea id="s_hintsOverride"></textarea></div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-section-title">🌱 집에서는 이렇게 도와주세요, 크레용숲에서는 그 힘을 미술로 표현합니다 <span class="hint">(이 4칸을 채우면 위의 "옛 방식" 대신 이 형식으로 나와요)</span></div>
+        <div class="form-row single">
+          <div class="f-field">
+            <label>🌱 살려줄 힘 <span class="hint">(첫 줄 = 소제목, 다음 줄부터 본문)</span></label>
+            <textarea id="s_growthHintPower" placeholder="자기표현과 자기선택&#10;다온이는 좋아하는 것에서 생각을 시작할 때 표현이 풍부해지고, 자기만의 이야기로 확장하는 힘이 잘 살아납니다. 좋아하는 대상이나 관심사를 충분히 이야기하고 표현할 수 있도록 지지해주세요."></textarea>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="f-field">
+            <label>💬 집에서 해볼 말 <span class="hint">(첫 줄 = 소제목, 다음 줄부터 본문)</span></label>
+            <textarea id="s_growthHintTalk" placeholder="결과보다 생각을 물어보기&#10;&quot;잘했네&quot;보다 &quot;이번에는 어떤 생각으로 이렇게 했어?&quot;라고 물어봐주세요. 자기 생각을 설명하는 경험이 자기 신뢰로 이어질 수 있습니다."></textarea>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="f-field">
+            <label>⏳ 기다려줄 부분 <span class="hint">(첫 줄 = 소제목, 다음 줄부터 본문)</span></label>
+            <textarea id="s_growthHintWait" placeholder="스스로 방법을 찾는 시간&#10;잘되지 않는 순간 바로 해결해주기보다, 잠시 고민하고 자기 방법을 찾아볼 시간을 남겨주세요."></textarea>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="f-field">
+            <label>🎨 CRAYON FOREST | 미술에서는 이렇게 경험합니다 <span class="hint">(소제목 없이 2~3문장)</span></label>
+            <textarea id="s_growthHintArt" placeholder="크레용숲에서는 다온이가 좋아하는 것과 자기 이야기를 작품 안으로 가져오고, 스스로 색·재료·방법을 선택해 표현하도록 돕습니다."></textarea>
+          </div>
         </div>
       </div>
 
@@ -438,6 +466,10 @@ function loadSummary(){
       document.getElementById('s_highlights').value = (data.highlights || []).join('\n');
       document.getElementById('s_narrativeOverride').value = data.narrativeOverride || '';
       document.getElementById('s_hintsOverride').value = (data.hintsOverride || []).join('\n');
+      document.getElementById('s_growthHintPower').value = data.growthHintPower || '';
+      document.getElementById('s_growthHintTalk').value = data.growthHintTalk || '';
+      document.getElementById('s_growthHintWait').value = data.growthHintWait || '';
+      document.getElementById('s_growthHintArt').value = data.growthHintArt || '';
       document.getElementById('s_published').checked = !!data.published;
       document.getElementById('s_feedbackA').value = data.feedbackA || '';
       document.getElementById('s_feedbackB').value = data.feedbackB || '';
@@ -494,6 +526,10 @@ function saveSummaryForm(){
     highlights: document.getElementById('s_highlights').value.trim(),
     narrativeOverride: document.getElementById('s_narrativeOverride').value.trim(),
     hintsOverride: document.getElementById('s_hintsOverride').value.trim(),
+    growthHintPower: document.getElementById('s_growthHintPower').value.trim(),
+    growthHintTalk: document.getElementById('s_growthHintTalk').value.trim(),
+    growthHintWait: document.getElementById('s_growthHintWait').value.trim(),
+    growthHintArt: document.getElementById('s_growthHintArt').value.trim(),
     published: document.getElementById('s_published').checked ? 'true' : 'false',
     feedbackA: document.getElementById('s_feedbackA').value.trim(),
     feedbackB: document.getElementById('s_feedbackB').value.trim(),
