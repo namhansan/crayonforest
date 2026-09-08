@@ -539,7 +539,7 @@ function saveSummaryForm(){
   });
   const btn = document.getElementById('summarySubmitBtn');
   btn.disabled = true; btn.textContent = '저장 중...';
-  fetch(GAS_URL + '?' + params.toString())
+  fetch(GAS_URL, { method: 'POST', body: params })
     .then(r => r.text())
     .then(text => {
       btn.disabled = false; btn.textContent = '성장요약 저장하기';
@@ -709,7 +709,7 @@ function submitEntry(){
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.textContent = '저장 중...';
 
-  fetch(GAS_URL + '?' + params.toString())
+  fetch(GAS_URL, { method: 'POST', body: params })
     .then(r => r.json())
     .then(data => {
       if(data && data.ok){

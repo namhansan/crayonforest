@@ -157,6 +157,12 @@ function doGet(e) {
 }
 
 function doPost(e) {
+  // 폼(URLSearchParams)으로 보낸 POST는 GET과 똑같이 e.parameter에 담겨서
+  // 들어와요. 그래서 action이 있으면 doGet과 완전히 같은 방식으로 처리해요 —
+  // 이렇게 하면 내용이 아주 긴 폼(성장요약 등)도 주소 길이 제한 없이 저장돼요.
+  if (e && e.parameter && e.parameter.action) {
+    return doGet(e);
+  }
   try {
     const data = JSON.parse(e.postData.contents);
     return jsonOutput(saveRegistration(data));
