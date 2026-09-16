@@ -788,19 +788,6 @@ function renderKeywordCloud(entries){
   const keys = Object.keys(counts);
   if(!keys.length) return '';
 
-  const groups = {};
-  keys.forEach(k => {
-    const cat = categorizeKeyword(k);
-    (groups[cat] = groups[cat] || []).push(k);
-  });
-
-  const groupTotal = cat => groups[cat].reduce((s,k)=>s+counts[k], 0);
-  const orderedCats = Object.keys(groups).sort((a,b) => {
-    if(a === '기타') return 1;
-    if(b === '기타') return -1;
-    return groupTotal(b) - groupTotal(a);
-  });
-
   const buildSentence = (top, rest, count) => {
     const countPhrase = count > 1 ? `(${count}회)` : '';
     let restPhrase = '';
@@ -811,6 +798,33 @@ function renderKeywordCloud(entries){
     }
     return `가장 자주 나타난 건 <b>"${top}"</b>${countPhrase}예요.${restPhrase}`;
   };
+
+  const groups = {};
+  keys.forEach(k => {
+    const cat = categorizeKeyword(k);
+    (groups[cat] = groups[cat] || []).push(k);
+  });
+
+  // 아이마다, 선생님마다 쓰는 키워드 표현이 달라서, 정해둔 6개 카테고리 사전이
+  // 항상 잘 맞지는 않아요. "기타"로 몰리는 비중이 너무 크면(거의 절반 이상)
+  // 억지로 카테고리를 씌우지 않고, 그냥 빈도순 카드 하나로 자연스럽게 보여줘요.
+  const totalCount = keys.reduce((s,k)=>s+counts[k], 0);
+  const otherCount = (groups['기타']||[]).reduce((s,k)=>s+counts[k], 0);
+
+  if(totalCount > 0 && otherCount / totalCount > 0.45){
+    const sorted = keys.slice().sort((a,b)=>counts[b]-counts[a]);
+    const top = sorted[0], rest = sorted.slice(1,3);
+    const sentence = buildSentence(top, rest, counts[top]);
+    const words = sorted.map(k => `<span class="cat-word${k===top?' top':''}">${k}${counts[k]>1?` ×${counts[k]}`:''}</span>`).join('');
+    return `<div class="keyword-cat-grid"><div class="keyword-cat-card" style="grid-column:1/-1;"><span class="keyword-cat-name">자주 나온 키워드</span><div class="keyword-cat-sentence">${sentence}</div><div class="keyword-cat-words">${words}</div></div></div>`;
+  }
+
+  const groupTotal = cat => groups[cat].reduce((s,k)=>s+counts[k], 0);
+  const orderedCats = Object.keys(groups).sort((a,b) => {
+    if(a === '기타') return 1;
+    if(b === '기타') return -1;
+    return groupTotal(b) - groupTotal(a);
+  });
 
   const cards = orderedCats.map(cat => {
     const sorted = groups[cat].slice().sort((a,b)=>counts[b]-counts[a]);
@@ -1379,35 +1393,8 @@ function withDefaultHidden(raw){
   return (raw && raw.length) ? raw : DEFAULT_HIDDEN_SECTIONS.slice();
 }
 
-function renderJournal(data, abilityStages){
-  document.getElementById('loginView').style.display = 'none';
-  document.getElementById('journalView').style.display = 'block';
-  document.getElementById('jChildName').textContent = `${data.name} 어린이`;
-  document.getElementById('jTerm').textContent = formatTermDisplay(data.term);
-  document.getElementById('printFooterName').textContent = ` · ${data.name}의 6개월 성장기록`;
-
-  const entries = buildAutoInsights(data.entries || []);
-  document.getElementById('jRegPeriod').textContent = computeRegistrationPeriod(entries);
-
-  // 표지 대표 사진: 첫 기록의 사진1 사용
-  const coverImg = entries.find(e => e.photo1)?.photo1;
-  document.getElementById('coverPhotoRing').innerHTML = coverImg
-    ? `<img src="${coverImg}" alt="대표 사진" onerror="this.parentElement.style.background='var(--ivory-deep)'">`
-    : '';
-
-  document.getElementById('jStatRow').innerHTML = `
-    <div><b>${entries.length}</b>총 기록 회차</div>
-  `;
-
-  const wrap = document.getElementById('jEntries');
-  if(entries.length === 0){
-    wrap.innerHTML = '<div class="empty-state">아직 등록된 월별 기록이 없어요. 다음 달부터 차곡차곡 쌓일 예정이에요 🌿</div>';
-    return;
-  }
-
-  renderGallery(entries);
-
-  const buildCard = (e, i) => `
+function buildMonthCard(e, i){
+  return `
     <div class="month-card" id="month-${i}">
       <div class="month-num">${String(i+1).padStart(2,'0')}</div>
       <div class="month-title-row">
@@ -1493,42 +1480,84 @@ function renderJournal(data, abilityStages){
       </div>
     </div>
   `;
+}
 
-  // 특강 기록이 하나도 없으면 지금까지와 완전히 동일하게 동작해요(추가 계산도,
-  // 화면 변화도 없음). 특강이 섞여 있을 때만 정규반/특강으로 나눠 보여줘요.
-  const isIntensive = e => String(e.classLabel || '').includes('특강');
-  const hasIntensive = entries.some(isIntensive);
+const isIntensiveEntry = e => String(e.classLabel || '').includes('특강');
+
+// 갤러리 + 회차 카드 목록 + 종합요약을 전부 같은 "선택된 범위"로 함께 그려요.
+// (예: 1~26회차로 범위를 잡으면, 갤러리·회차 카드·종합요약·인쇄까지 전부
+// 1~26회차만 나오고, 27~29회차는 안 보여요.)
+function renderBoundedContent(boundedEntries, data, abilityStages){
+  renderGallery(boundedEntries);
+
+  const wrap = document.getElementById('jEntries');
+  const hasIntensive = boundedEntries.some(isIntensiveEntry);
 
   if(hasIntensive){
     const regular = [], intensive = [];
-    entries.forEach((e, i) => (isIntensive(e) ? intensive : regular).push([e, i]));
+    boundedEntries.forEach((e, i) => (isIntensiveEntry(e) ? intensive : regular).push([e, i]));
     const section = (title, list) => list.length ? `
       <div class="class-group-heading">${title} <span class="class-group-count">${list.length}회</span></div>
-      ${list.map(([e, i]) => buildCard(e, i)).join('')}` : '';
+      ${list.map(([e, i]) => buildMonthCard(e, i)).join('')}` : '';
     wrap.innerHTML = section('정규반', regular) + section('특강', intensive);
   } else {
-    wrap.innerHTML = entries.map((e, i) => buildCard(e, i)).join('');
+    wrap.innerHTML = boundedEntries.map((e, i) => buildMonthCard(e, i)).join('');
   }
 
-  // 종합요약(색채 여정 등)은 흐름이 이어지는 정규반 기록만으로 계산해요 — 특강은
-  // 기간이 짧고 별개 활동이라 성장 흐름 계산에 섞이면 오히려 왜곡될 수 있어서예요.
-  const summaryEntries = hasIntensive ? entries.filter(e => !isIntensive(e)) : entries;
-  _journalState = { entries: summaryEntries, summary: data.summary, name: data.name, narrativeOverride: data.narrativeOverride, hintsOverride: data.hintsOverride, feedback: { A: data.feedbackA||'', B: data.feedbackB||'', C: data.feedbackC||'', D: data.feedbackD||'' }, hiddenSections: withDefaultHidden(data.hiddenSections), abilityStages: abilityStages || [], growthHint: { power: data.growthHintPower||'', talk: data.growthHintTalk||'', wait: data.growthHintWait||'', art: data.growthHintArt||'' } };
+  const summaryEntries = hasIntensive ? boundedEntries.filter(e => !isIntensiveEntry(e)) : boundedEntries;
   if(hasIntensive){
-    wrap.insertAdjacentHTML('beforeend', `<div class="class-note">ℹ️ 특강 ${entries.length - summaryEntries.length}회는 별도 활동이라 아래 종합요약(색채 여정 등) 계산에는 포함하지 않았어요. 위 기록에서는 그대로 확인할 수 있어요.</div>`);
+    wrap.insertAdjacentHTML('beforeend', `<div class="class-note">ℹ️ 특강 ${boundedEntries.length - summaryEntries.length}회는 별도 활동이라 아래 종합요약(색채 여정 등) 계산에는 포함하지 않았어요. 위 기록에서는 그대로 확인할 수 있어요.</div>`);
   }
 
-  renderSummaryFilter(summaryEntries.length, data.range);
-  const total = summaryEntries.length;
-  const savedFrom = (data.range && data.range.from) ? Math.max(1, Math.min(data.range.from, total)) : 1;
-  const savedTo = (data.range && data.range.to) ? Math.max(1, Math.min(data.range.to, total)) : total;
-  const initialSlice = summaryEntries.slice(savedFrom - 1, savedTo);
-  renderSummarySection(initialSlice, data.summary, data.name, data.narrativeOverride, data.hintsOverride, { A: data.feedbackA||'', B: data.feedbackB||'', C: data.feedbackC||'', D: data.feedbackD||'' }, withDefaultHidden(data.hiddenSections), abilityStages || [], { power: data.growthHintPower||'', talk: data.growthHintTalk||'', wait: data.growthHintWait||'', art: data.growthHintArt||'' });
+  renderSummarySection(summaryEntries, data.summary, data.name, data.narrativeOverride, data.hintsOverride, { A: data.feedbackA||'', B: data.feedbackB||'', C: data.feedbackC||'', D: data.feedbackD||'' }, withDefaultHidden(data.hiddenSections), abilityStages || [], { power: data.growthHintPower||'', talk: data.growthHintTalk||'', wait: data.growthHintWait||'', art: data.growthHintArt||'' });
+
+  return summaryEntries;
 }
 
-// 종합요약(자동 생성 부분)만 원하는 회차 범위로 좁혀볼 수 있는 필터.
-// 회차별 카드 자체는 항상 전체가 다 보이고, 이 필터는 아래 종합요약에만 영향을 줘요.
-// 선생님 모드에서만 UI가 보이고, 저장하면 학부모 화면에도 그 범위가 그대로 반영돼요.
+function renderJournal(data, abilityStages){
+  document.getElementById('loginView').style.display = 'none';
+  document.getElementById('journalView').style.display = 'block';
+  document.getElementById('jChildName').textContent = `${data.name} 어린이`;
+  document.getElementById('jTerm').textContent = formatTermDisplay(data.term);
+  document.getElementById('printFooterName').textContent = ` · ${data.name}의 6개월 성장기록`;
+
+  const entries = buildAutoInsights(data.entries || []);
+  document.getElementById('jRegPeriod').textContent = computeRegistrationPeriod(entries);
+
+  // 표지 대표 사진: 첫 기록의 사진1 사용
+  const coverImg = entries.find(e => e.photo1)?.photo1;
+  document.getElementById('coverPhotoRing').innerHTML = coverImg
+    ? `<img src="${coverImg}" alt="대표 사진" onerror="this.parentElement.style.background='var(--ivory-deep)'">`
+    : '';
+
+  document.getElementById('jStatRow').innerHTML = `
+    <div><b>${entries.length}</b>총 기록 회차</div>
+  `;
+
+  const wrap = document.getElementById('jEntries');
+  if(entries.length === 0){
+    wrap.innerHTML = '<div class="empty-state">아직 등록된 월별 기록이 없어요. 다음 달부터 차곡차곡 쌓일 예정이에요 🌿</div>';
+    return;
+  }
+
+  renderSummaryFilter(entries.length, data.range);
+  const total = entries.length;
+  const savedFrom = (data.range && data.range.from) ? Math.max(1, Math.min(data.range.from, total)) : 1;
+  const savedTo = (data.range && data.range.to) ? Math.max(1, Math.min(data.range.to, total)) : total;
+  const boundedEntries = entries.slice(savedFrom - 1, savedTo);
+
+  document.getElementById('jStatRow').innerHTML = `
+    <div><b>${boundedEntries.length}</b>총 기록 회차</div>
+  `;
+
+  const summaryEntries = renderBoundedContent(boundedEntries, data, abilityStages);
+  _journalState = { allEntries: entries, entries: summaryEntries, summary: data.summary, name: data.name, narrativeOverride: data.narrativeOverride, hintsOverride: data.hintsOverride, feedback: { A: data.feedbackA||'', B: data.feedbackB||'', C: data.feedbackC||'', D: data.feedbackD||'' }, hiddenSections: withDefaultHidden(data.hiddenSections), abilityStages: abilityStages || [], growthHint: { power: data.growthHintPower||'', talk: data.growthHintTalk||'', wait: data.growthHintWait||'', art: data.growthHintArt||'' } };
+}
+
+// 종합요약으로 볼 범위(선생님이 저장한 범위)는 이제 갤러리·회차 카드·종합요약·인쇄까지
+// 전부 함께 적용돼요. 예를 들어 1~26회차로 저장하면, 27회차 이후 기록은 이 범위를
+// 다시 넓히기 전까지 화면과 인쇄물에서 보이지 않아요.
+// 선생님 모드에서만 범위 조절 UI가 보이고, 저장하면 학부모 화면에도 그대로 반영돼요.
 let _journalState = null;
 function renderSummaryFilter(total, savedRange){
   document.getElementById('jTeacherBadge').style.display = isTeacher ? 'inline-block' : 'none';
@@ -1555,14 +1584,22 @@ function applySummaryFilter(){
   const from = parseInt(document.getElementById('jFromSel').value, 10);
   const to = parseInt(document.getElementById('jToSel').value, 10);
   const lo = Math.min(from, to) - 1, hi = Math.max(from, to);
-  const subset = _journalState.entries.slice(lo, hi);
-  renderSummarySection(subset, _journalState.summary, _journalState.name, _journalState.narrativeOverride, _journalState.hintsOverride, _journalState.feedback, _journalState.hiddenSections, _journalState.abilityStages, _journalState.growthHint);
+  const subset = _journalState.allEntries.slice(lo, hi);
+  const data = {
+    summary: _journalState.summary, name: _journalState.name,
+    narrativeOverride: _journalState.narrativeOverride, hintsOverride: _journalState.hintsOverride,
+    feedbackA: _journalState.feedback.A, feedbackB: _journalState.feedback.B, feedbackC: _journalState.feedback.C, feedbackD: _journalState.feedback.D,
+    hiddenSections: _journalState.hiddenSections,
+    growthHintPower: _journalState.growthHint.power, growthHintTalk: _journalState.growthHint.talk, growthHintWait: _journalState.growthHint.wait, growthHintArt: _journalState.growthHint.art
+  };
+  _journalState.entries = renderBoundedContent(subset, data, _journalState.abilityStages);
+  document.getElementById('jStatRow').innerHTML = `<div><b>${subset.length}</b>총 기록 회차</div>`;
 }
 function resetSummaryFilter(){
   if(!_journalState) return;
   const fromSel = document.getElementById('jFromSel'), toSel = document.getElementById('jToSel');
   if(fromSel) fromSel.value = 1;
-  if(toSel) toSel.value = _journalState.entries.length;
+  if(toSel) toSel.value = _journalState.allEntries.length;
   applySummaryFilter();
 }
 // 선생님 모드에서 B/E/F/G/H 섹션을 학부모 화면에 보일지 숨길지 전환하고,
