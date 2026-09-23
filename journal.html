@@ -801,6 +801,36 @@ function renderEffectBalance(entries){
 // 단어 칩을 함께 넣는 방식으로 바꿨어요. "·"로 여러 단어를 한 번에 적어주신
 // 경우("기쁨표현 · 창의적 · 기대감") 낱개로 쪼개서 세야 "기쁨표현"이 여러
 // 회차에 반복됐다는 게 정확히 잡혀요.
+// "기타"로 몰린 키워드들을 사전 없이도 스스로 소그룹으로 묶어주는 로직이에요
+// (AI 호출 없이 브라우저에서 바로 계산돼서 비용이 전혀 들지 않아요). 아이마다
+// 쓰는 표현이 달라서 고정 사전이 안 맞을 수 있으니, "기타"에 남은 키워드들끼리
+// 같은 단어를 공유하면(예: "상상 이어가기"와 "상상 연결하기" → "상상") 그 단어를
+// 그룹 이름 삼아 하나로 묶어요. 짝을 못 찾은 나머지는 "그 외"로 모아요.
+const CLUSTER_STOPWORDS = new Set(['하기','해보기','하는','하며','했어요','것','수','위해','대한','통해','그리고','으로','에서','에게','스스로']);
+function autoClusterKeywords(keys, counts){
+  let pool = keys.slice();
+  const clusters = [];
+  while(pool.length){
+    const wordMap = {};
+    pool.forEach(k => {
+      const tokens = k.split(/\s+/).map(t => t.trim()).filter(t => t.length >= 2 && !CLUSTER_STOPWORDS.has(t));
+      new Set(tokens).forEach(t => (wordMap[t] = wordMap[t] || []).push(k));
+    });
+    let bestWord = null, bestKeys = [], bestScore = -1;
+    Object.keys(wordMap).forEach(w => {
+      const ks = wordMap[w];
+      if(ks.length < 2) return;
+      const score = ks.reduce((s,k)=>s+(counts[k]||1), 0) * 1000 + ks.length;
+      if(score > bestScore){ bestScore = score; bestWord = w; bestKeys = ks; }
+    });
+    if(!bestWord) break;
+    clusters.push({ label: `"${bestWord}" 관련 표현`, keys: bestKeys });
+    pool = pool.filter(k => !bestKeys.includes(k));
+  }
+  if(pool.length) clusters.push({ label: '그 외', keys: pool });
+  return clusters;
+}
+
 function renderKeywordCloud(entries){
   const counts = {};
   entries.forEach(e => (e.emotionKeywords||[]).forEach(raw => {
@@ -828,24 +858,25 @@ function renderKeywordCloud(entries){
     (groups[cat] = groups[cat] || []).push(k);
   });
 
-  // 아이마다, 선생님마다 쓰는 키워드 표현이 달라서, 정해둔 6개 카테고리 사전이
+  // 아이마다, 선생님마다 쓰는 키워드 표현이 달라서, 정해둔 카테고리 사전이
   // 항상 잘 맞지는 않아요. "기타"로 몰리는 비중이 너무 크면(거의 절반 이상)
-  // 억지로 카테고리를 씌우지 않고, 그냥 빈도순 카드 하나로 자연스럽게 보여줘요.
+  // 사전에 없는 표현들끼리 스스로 소그룹으로 묶어서(autoClusterKeywords) 보여줘요 —
+  // 사전을 매번 늘리지 않아도, 이 아이만의 키워드 결을 그대로 살려서 카드로 만들어요.
   const totalCount = keys.reduce((s,k)=>s+counts[k], 0);
   const otherCount = (groups['기타']||[]).reduce((s,k)=>s+counts[k], 0);
 
   if(totalCount > 0 && otherCount / totalCount > 0.45){
-    const sorted = keys.slice().sort((a,b)=>counts[b]-counts[a]);
-    const top = sorted[0], rest = sorted.slice(1,3);
-    const sentence = buildSentence(top, rest, counts[top]);
-    const words = sorted.map(k => `<span class="cat-word${k===top?' top':''}">${k}${counts[k]>1?` ×${counts[k]}`:''}</span>`).join('');
-    return `<div class="keyword-cat-grid"><div class="keyword-cat-card" style="grid-column:1/-1;"><span class="keyword-cat-name">자주 나온 키워드</span><div class="keyword-cat-sentence">${sentence}</div><div class="keyword-cat-words">${words}</div></div></div>`;
+    const otherKeys = groups['기타'] || [];
+    delete groups['기타'];
+    autoClusterKeywords(otherKeys, counts).forEach(c => { groups[c.label] = c.keys; });
   }
 
+  const LAST_LABELS = new Set(['기타', '그 외']);
   const groupTotal = cat => groups[cat].reduce((s,k)=>s+counts[k], 0);
   const orderedCats = Object.keys(groups).sort((a,b) => {
-    if(a === '기타') return 1;
-    if(b === '기타') return -1;
+    const aLast = LAST_LABELS.has(a), bLast = LAST_LABELS.has(b);
+    if(aLast && !bLast) return 1;
+    if(bLast && !aLast) return -1;
     return groupTotal(b) - groupTotal(a);
   });
 
