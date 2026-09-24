@@ -859,16 +859,17 @@ function renderKeywordCloud(entries){
   });
 
   // 아이마다, 선생님마다 쓰는 키워드 표현이 달라서, 정해둔 카테고리 사전이
-  // 항상 잘 맞지는 않아요. "기타"로 몰리는 비중이 너무 크면(거의 절반 이상)
+  // 항상 잘 맞지는 않아요. "기타"에 남은 키워드가 2개 이상이면(비중과 상관없이)
   // 사전에 없는 표현들끼리 스스로 소그룹으로 묶어서(autoClusterKeywords) 보여줘요 —
-  // 사전을 매번 늘리지 않아도, 이 아이만의 키워드 결을 그대로 살려서 카드로 만들어요.
+  // 예전엔 "기타 비중이 전체의 45%를 넘을 때만" 이 로직이 돌았는데, 사전 카테고리가
+  // 늘어날수록 기타의 "비중"은 낮아지지만 기타 안의 "개수"는 여전히 많을 수 있어서,
+  // 이제는 개수만 보고 항상 소그룹으로 정리해요.
   const totalCount = keys.reduce((s,k)=>s+counts[k], 0);
-  const otherCount = (groups['기타']||[]).reduce((s,k)=>s+counts[k], 0);
+  const otherKeysAll = groups['기타'] || [];
 
-  if(totalCount > 0 && otherCount / totalCount > 0.45){
-    const otherKeys = groups['기타'] || [];
+  if(otherKeysAll.length >= 2){
     delete groups['기타'];
-    autoClusterKeywords(otherKeys, counts).forEach(c => { groups[c.label] = c.keys; });
+    autoClusterKeywords(otherKeysAll, counts).forEach(c => { groups[c.label] = c.keys; });
   }
 
   const LAST_LABELS = new Set(['기타', '그 외']);
