@@ -353,12 +353,15 @@
           <input type="checkbox" id="sec_effectBalance" checked style="width:auto;"> 재료 효과 비율
         </label>
         <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:#4b463f; cursor:pointer; margin-bottom:10px;">
-          <input type="checkbox" id="sec_keywordCloud" checked style="width:auto;"> 자주 나온 감정 · 성장 키워드
+          <input type="checkbox" id="sec_keywordCloud" checked style="width:auto;"> 자주 나온 감정 · 성장 키워드 (카테고리 카드)
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:#4b463f; cursor:pointer; margin-bottom:10px;">
+          <input type="checkbox" id="sec_keywordWordcloud" checked style="width:auto;"> 키워드 워드클라우드 (많이 나온 키워드일수록 크게 보이는 그림)
         </label>
         <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:#4b463f; cursor:pointer;">
           <input type="checkbox" id="sec_parentingHints" checked style="width:auto;"> 가정에서 함께 지켜보면 좋은 점
         </label>
-        <div class="hint" style="margin-top:10px; display:block;">이 5개 섹션은 journal.html에서 선생님 모드로 들어가서 바로 켜고 끌 수도 있어요 — 여기서는 한 번에 미리 정해두고 싶을 때 쓰시면 돼요.</div>
+        <div class="hint" style="margin-top:10px; display:block;">이 섹션들은 journal.html에서 선생님 모드로 들어가서 바로 켜고 끌 수도 있어요 — 여기서는 한 번에 미리 정해두고 싶을 때 쓰시면 돼요. 위의 "카테고리 카드"와 "워드클라우드"는 서로 독립적이라, 둘 다 켜두면 두 가지 모두 보여줘요.</div>
       </div>
 
       <div class="form-card">
@@ -482,6 +485,7 @@ function loadSummary(){
       document.getElementById('sec_materialWheel').checked = !hidden.has('materialWheel');
       document.getElementById('sec_effectBalance').checked = !hidden.has('effectBalance');
       document.getElementById('sec_keywordCloud').checked = !hidden.has('keywordCloud');
+      document.getElementById('sec_keywordWordcloud').checked = !hidden.has('keywordWordcloud');
       document.getElementById('sec_parentingHints').checked = !hidden.has('parentingHints');
       msg.className = 'submit-msg ok';
       msg.textContent = '✔ 기존 내용을 불러왔어요. 수정하고 저장하시면 돼요.';
@@ -509,6 +513,7 @@ function saveSummaryForm(){
   if(!document.getElementById('sec_materialWheel').checked) hiddenList.push('materialWheel');
   if(!document.getElementById('sec_effectBalance').checked) hiddenList.push('effectBalance');
   if(!document.getElementById('sec_keywordCloud').checked) hiddenList.push('keywordCloud');
+  if(!document.getElementById('sec_keywordWordcloud').checked) hiddenList.push('keywordWordcloud');
   if(!document.getElementById('sec_parentingHints').checked) hiddenList.push('parentingHints');
 
   const params = new URLSearchParams({

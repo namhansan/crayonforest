@@ -247,6 +247,9 @@
   .keyword-cat-sentence{font-size:12.5px; color:#4b463f; line-height:1.7; margin-bottom:12px;}
   .keyword-cat-sentence b{color:var(--clay); font-weight:700;}
   .keyword-cat-words{display:flex; flex-wrap:wrap; gap:5px;}
+  .wordcloud-wrap{background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:10px; break-inside:avoid; page-break-inside:avoid;}
+  .wordcloud-svg{width:100%; height:auto; display:block;}
+  .wordcloud-svg text{font-family:inherit;}
   .cat-word{background:var(--ivory-deep); color:#7a7468; font-size:10.5px; padding:3px 9px; border-radius:999px;}
   .cat-word.top{background:var(--forest); color:#fff; font-weight:700;}
 
@@ -895,6 +898,57 @@ function renderKeywordCloud(entries){
   }).join('');
 
   return `<div class="keyword-cat-grid">${cards}</div>`;
+}
+
+// 카테고리 카드와는 별개로, "많이 나온 키워드일수록 글자가 크게" 보이는
+// 워드클라우드 그림도 하나 더 그려줘요. 외부 라이브러리 없이 순수 SVG로 그리고,
+// 화면 중앙에서 소용돌이(스파이럴) 모양으로 자리를 넓혀가며 이미 놓인 단어와
+// 겹치지 않는 자리를 찾아요. 사전이 필요 없어서 어떤 아이 키워드든 그대로 써요.
+const WORDCLOUD_PALETTE = ['#D96B5C','#E0A24C','#8FA888','#5C7FA6','#8B6BA6','#D98FA6','#5C9A93','#8A6B4E','#4B6B1E','#6A6BC2','#B98A3E','#6E6BA6'];
+function estimateTextWidth(text, fontSize){
+  // 정밀한 measureText 없이도, 한글은 정사각형에 가깝고 영문/숫자는 더 좁으니
+  // 글자 종류별로 대략의 폭만 어림잡아도 자리 배치엔 충분해요.
+  let w = 0;
+  for(const ch of text){ w += /[A-Za-z0-9]/.test(ch) ? fontSize * 0.62 : fontSize * 1.04; }
+  return w;
+}
+function renderKeywordWordcloud(entries){
+  const counts = {};
+  entries.forEach(e => (e.emotionKeywords||[]).forEach(raw => {
+    String(raw||'').split(/[·,、]/).map(s => s.trim()).filter(Boolean).forEach(k => {
+      counts[k] = (counts[k]||0) + 1;
+    });
+  }));
+  const keys = Object.keys(counts);
+  if(!keys.length) return '';
+
+  const sorted = keys.slice().sort((a,b)=>counts[b]-counts[a]);
+  const maxCount = counts[sorted[0]], minCount = counts[sorted[sorted.length-1]];
+  const FONT_MAX = 42, FONT_MIN = 15;
+  const fontSizeOf = c => (maxCount === minCount) ? (FONT_MAX+FONT_MIN)/2
+    : FONT_MIN + (c - minCount) / (maxCount - minCount) * (FONT_MAX - FONT_MIN);
+
+  const W = 720, H = 380, cx = W/2, cy = H/2;
+  const placed = [];
+  const words = sorted.map((k, idx) => {
+    const size = fontSizeOf(counts[k]);
+    const w = estimateTextWidth(k, size), h = size * 1.15;
+    let x = cx - w/2, y = cy - h/2, angle = 0, radius = 0;
+    for(let attempt = 0; attempt < 2000; attempt++){
+      x = cx + radius * Math.cos(angle) - w/2;
+      y = cy + radius * Math.sin(angle) * 0.72 - h/2; // 세로로 살짝 눌러서 카드 비율에 맞춤
+      const overlaps = placed.some(p => !(x + w < p.x - 4 || p.x + p.w < x - 4 || y + h < p.y - 4 || p.y + p.h < y - 4));
+      const withinBounds = x >= 4 && y >= 4 && x + w <= W - 4 && y + h <= H - 4;
+      if(!overlaps && withinBounds) break;
+      angle += 0.35;
+      radius += 1.1;
+    }
+    placed.push({x, y, w, h});
+    return { k, size, cx: x + w/2, cy: y + h/2, color: WORDCLOUD_PALETTE[idx % WORDCLOUD_PALETTE.length], count: counts[k] };
+  });
+
+  const textEls = words.map(w => `<text x="${w.cx.toFixed(1)}" y="${w.cy.toFixed(1)}" font-size="${w.size.toFixed(1)}" fill="${w.color}" text-anchor="middle" dominant-baseline="central" font-weight="700">${w.k}</text>`).join('');
+  return `<div class="wordcloud-wrap"><svg viewBox="0 0 ${W} ${H}" class="wordcloud-svg" xmlns="http://www.w3.org/2000/svg">${textEls}</svg></div>`;
 }
 
 // 지난 회차와 비교해서 달라진 점을 문장으로 자동 생성 (색, 톤, 재료 효과 영역,
@@ -1757,6 +1811,7 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
     const moodColorNotesHtml = renderMoodColorNotes(entries);
     const effectBalanceHtml = renderEffectBalance(entries);
     const keywordCloudHtml = renderKeywordCloud(entries);
+    const keywordWordcloudHtml = renderKeywordWordcloud(entries);
     const artStagesMap = stagesMapFor(abilityStages, '미술');
     const mindStagesMap = stagesMapFor(abilityStages, '마음');
     const artBadgesHtml = isTeacher ? '' : renderAbilityBadges(entries, 'artAbility', ART_ABILITIES, ART_ABILITY_DEFS, ART_ABILITY_GROUPS, artStagesMap);
@@ -1801,6 +1856,7 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
       { key:'materialWheel', title:'재료 효과 여정 (사고·감정·뉴트럴)', html: materialWheelHtml, toggle:true },
       { key:'effectBalance', title:'재료 효과 비율', html: effectBalanceHtml, toggle:true },
       { key:'keywordCloud', title:'자주 나온 감정 · 성장 키워드', html: keywordCloudHtml, toggle:true },
+      { key:'keywordWordcloud', title:'키워드 워드클라우드', html: keywordWordcloudHtml, toggle:true },
       { key:'parentingHints', title:'집에서는 이렇게 도와주세요. 크레용숲에서는 그 힘을 미술로 표현합니다', html: hintsHtml, toggle:true }
     ].filter(s => s.html || s.extra);
 
