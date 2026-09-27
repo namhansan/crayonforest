@@ -1495,7 +1495,7 @@ function computeRegistrationPeriod(entries){
 // 켜서 "숨긴 게 하나도 없는" 상태로 만들면 __none__ 표시를 따로 저장해서,
 // "한 번도 안 건드림"과 구분해요 — 안 그러면 둘 다 빈 배열이라 구별이 안 되고
 // 다음에 열 때마다 자꾸 다시 숨겨져 버려요.
-const DEFAULT_HIDDEN_SECTIONS = ['colorJourney', 'materialWheel', 'effectBalance'];
+const DEFAULT_HIDDEN_SECTIONS = ['colorJourney', 'materialWheel', 'effectBalance', 'keywordCloud'];
 const HIDDEN_NONE_MARKER = '__none__';
 function withDefaultHidden(raw){
   if(raw && raw.length === 1 && raw[0] === HIDDEN_NONE_MARKER) return [];
@@ -1856,7 +1856,7 @@ function renderSummarySection(entries, summary, childName, narrativeOverride, hi
       { key:'materialWheel', title:'재료 효과 여정 (사고·감정·뉴트럴)', html: materialWheelHtml, toggle:true },
       { key:'effectBalance', title:'재료 효과 비율', html: effectBalanceHtml, toggle:true },
       { key:'keywordCloud', title:'자주 나온 감정 · 성장 키워드', html: keywordCloudHtml, toggle:true },
-      { key:'keywordWordcloud', title:'키워드 워드클라우드', html: keywordWordcloudHtml, toggle:true },
+      { key:'keywordWordcloud', title:'자주 나온 감정 · 성장 키워드', html: keywordWordcloudHtml, toggle:true },
       { key:'parentingHints', title:'집에서는 이렇게 도와주세요. 크레용숲에서는 그 힘을 미술로 표현합니다', html: hintsHtml, toggle:true }
     ].filter(s => s.html || s.extra);
 
