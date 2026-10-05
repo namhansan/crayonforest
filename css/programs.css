@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 /* 수업(여정) 카드 · 구분 섹션 공통 스타일 (index.html, classes.html) */
 .cls-section{margin-bottom:46px;}
 .cls-sec-head{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:18px;}
@@ -22,3 +23,42 @@
 @media(max-width:680px){.cls-title{font-size:14px; min-height:0;} .cls-body{padding:12px 13px 14px;} .cls-meta{font-size:12px;}}
 .prog-empty{text-align:center; color:#9a9285; padding:40px 0; font-size:14px;}
 .prog-more{text-align:center; margin-top:8px;}
+
+/* ===== 귀여운 느낌 (둥글둥글 · 스티커 · 통통 튀는 움직임) ===== */
+:root{--cute-font:'Jua','Noto Sans KR',sans-serif; --cute-line:#2A2622;}
+.page-head h1{font-family:var(--cute-font) !important; font-weight:400 !important; letter-spacing:.01em;}
+.page-head .eyebrow{display:inline-block; background:#FFE9B8; color:#8a5a12; padding:4px 14px; border-radius:999px; transform:rotate(-2deg); letter-spacing:.12em;}
+.cls-sec-head{gap:12px;}
+.cls-sec-head h2{font-family:var(--cute-font); font-weight:400; font-size:clamp(22px,3vw,28px); position:relative; padding-bottom:6px;}
+.cls-sec-head h2::after{content:''; position:absolute; left:0; right:-6px; bottom:0; height:9px; background:radial-gradient(circle at 6px 0, transparent 5px, #F7C873 5.5px, #F7C873 7px, transparent 7.5px) 0 0/12px 9px repeat-x; opacity:.9;}
+.cls-sec-head span{background:#fff; border:1.5px solid var(--cute-line); border-radius:999px; padding:1px 11px; color:var(--cute-line); font-size:12px; transform:rotate(1.5deg);}
+.cls-card{border:2px solid var(--cute-line); border-radius:28px; box-shadow:4px 5px 0 var(--cute-line); transition:transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s;}
+.cls-card:hover{transform:translate(-2px,-5px) rotate(-1deg); box-shadow:7px 10px 0 var(--cute-line);}
+.cls-grid > a:nth-child(even) .cls-card:hover{transform:translate(-2px,-5px) rotate(1deg);}
+.cls-photo{border-bottom:2px solid var(--cute-line);}
+.cls-status{top:12px; right:12px; border:1.5px solid var(--cute-line); box-shadow:2px 2px 0 var(--cute-line); transform:rotate(4deg); font-family:var(--cute-font); font-weight:400; font-size:12.5px; background:#FFF3C4; color:var(--cute-line);}
+.cls-status.closed{background:#E9E4DA; color:#6b6459;}
+.cls-title{font-family:var(--cute-font); font-weight:400; font-size:17px; border-bottom:2px dashed #D9CDB4;}
+.cls-seat{display:inline-block; align-self:flex-start; margin-top:7px; background:#E7F3DF; border:1.5px solid var(--cute-line); border-radius:999px; padding:1px 11px; font-size:12px; color:var(--cute-line);}
+.cls-seat.low{background:#FFE1D6; color:var(--cute-line);}
+.cls-seat.full{background:#EEE9E0; color:#6b6459;}
+.cls-card .cls-new{position:absolute; left:10px; top:12px; background:#FF8FA3; color:#fff; border:1.5px solid var(--cute-line); border-radius:999px; font-family:var(--cute-font); font-size:12px; padding:2px 10px; transform:rotate(-5deg); box-shadow:2px 2px 0 var(--cute-line);}
+.prog-more a,.prog-more .btn{font-family:var(--cute-font);}
+@media(max-width:680px){.cls-card{border-radius:22px; box-shadow:3px 4px 0 var(--cute-line);} .cls-title{font-size:15px;}}
+@media(prefers-reduced-motion:reduce){.cls-card,.cls-card:hover{transition:none; transform:none;}}
+.cls-photo img{object-position:50% 38%;}
+
+/* 메인 페이지용 촘촘한 보기 */
+.cls-compact .cls-section{margin-bottom:22px;}
+.cls-compact .cls-sec-head{margin-bottom:10px;}
+.cls-compact .cls-grid{gap:14px;}
+.cls-compact .cls-photo{aspect-ratio:16/9;}
+.cls-compact .cls-body{padding:11px 13px 13px;}
+.cls-compact .cls-title{font-size:15px; min-height:0; padding-bottom:8px; margin-bottom:8px;}
+.cls-compact .cls-meta{font-size:12px; line-height:1.55;}
+.cls-compact .cls-status{top:8px; right:8px;}
+@media(max-width:680px){.cls-compact .cls-grid{gap:10px;} .cls-compact .cls-photo{aspect-ratio:3/2;} .cls-compact .cls-title{font-size:13.5px;}}
+
+.cls-compact .cls-photo.noimg{aspect-ratio:auto; height:40px; justify-content:flex-start; padding-left:12px;}
+.cls-compact .cls-photo.noimg .cls-ph{font-size:12px; letter-spacing:.1em; text-shadow:none;}
+.cls-compact .cls-photo.noimg .cls-status{top:7px;}

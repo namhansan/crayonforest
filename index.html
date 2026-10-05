@@ -43,8 +43,8 @@
     color:var(--clay);
   }
   .wrap{max-width:1140px; margin:0 auto; padding:0 28px;}
-  section{padding:88px 0;}
-  @media(max-width:720px){ section{padding:56px 0;} .wrap{padding:0 20px;} }
+  section{padding:48px 0;}
+  @media(max-width:720px){ section{padding:32px 0;} .wrap{padding:0 20px;} }
 
   /* ---------- Header ---------- */
   header{
@@ -310,7 +310,9 @@
 
   /* ---------- Programs ---------- */
   .program-section{background:var(--ivory-deep); border-radius:var(--radius-lg); }
-  .section-head{text-align:center; margin-bottom:36px;}
+  .section-head{text-align:center; margin-bottom:24px;}
+  .motif-fig{max-width:560px; margin:0 auto; border:2px solid #2A2622; border-radius:26px; overflow:hidden; box-shadow:5px 6px 0 #2A2622; background:#fff;}
+  .motif-fig img{display:block; width:100%; height:auto;}
   .section-head h2{font-family:'Noto Serif KR',serif; font-size:clamp(22px,3vw,30px); color:var(--forest); margin-top:10px;}
   .section-head p{color:#6b6459; margin-top:10px; font-size:15px;}
 
@@ -683,16 +685,26 @@
 
 <!-- ===== Programs ===== -->
 <section id="program" class="wrap">
-  <div class="program-section wrap" style="padding:56px 32px;">
+  <div class="program-section wrap" style="padding:36px 28px 30px;">
     <div class="section-head">
       <div class="eyebrow">Journey</div>
       <h2>크레용숲 여정</h2>
       <p>마음에 드는 수업을 눌러 자세히 보고, 바로 신청해보세요</p>
     </div>
-    <div id="progGrid"><div class="prog-empty">수업을 불러오는 중이에요…</div></div>
-    <div class="prog-more"><a href="classes.html" class="btn-outline" style="border-color:var(--forest); color:var(--forest);">크레용숲 여정 전체 보기 →</a></div>
-    <p style="text-align:center; margin-top:26px; font-size:13px; color:#8a8378;">결제는 따로 진행되지 않아요. 신청서를 남겨주시면 원장님이 확인 후 개별 연락드려요.</p>
+    <div id="progGrid" class="cls-compact"><div class="prog-empty">수업을 불러오는 중이에요…</div></div>
+    <div class="prog-more"><a href="classes.html" class="btn-outline" style="border-color:var(--forest); color:var(--forest);">신청·자세히 보기 →</a></div>
+    <p style="text-align:center; margin-top:16px; font-size:13px; color:#8a8378;">결제는 따로 진행되지 않아요. 신청서를 남겨주시면 원장님이 확인 후 개별 연락드려요.</p>
   </div>
+</section>
+
+
+<!-- ===== 유리창 모티브 이야기 ===== -->
+<section id="motif" class="wrap">
+  <div class="section-head" style="margin-bottom:22px;">
+    <div class="eyebrow">Our Space</div>
+    <h2>크레용숲 유리창 모티브 이야기</h2>
+  </div>
+  <figure class="motif-fig"><img src="images/window-motif.jpg" alt="크레용숲 유리창 모티브 이야기 — 둥근 곡선, 반짝이는 별, 물결선, 눈, 연필 친구, 하트에 싹, 이어진 고리" loading="lazy"></figure>
 </section>
 
 <!-- ===== Events / Schedule (public) ===== -->
@@ -1060,7 +1072,7 @@ window.addEventListener('scroll', ()=>{
 
 /* ---------- 크레용숲 여정 (수업 카드: 구글 시트 → js/programs.js) ---------- */
 loadClassData(data => {
-  document.getElementById('progGrid').innerHTML = renderClassSections(data, 4);
+  document.getElementById('progGrid').innerHTML = renderClassSections(data, 0);
 });
 
 /* ---------- About tabs ---------- */

@@ -152,7 +152,7 @@ function renderProgramCard(p, counts){
   const seatCls = si.full ? ' full' : (si.left !== null && si.left <= 2 ? ' low' : '');
   return `
   <a class="cls-card" href="program.html?id=${encodeURIComponent(p.id)}">
-    <div class="cls-photo" style="background:${c.grad};">
+    <div class="cls-photo${p.image ? '' : ' noimg'}" style="background:${c.grad};">
       ${p.image ? `<img src="${escHtml(p.image)}" alt="${escHtml(p.title)}" loading="lazy">` : `<span class="cls-ph">${escHtml(tag || 'CRAYON')}</span>`}
       ${si.status ? `<span class="cls-status${si.full ? ' closed' : ''}">${escHtml(si.status)}</span>` : ''}
     </div>
@@ -161,6 +161,7 @@ function renderProgramCard(p, counts){
       <div class="cls-meta">
         ${lines.map(l => `<div>${l}</div>`).join('')}
         ${seat ? `<div class="cls-seat${seatCls}">${seat}</div>` : ''}
+        ${!seat && p.price && lines.length ? `<div class="cls-seat">${escHtml(String(p.price).split(' ')[0])}</div>` : ''}
         ${!lines.length && !seat ? `<div>${p.price ? escHtml(p.price) : '자세히 보기'}</div>` : ''}
       </div>
     </div>
