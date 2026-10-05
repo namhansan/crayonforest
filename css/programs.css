@@ -1,0 +1,24 @@
+/* 수업(여정) 카드 · 구분 섹션 공통 스타일 (index.html, classes.html) */
+.cls-section{margin-bottom:46px;}
+.cls-sec-head{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:18px;}
+.cls-sec-head h2{font-family:'Noto Serif KR',serif; font-size:clamp(19px,2.6vw,24px); color:var(--forest); font-weight:700;}
+.cls-sec-head span{font-size:12.5px; color:#9a9285; letter-spacing:.02em;}
+.cls-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:20px;}
+@media(max-width:900px){.cls-grid{grid-template-columns:repeat(3,1fr); gap:16px;}}
+@media(max-width:680px){.cls-grid{grid-template-columns:repeat(2,1fr); gap:12px;}}
+.cls-card{display:flex; flex-direction:column; background:var(--paper); border:1px solid var(--line); border-radius:22px; overflow:hidden; transition:transform .25s, box-shadow .25s; box-shadow:0 10px 30px -24px rgba(44,74,59,.5);}
+.cls-card:hover{transform:translateY(-4px); box-shadow:var(--shadow);}
+.cls-photo{position:relative; aspect-ratio:4/3; overflow:hidden; display:flex; align-items:center; justify-content:center;}
+.cls-photo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+.cls-ph{font-family:'Playfair Display',serif; font-style:italic; font-size:clamp(15px,2vw,19px); color:rgba(255,255,255,.92); letter-spacing:.06em; text-shadow:0 2px 12px rgba(0,0,0,.18); text-align:center; padding:0 10px;}
+.cls-status{position:absolute; top:10px; right:10px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:#fff; color:var(--forest); box-shadow:0 2px 8px rgba(0,0,0,.12);}
+.cls-status.closed{background:rgba(30,26,20,.75); color:#fff;}
+.cls-body{padding:15px 16px 16px; display:flex; flex-direction:column; flex:1;}
+.cls-title{font-size:15px; font-weight:700; color:var(--ink); line-height:1.45; padding-bottom:12px; margin-bottom:11px; border-bottom:1px solid var(--line); min-height:3.1em; word-break:keep-all;}
+.cls-meta{font-size:12.5px; color:#8a8378; line-height:1.65; display:flex; flex-direction:column; gap:1px;}
+.cls-seat{margin-top:4px; font-weight:700; color:var(--forest);}
+.cls-seat.low{color:#B4482A;}
+.cls-seat.full{color:#9a9285;}
+@media(max-width:680px){.cls-title{font-size:14px; min-height:0;} .cls-body{padding:12px 13px 14px;} .cls-meta{font-size:12px;}}
+.prog-empty{text-align:center; color:#9a9285; padding:40px 0; font-size:14px;}
+.prog-more{text-align:center; margin-top:8px;}

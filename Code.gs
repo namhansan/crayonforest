@@ -129,6 +129,19 @@ function doGet(e) {
   if (action === 'register') return jsonOutput(saveRegistration(e.parameter));
   if (action === 'visit') return jsonOutput(recordVisit());
   if (action === 'registrations') return jsonOutput(getRegistrations());
+  if (action === 'regCounts') return jsonOutput(getRegistrationCounts());
+  if (action === 'classes') return jsonOutput(getPublicClasses());
+  if (action === 'classesAdmin' || action === 'saveClass' || action === 'deleteClass' || action === 'uploadClassImage') {
+    try {
+      if (!checkClassAdmin(e.parameter.pw)) return jsonOutput({ ok: false, error: '비밀번호가 맞지 않아요.' });
+      if (action === 'classesAdmin') return jsonOutput(getAdminClasses());
+      if (action === 'saveClass') return jsonOutput(saveClass(e.parameter));
+      if (action === 'deleteClass') return jsonOutput(deleteClass(e.parameter.id));
+      return jsonOutput(uploadClassImage(e.parameter));
+    } catch (err) {
+      return jsonOutput({ ok: false, error: err.message });
+    }
+  }
   if (action === 'visitCount') return jsonOutput(getVisitCounts());
   if (action === 'journal') return jsonOutput(getJournal(e.parameter.name, e.parameter.phone4));
   if (action === 'saveSummaryRange') return jsonOutput(saveSummaryRange(e.parameter.name, e.parameter.phone4, e.parameter.from, e.parameter.to));
@@ -165,19 +178,30 @@ function doPost(e) {
   }
   try {
     const data = JSON.parse(e.postData.contents);
+    if (data && data.action) return doGet({ parameter: data });
     return jsonOutput(saveRegistration(data));
   } catch (err) {
     return jsonOutput({ result: 'error', message: String(err) });
   }
 }
 
-/* ---------- 수강신청 ---------- */
+/* ---------- 수강신청 ----------
+ * 시트 "수강신청" 열 구성 (1~6열은 예전부터 쓰던 칸이라 순서를 바꾸지 않아요):
+ * 신청일시 | 이름 | 연락처 | 관심프로그램 | 문의내용 | 날짜 |
+ * 참가아이 | 나이·학년 | 희망반·일정 | 인원 | 상담희망시간 | 프로그램ID
+ * (7열부터는 program.html 신청 폼에서 들어오는 칸이에요. 상담 폼에서 들어온 신청은
+ *  7열 이후가 비어 있는 게 정상이에요.) */
+const REG_HEADERS = ['신청일시', '이름', '연락처', '관심프로그램', '문의내용', '날짜',
+                     '참가아이', '나이·학년', '희망반·일정', '인원', '상담희망시간', '프로그램ID'];
+
 function saveRegistration(data) {
   const sheet = getOrCreateSheet();
   const now = new Date();
   sheet.appendRow([
     now, data.name || '', data.phone || '', data.program || '', data.message || '',
-    Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd')
+    Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd'),
+    data.child || '', data.grade || '', data.schedule || '', data.people || '',
+    data.callTime || '', data.programId || ''
   ]);
   return { result: 'success' };
 }
@@ -187,8 +211,11 @@ function getOrCreateSheet() {
   let sheet = ss.getSheetByName(SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
-    sheet.appendRow(['신청일시', '이름', '연락처', '관심프로그램', '문의내용', '날짜']);
+    sheet.appendRow(REG_HEADERS);
     sheet.setFrozenRows(1);
+  } else if (!sheet.getRange(1, 7).getValue()) {
+    // 예전에 만들어진 시트(6열까지만 있음) — 새 칸의 제목을 한 번만 채워줘요.
+    sheet.getRange(1, 1, 1, REG_HEADERS.length).setValues([REG_HEADERS]);
   }
   return sheet;
 }
@@ -198,8 +225,240 @@ function getRegistrations() {
   const rows = sheet.getDataRange().getValues();
   rows.shift();
   return rows.map(r => ({
-    timestamp: r[0], name: r[1], phone: r[2], program: r[3], message: r[4], date: r[5]
+    timestamp: r[0], name: r[1], phone: r[2], program: r[3], message: r[4], date: r[5],
+    child: r[6] || '', grade: r[7] || '', schedule: r[8] || '', people: r[9] || '',
+    callTime: r[10] || '', programId: r[11] || ''
   })).reverse();
+}
+
+// 수업별 신청 인원 합계 (남은 자리 표시용). 대기 신청("[대기]"로 시작)은 세지 않아요.
+// 이름·연락처 같은 개인정보는 내보내지 않고, 프로그램ID별 인원 숫자만 돌려줘요.
+function getRegistrationCounts() {
+  const sheet = getOrCreateSheet();
+  const rows = sheet.getDataRange().getValues();
+  rows.shift();
+  const counts = {};
+  rows.forEach(r => {
+    const id = String(r[11] || '').trim();
+    if (!id) return;
+    if (String(r[3] || '').indexOf('[대기]') === 0) return;
+    const n = Number(r[9]) || 1;
+    counts[id] = (counts[id] || 0) + n;
+  });
+  return { counts: counts };
+}
+
+/* ---------- 수업 목록 (여정 페이지) ----------
+ * 시트 "수업목록" — 한 줄이 수업 하나(= 카드 한 장)예요. 선생님은 class-admin.html에서
+ * 올리면 되고, 시트에서 직접 고쳐도 돼요. 제목 줄(1행)의 글자는 바꾸지 마세요(열 순서는 바꿔도 돼요).
+ * 시트 "수업구분" — 여정 페이지의 구분 제목('마음은 색이 되어' 등)이에요. 여기서 문구만 고치면 돼요.
+ * 사진은 구글 드라이브 "크레용숲_수업사진" 폴더에 저장돼요(링크가 있는 사람만 볼 수 있음).
+ *
+ * ⚠️ 이 기능을 처음 쓸 때 Apps Script가 "구글 드라이브 접근 권한"을 한 번 물어봐요.
+ *    배포 > 배포 관리 > 새 버전으로 다시 배포하고, 안내에 따라 권한을 승인해주세요. */
+const CLASS_SHEET_NAME = '수업목록';
+const SECTION_SHEET_NAME = '수업구분';
+const CLASS_PHOTO_FOLDER = '크레용숲_수업사진';
+const CLASS_ADMIN_PASSWORD = 'crayon2026'; // 스크립트 속성에 ADMIN_PASSWORD를 등록하면 그 값이 우선해요
+const CLASS_HEADERS = ['id', '노출', '구분', '상태', '제목', '부제', '대상', '기간', '요일시간', '정원',
+  '수강료', '장소', '대표사진', '추가사진', '한줄소개', '상세소개', '진행내용', '이런분께', '희망반옵션',
+  '커리큘럼페이지', '순서', '수정일시'];
+const CLASS_SECTION_DEFAULTS = [
+  ['child',   'CHILD ART',          '크레용숲 어린이색채학교', 1],
+  ['youth',   'YOUTH ART',    '사유의 숲',               2],
+  ['adult',   'ADULT ART',    '예술리추얼',              3],
+  ['mom',     'FOR MOM', '정원사',                  4],
+  ['special', 'SPECIAL',     '특강 · 체험',                         5]
+];
+const CLASS_SEED = [
+  // [id, 구분, 상태, 제목, 부제, 대상, 기간, 요일시간, 정원, 한줄소개, 커리큘럼페이지]
+  ['child-sense','child','모집중','감각의 숲 (5~7세)','크레용숲 어린이색채학교','5~7세','8주 (날짜를 적어주세요)','요일·시간 입력',4,'색과 재료를 몸으로 만나며 감각을 깨우는 수업','program-child.html'],
+  ['child-symbol-low','child','모집중','상징의 숲 (초등 저학년)','크레용숲 어린이색채학교','초등 1~3학년','8주 (날짜를 적어주세요)','요일·시간 입력',5,'이야기와 상징으로 마음을 표현해보는 수업','program-child.html'],
+  ['child-symbol-high','child','모집중','상징의 숲 (초등 고학년)','크레용숲 어린이색채학교','초등 4~6학년','8주 (날짜를 적어주세요)','요일·시간 입력',5,'나만의 상징과 이야기를 만들어가는 수업','program-child.html'],
+  ['youth-1','youth','모집중','사유의 숲 · 감각의 방','4ROOM 사유구조 · 1/4','중·고등학생','3개월 (날짜를 적어주세요)','요일·시간 입력',6,'색과 재료로 감각을 열어요','program-youth.html'],
+  ['youth-2','youth','모집중','사유의 숲 · 감정의 방','4ROOM 사유구조 · 2/4','중·고등학생','3개월 (날짜를 적어주세요)','요일·시간 입력',6,'색으로 감정의 결을 만나요','program-youth.html'],
+  ['youth-3','youth','모집중','사유의 숲 · 상징의 방','4ROOM 사유구조 · 3/4','중·고등학생','3개월 (날짜를 적어주세요)','요일·시간 입력',6,'기억과 감정을 상징으로 바꿔요','program-youth.html'],
+  ['youth-4','youth','모집중','사유의 숲 · 해석의 방','4ROOM 사유구조 · 4/4','중·고등학생','3개월 (날짜를 적어주세요)','요일·시간 입력',6,'나만의 언어와 세계관을 완성해요','program-youth.html'],
+  ['adult','adult','상시','ADULT ART','크레용숲 예술리추얼 · 창조의 숲','성인 전체','','일정 공지 후 상시 진행','','감정 리추얼 · 컬러링테라피 · 패턴드로잉으로 나만의 색과 서사를 발견하는 시간','program-adult.html'],
+  ['mom','mom','상시','FOR MOM','크레용숲 정원사 · 창조의 숲','자녀를 둔 어머니','','일정 공지 후 상시 진행','','엄마 자신의 마음에 물을 주고 다시 감각을 되찾는 웰니스 커뮤니티','program-mom.html']
+];
+
+function checkClassAdmin(pw) {
+  const saved = PropertiesService.getScriptProperties().getProperty('ADMIN_PASSWORD') || CLASS_ADMIN_PASSWORD;
+  return String(pw || '') === saved;
+}
+
+function getClassSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(CLASS_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(CLASS_SHEET_NAME);
+    sheet.appendRow(CLASS_HEADERS);
+    sheet.setFrozenRows(1);
+    // 기존에 보이던 큰 프로그램 4개를 첫 줄들로 넣어둬요(상시 상담용 카드).
+    CLASS_SEED.forEach((r, i) => {
+      const row = CLASS_HEADERS.map(() => '');
+      const set = (h, v) => { row[CLASS_HEADERS.indexOf(h)] = v; };
+      set('id', r[0]); set('노출', true); set('구분', r[1]); set('상태', r[2]); set('제목', r[3]);
+      set('부제', r[4]); set('대상', r[5]); set('기간', r[6]); set('요일시간', r[7]); set('정원', r[8]); set('장소', '크레용숲 (위례)');
+      set('한줄소개', r[9]); set('상세소개', r[9]); set('커리큘럼페이지', r[10]); set('순서', 100 + i);
+      set('수정일시', new Date());
+      sheet.appendRow(row);
+    });
+  }
+  return sheet;
+}
+
+function getSectionSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SECTION_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SECTION_SHEET_NAME);
+    sheet.appendRow(['key', '제목문구', '부제', '순서']);
+    sheet.setFrozenRows(1);
+    CLASS_SECTION_DEFAULTS.forEach(r => sheet.appendRow(r));
+  }
+  return sheet;
+}
+
+function readSections() {
+  const sheet = getSectionSheet();
+  const rows = sheet.getDataRange().getValues();
+  rows.shift();
+  return rows.filter(r => r[0]).map(r => ({
+    key: String(r[0]).trim(), title: String(r[1] || ''), sub: String(r[2] || ''), order: Number(r[3]) || 99
+  })).sort((a, b) => a.order - b.order);
+}
+
+function splitLines(v) {
+  return String(v || '').split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+}
+
+function rowToClass(row, map) {
+  const g = h => { const i = map[normalizeHeader(h)]; return i === undefined ? '' : row[i]; };
+  const colorOf = { child: 'gold', youth: 'berry', adult: 'clay', mom: 'sage', special: 'forest' };
+  const cat = String(g('구분') || 'child').trim();
+  const enabledRaw = g('노출');
+  return {
+    id: String(g('id') || '').trim(),
+    enabled: !(enabledRaw === false || String(enabledRaw).toUpperCase() === 'FALSE' || String(enabledRaw).trim() === '숨김'),
+    category: cat, color: colorOf[cat] || 'gold',
+    status: String(g('상태') || ''), title: String(g('제목') || ''), subtitle: String(g('부제') || ''),
+    target: String(g('대상') || ''), period: String(g('기간') || ''), day_time: String(g('요일시간') || ''),
+    capacity: Number(g('정원')) || 0, price: String(g('수강료') || ''), place: String(g('장소') || ''),
+    image: String(g('대표사진') || ''), gallery: splitLines(g('추가사진')),
+    summary: String(g('한줄소개') || ''), description: String(g('상세소개') || ''),
+    curriculum: splitLines(g('진행내용')), fit: splitLines(g('이런분께')), options: splitLines(g('희망반옵션')),
+    detail_page: String(g('커리큘럼페이지') || ''), order: Number(g('순서')) || 999
+  };
+}
+
+function readClasses() {
+  const sheet = getClassSheet();
+  if (sheet.getLastRow() < 2) return [];
+  const map = getHeaderIndexMap(sheet);
+  const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
+  return rows.map(r => rowToClass(r, map)).filter(c => c.id);
+}
+
+function sortClasses(list, sections) {
+  const secOrder = {};
+  sections.forEach(s => { secOrder[s.key] = s.order; });
+  return list.slice().sort((a, b) =>
+    ((secOrder[a.category] || 99) - (secOrder[b.category] || 99)) || (a.order - b.order));
+}
+
+// 누구나 볼 수 있는 목록: 노출 중인 수업 + 구분 제목 + 수업별 신청 인원(남은 자리 계산용)
+function getPublicClasses() {
+  const sections = readSections();
+  const items = sortClasses(readClasses().filter(c => c.enabled), sections);
+  return { items: items, sections: sections, counts: getRegistrationCounts().counts };
+}
+
+function getAdminClasses() {
+  const sections = readSections();
+  return { ok: true, items: sortClasses(readClasses(), sections), sections: sections, counts: getRegistrationCounts().counts };
+}
+
+function saveClass(p) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const sheet = getClassSheet();
+    const map = getHeaderIndexMap(sheet);
+    const title = String(p.title || '').trim();
+    if (!title) throw new Error('수업 이름(제목)을 입력해주세요.');
+    let id = String(p.id || '').trim();
+    const isNew = !id;
+    if (isNew) id = 'c' + new Date().getTime().toString(36);
+
+    const values = {
+      'id': id,
+      '노출': String(p.enabled) === 'false' ? false : true,
+      '구분': p.category || 'child', '상태': p.status || '모집중', '제목': title,
+      '부제': p.subtitle || '', '대상': p.target || '', '기간': p.period || '', '요일시간': p.day_time || '',
+      '정원': p.capacity === undefined || p.capacity === '' ? '' : Number(p.capacity),
+      '수강료': p.price || '', '장소': p.place || '', '대표사진': p.image || '',
+      '추가사진': Array.isArray(p.gallery) ? p.gallery.join('\n') : String(p.gallery || ''),
+      '한줄소개': p.summary || '', '상세소개': p.description || '', '진행내용': p.curriculum || '',
+      '이런분께': p.fit || '', '희망반옵션': p.options || '', '커리큘럼페이지': p.detail_page || '',
+      '순서': p.order === undefined || p.order === '' ? '' : Number(p.order),
+      '수정일시': new Date()
+    };
+
+    let rowIdx = -1;
+    if (!isNew && sheet.getLastRow() >= 2) {
+      const ids = sheet.getRange(2, map[normalizeHeader('id')] + 1, sheet.getLastRow() - 1, 1).getValues();
+      for (let i = 0; i < ids.length; i++) if (String(ids[i][0]).trim() === id) { rowIdx = i + 2; break; }
+    }
+    if (rowIdx === -1) {
+      const row = new Array(sheet.getLastColumn()).fill('');
+      Object.keys(values).forEach(h => { const i = map[normalizeHeader(h)]; if (i !== undefined) row[i] = values[h]; });
+      if (values['순서'] === '') { const oi = map[normalizeHeader('순서')]; if (oi !== undefined) row[oi] = sheet.getLastRow() + 100; }
+      sheet.appendRow(row);
+    } else {
+      Object.keys(values).forEach(h => {
+        const i = map[normalizeHeader(h)];
+        if (i !== undefined) sheet.getRange(rowIdx, i + 1).setValue(values[h]);
+      });
+    }
+    return { ok: true, id: id, created: rowIdx === -1 };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function deleteClass(id) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const sheet = getClassSheet();
+    const map = getHeaderIndexMap(sheet);
+    if (!id || sheet.getLastRow() < 2) throw new Error('삭제할 수업을 찾지 못했어요.');
+    const ids = sheet.getRange(2, map[normalizeHeader('id')] + 1, sheet.getLastRow() - 1, 1).getValues();
+    for (let i = 0; i < ids.length; i++) {
+      if (String(ids[i][0]).trim() === String(id).trim()) { sheet.deleteRow(i + 2); return { ok: true }; }
+    }
+    throw new Error('삭제할 수업을 찾지 못했어요.');
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// 사진 한 장 업로드 (브라우저에서 줄여 보낸 JPEG/PNG를 드라이브에 저장하고 보여줄 주소를 돌려줘요)
+function uploadClassImage(p) {
+  const b64 = String(p.data || '');
+  if (!b64) throw new Error('사진 데이터가 비어 있어요.');
+  if (b64.length > 6 * 1024 * 1024) throw new Error('사진이 너무 커요. 더 작은 사진으로 올려주세요.');
+  const mime = /^image\/(jpeg|png|webp|gif)$/.test(String(p.mime || '')) ? p.mime : 'image/jpeg';
+  const ext = mime.split('/')[1].replace('jpeg', 'jpg');
+  const folders = DriveApp.getFoldersByName(CLASS_PHOTO_FOLDER);
+  const folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(CLASS_PHOTO_FOLDER);
+  const stamp = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyyMMdd-HHmmss');
+  const blob = Utilities.newBlob(Utilities.base64Decode(b64), mime, 'class-' + stamp + '.' + ext);
+  const file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return { ok: true, url: 'https://drive.google.com/thumbnail?id=' + file.getId() + '&sz=w1200' };
 }
 
 /* ---------- 방문자수 ---------- */

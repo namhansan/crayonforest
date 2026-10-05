@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>프로그램 안내 · 신청 | 크레용숲</title>
+<meta name="description" content="크레용숲 프로그램 상세 안내와 신청">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500;1,600&family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#FBF6EE; --ivory-deep:#F3EBDC; --forest:#2C4A3B; --clay:#BE6A42;
+    --gold:#D3A24C; --berry:#8B4B5C; --sage:#93AC8C; --ink:#2A2622; --paper:#FFFFFF; --line:#E4DBC9;
+    --accent:#D3A24C; --accent-soft:#F6E9CC;
+    --shadow:0 20px 50px -25px rgba(44,74,59,0.35); --radius-lg:32px; --radius-md:20px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Noto Sans KR',sans-serif; background:var(--ivory); color:var(--ink); line-height:1.7; -webkit-font-smoothing:antialiased;}
+  .logotype{font-family:'Playfair Display',serif; font-style:italic; font-weight:500;}
+  a{color:inherit; text-decoration:none;} img{display:block; max-width:100%;}
+  .wrap{max-width:1020px; margin:0 auto; padding:0 28px;}
+  @media(max-width:720px){.wrap{padding:0 20px;}}
+
+  header{position:sticky; top:0; z-index:200; background:rgba(251,246,238,.92); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
+  .nav-inner{max-width:1020px; margin:0 auto; padding:16px 28px; display:flex; align-items:center; justify-content:space-between;}
+  .brand{font-size:20px; color:var(--forest);}
+  nav.menu{display:flex; gap:26px; align-items:center;}
+  nav.menu a{font-size:14px; font-weight:500; color:var(--forest); opacity:.75;}
+  .cta-btn{background:var(--clay); color:#fff !important; opacity:1 !important; padding:10px 20px; border-radius:999px; font-size:13.5px; font-weight:600;}
+  @media(max-width:700px){nav.menu a:not(.cta-btn){display:none;} .nav-inner{padding:14px 20px;}}
+
+  /* 상단 배너 */
+  .hero{background:var(--accent-grad, linear-gradient(150deg,#F3D9A8,#E0AE6C)); position:relative; overflow:hidden;}
+  .hero::after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(30,26,20,.38) 100%);}
+  .hero-img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.9;}
+  .hero-copy{position:relative; z-index:2; padding-top:54px; padding-bottom:38px; color:#fff; min-height:230px; display:flex; flex-direction:column; justify-content:flex-end;}
+  .crumb{font-size:12.5px; opacity:.9; margin-bottom:12px;}
+  .crumb a{text-decoration:underline; text-underline-offset:3px;}
+  .badge-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;}
+  .badge{font-size:12px; font-weight:700; padding:4px 12px; border-radius:999px; background:rgba(255,255,255,.92); color:var(--forest);}
+  .badge.status-open{background:#fff; color:var(--forest);}
+  .badge.status-closed{background:rgba(30,26,20,.65); color:#fff;}
+  .hero h1{font-family:'Noto Serif KR',serif; font-size:clamp(26px,4vw,38px); line-height:1.3;}
+  .hero .sub{margin-top:8px; font-size:14.5px; opacity:.95;}
+
+  /* 본문 2단 */
+  .layout{display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:36px; padding-top:38px; padding-bottom:90px; align-items:start;}
+  @media(max-width:900px){.layout{grid-template-columns:1fr; gap:26px; padding-bottom:110px;}}
+  .info-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:30px;}
+  @media(max-width:520px){.info-grid{grid-template-columns:1fr;}}
+  .info-item{background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:14px 18px;}
+  .info-item span{display:block; font-size:12px; color:#8a8378; font-weight:600; letter-spacing:.04em;}
+  .info-item b{display:block; font-size:15px; color:var(--forest); margin-top:2px; font-weight:600;}
+  .block{margin-bottom:34px;}
+  .block h2{font-family:'Noto Serif KR',serif; font-size:20px; color:var(--forest); margin-bottom:14px; display:flex; align-items:center; gap:10px;}
+  .block h2::before{content:""; width:6px; height:20px; border-radius:3px; background:var(--accent);}
+  .block p{font-size:15px; color:#4b463f; line-height:1.85;}
+  .list{list-style:none; display:flex; flex-direction:column; gap:10px;}
+  .list li{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:13px 18px 13px 44px; font-size:14.5px; color:#4b463f; position:relative;}
+  .list li::before{content:"✓"; position:absolute; left:16px; top:12px; color:var(--accent); font-weight:800;}
+  .more-link{display:inline-flex; align-items:center; gap:6px; margin-top:6px; padding:12px 22px; border:1.5px solid var(--forest); color:var(--forest); border-radius:999px; font-weight:600; font-size:14px;}
+  .more-link:hover{background:var(--forest); color:#fff;}
+  .gallery{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+  .gallery img{width:100%; aspect-ratio:1; object-fit:cover; border-radius:12px;}
+
+  /* 신청 카드 */
+  .apply{position:sticky; top:84px; background:var(--paper); border:1px solid var(--line); border-top:5px solid var(--accent); border-radius:var(--radius-md); padding:26px 24px; box-shadow:var(--shadow);}
+  @media(max-width:900px){.apply{position:static;}}
+  .apply h3{font-family:'Noto Serif KR',serif; font-size:19px; color:var(--forest);}
+  .apply .price{margin:6px 0 16px; font-size:14px; color:#6b6459;}
+  .apply .price b{color:var(--clay); font-size:17px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:12.5px; font-weight:600; color:var(--forest); margin-bottom:5px;}
+  .field input, .field select, .field textarea{width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:12px; font:inherit; font-size:14px; background:#fff; color:var(--ink);}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--accent); border-color:transparent;}
+  .field textarea{min-height:76px; resize:vertical;}
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .req{color:var(--clay);}
+  .consent{display:flex; align-items:flex-start; gap:8px; font-size:12px; color:#8a8378; margin:4px 0 16px; line-height:1.55;}
+  .submit-btn{width:100%; padding:15px; border:none; border-radius:999px; background:var(--clay); color:#fff; font:inherit; font-weight:700; font-size:15.5px; cursor:pointer;}
+  .submit-btn:hover{filter:brightness(1.05);}
+  .submit-btn:disabled{opacity:.6; cursor:default;}
+  .hp{position:absolute; left:-9999px; width:1px; height:1px; opacity:0;}
+  .apply-note{margin-top:12px; font-size:12px; color:#8a8378; text-align:center; line-height:1.6;}
+  .err{display:none; margin-bottom:12px; padding:10px 14px; border-radius:12px; background:#FBE9E4; color:#9B3B22; font-size:13px;}
+  .done{display:none; text-align:center; padding:10px 0 4px;}
+  .done .check{width:58px; height:58px; margin:0 auto 14px; border-radius:50%; background:var(--accent-soft); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:800;}
+  .done h4{font-family:'Noto Serif KR',serif; font-size:19px; color:var(--forest); margin-bottom:8px;}
+  .done p{font-size:13.5px; color:#5b564e; line-height:1.75;}
+  .done .sum{margin:16px 0; text-align:left; background:var(--ivory); border-radius:14px; padding:14px 16px; font-size:13px; color:#4b463f; line-height:1.8;}
+  .done .sum b{color:var(--forest);}
+  .done a{display:inline-block; margin-top:6px; padding:11px 22px; border-radius:999px; border:1.5px solid var(--forest); color:var(--forest); font-weight:600; font-size:13.5px;}
+
+  /* 모바일 하단 고정 신청 바 */
+  .mbar{display:none;}
+  @media(max-width:900px){
+    .mbar{display:flex; position:fixed; left:0; right:0; bottom:0; z-index:150; padding:12px 20px calc(12px + env(safe-area-inset-bottom)); background:rgba(251,246,238,.96); backdrop-filter:blur(10px); border-top:1px solid var(--line); gap:12px; align-items:center;}
+    .mbar .t{flex:1; min-width:0; font-size:13px; color:var(--forest); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+    .mbar a{background:var(--clay); color:#fff; font-weight:700; font-size:14.5px; padding:12px 26px; border-radius:999px; white-space:nowrap;}
+  }
+  .state{padding:120px 0; text-align:center; color:#8a8378;}
+  .state a{display:inline-block; margin-top:16px; color:var(--forest); text-decoration:underline;}
+  footer{background:var(--ivory-deep); border-top:1px solid var(--line); padding:30px 0; text-align:center; font-size:12.5px; color:#8a8378;}
+  @media(max-width:900px){footer{padding-bottom:90px;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="nav-inner">
+    <a href="index.html" class="brand logotype">Forêt des Crayons</a>
+    <nav class="menu">
+      <a href="index.html#program">프로그램</a>
+      <a href="index.html#events">수업 일정</a>
+      <a href="index.html#about">소개</a>
+      <a href="index.html#contact">문의하기</a>
+      <a href="classes.html" class="cta-btn">크레용숲 여정</a>
+    </nav>
+  </div>
+</header>
+
+<main id="app"><div class="state">프로그램을 불러오는 중이에요…</div></main>
+
+<footer>© 크레용숲 · Forêt des Crayons</footer>
+
+<script src="js/programs.js"></script>
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyahvBkqM7NVzHde2vdtpWTGdOhaUs8i-ewGe9WBpuyyetVIv1VEPJrhhCNy3fgrmad/exec";
+const params = new URLSearchParams(location.search);
+const wantedId = params.get('id');
+let current = null;
+let counts = null;
+
+let formDirty = false;
+loadClassData(data => {
+  counts = data.counts;
+  const found = data.items.find(p => p.id === wantedId);
+  if(!found){
+    if(!current) document.getElementById('app').innerHTML = `<div class="state">찾으시는 수업을 불러오지 못했어요.<br><a href="classes.html">크레용숲 여정 보기</a></div>`;
+    return;
+  }
+  if(current && formDirty) return;   // 작성 중인 신청서를 최신 목록 도착으로 지우지 않아요
+  current = found;
+  render(current);
+});
+
+function render(p){
+  const c = PROGRAM_COLORS[p.color] || PROGRAM_COLORS.gold;
+  const root = document.documentElement.style;
+  root.setProperty('--accent', c.main);
+  root.setProperty('--accent-soft', c.soft);
+  root.setProperty('--accent-grad', c.grad);
+  document.title = `${p.title} | 크레용숲`;
+
+  const si = seatInfo(p, counts);
+  const closed = si.full;
+  const statusBadge = si.status ? `<span class="badge ${closed ? 'status-closed' : 'status-open'}">${escHtml(si.status)}</span>` : '';
+  const catLabel = (PROGRAM_CATEGORIES.find(x => x.key === p.category) || {}).label || '';
+
+  const seatText = si.cap ? (si.full ? `정원 ${si.cap}명 · 마감` : `정원 ${si.cap}명`) : '';
+  const infoItems = [['대상', p.target], ['기간', p.period], ['요일 · 시간', p.day_time], ['일정 · 운영', (p.period || p.day_time) ? '' : p.schedule], ['정원', seatText], ['장소', p.place], ['수강료', p.price || '상담 시 안내']]
+    .filter(x => x[1]).map(x => `<div class="info-item"><span>${x[0]}</span><b>${escHtml(x[1])}</b></div>`).join('');
+
+  const listBlock = (title, arr) => (arr && arr.length)
+    ? `<section class="block"><h2>${title}</h2><ul class="list">${arr.map(x => `<li>${escHtml(x)}</li>`).join('')}</ul></section>` : '';
+
+  const gallery = (p.gallery && p.gallery.length)
+    ? `<section class="block"><h2>수업 사진</h2><div class="gallery">${p.gallery.map(src => `<img src="${escHtml(src)}" alt="" loading="lazy">`).join('')}</div></section>` : '';
+
+  const options = (p.options && p.options.length)
+    ? `<div class="field"><label>희망 반 · 일정 <span class="req">*</span></label>
+         <select id="fSchedule" required>${p.options.length > 1 ? '<option value="">선택해주세요</option>' : ''}${p.options.map(o => `<option>${escHtml(o)}</option>`).join('')}</select></div>` : '';
+
+  const adultLike = p.category === 'adult' || p.category === 'mom';
+  const participantFields = adultLike
+    ? `<div class="field"><label>참가자 이름 <span class="req">*</span></label><input id="fName" required placeholder="참가하시는 분 성함" autocomplete="name"></div>`
+    : `<div class="field"><label>보호자(신청자) 이름 <span class="req">*</span></label><input id="fName" required placeholder="신청하시는 분 성함" autocomplete="name"></div>
+       <div class="field-row">
+         <div class="field"><label>참가 아이 이름 <span class="req">*</span></label><input id="fChild" required placeholder="아이 이름"></div>
+         <div class="field"><label>나이 · 학년 <span class="req">*</span></label><input id="fGrade" required placeholder="예: 7세 / 초3"></div>
+       </div>`;
+
+  document.getElementById('app').innerHTML = `
+    <div class="hero">
+      ${p.image ? `<img class="hero-img" src="${escHtml(p.image)}" alt="">` : ''}
+      <div class="wrap hero-copy">
+        <div class="crumb"><a href="index.html">홈</a> › <a href="classes.html">크레용숲 여정</a> › ${escHtml(p.title)}</div>
+        <div class="badge-row">${catLabel && p.category !== 'all' ? `<span class="badge">${escHtml(catLabel)}</span>` : ''}${statusBadge}</div>
+        <h1>${escHtml(p.title)}</h1>
+        ${p.subtitle ? `<div class="sub">${escHtml(p.subtitle)}</div>` : ''}
+      </div>
+    </div>
+
+    <div class="wrap layout">
+      <div>
+        <div class="info-grid">${infoItems}</div>
+        <section class="block"><h2>프로그램 소개</h2><p>${nl2br(p.description || p.summary)}</p></section>
+        ${listBlock('이렇게 진행돼요', p.curriculum)}
+        ${listBlock('이런 분께 잘 맞아요', p.fit)}
+        ${gallery}
+        ${p.detail_page ? `<a class="more-link" href="${escHtml(p.detail_page)}">커리큘럼 전체 보기 →</a>` : ''}
+      </div>
+
+      <aside class="apply" id="apply">
+        <div id="applyForm">
+          <h3>${closed ? '대기 신청' : '신청하기'}</h3>
+          <div class="price">${p.price ? `수강료 <b>${escHtml(p.price)}</b>` : '수강료 · 일정은 신청 후 안내드려요'}</div>
+          ${closed ? '<div class="err" style="display:block;background:#F3EBDC;color:#6b6459;">현재 모집이 마감되었어요(정원 초과). 대기 신청을 남겨주시면 자리가 생길 때 먼저 연락드려요.</div>' : ''}
+          <form id="form" novalidate>
+            ${participantFields}
+            <div class="field"><label>연락처 <span class="req">*</span></label><input id="fPhone" type="tel" required placeholder="010-0000-0000" autocomplete="tel"></div>
+            ${options}
+            <div class="field-row">
+              <div class="field"><label>인원</label><input id="fPeople" type="number" min="1" max="20" value="1"></div>
+              <div class="field"><label>상담 희망 시간</label><select id="fCallTime"><option value="">상관없어요</option><option>오전</option><option>오후</option><option>저녁</option></select></div>
+            </div>
+            <div class="field"><label>문의 · 전달사항</label><textarea id="fMsg" placeholder="궁금한 점이나 희망 요일 등을 편하게 남겨주세요"></textarea></div>
+            <input class="hp" id="fWebsite" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <label class="consent"><input type="checkbox" id="fConsent" required style="margin-top:3px;"> 신청 접수와 안내를 위해 이름·연락처 등 개인정보를 수집·이용하는 것에 동의합니다.</label>
+            <div class="err" id="err"></div>
+            <button class="submit-btn" id="submitBtn" type="submit">${closed ? '대기 신청 보내기' : '신청 보내기'}</button>
+            <div class="apply-note">결제는 이 단계에서 진행되지 않아요.<br>신청이 접수되면 원장님이 확인 후 개별 연락드려요.</div>
+          </form>
+        </div>
+        <div class="done" id="done"></div>
+      </aside>
+    </div>
+
+    <div class="mbar"><span class="t">${escHtml(p.title)}</span><a href="#apply">${closed ? '대기 신청' : '신청하기'}</a></div>`;
+
+  document.getElementById('form').addEventListener('submit', submitForm);
+  document.getElementById('form').addEventListener('input', () => { formDirty = true; });
+}
+
+function val(id){ const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function showErr(msg){ const e = document.getElementById('err'); e.textContent = msg; e.style.display = 'block'; }
+
+function submitForm(ev){
+  ev.preventDefault();
+  document.getElementById('err').style.display = 'none';
+  if(val('fWebsite')) return; // 스팸 방지용 숨김 칸 — 사람은 채우지 않아요
+
+  const name = val('fName'), phone = val('fPhone');
+  const child = val('fChild'), grade = val('fGrade');
+  const schedule = val('fSchedule'), people = val('fPeople') || '1', callTime = val('fCallTime'), msg = val('fMsg');
+  const adultLike = current.category === 'adult' || current.category === 'mom';
+
+  if(!name) return showErr('이름을 입력해주세요.');
+  if(!adultLike && (!child || !grade)) return showErr('참가 아이 이름과 나이(학년)를 입력해주세요.');
+  if(phone.replace(/\D/g,'').length < 9) return showErr('연락처를 정확히 입력해주세요. (예: 010-0000-0000)');
+  if(document.getElementById('fSchedule') && !schedule) return showErr('희망 반·일정을 선택해주세요.');
+  if(!document.getElementById('fConsent').checked) return showErr('개인정보 수집·이용에 동의해주세요.');
+
+  const waitlist = seatInfo(current, counts).full;
+  const programLabel = (waitlist ? '[대기] ' : '') + current.title;
+
+  // 서버(Code.gs)가 새 칸을 지원하지 않는 예전 버전이어도 정보가 사라지지 않도록,
+  // 입력 내용을 "문의내용" 칸에도 한 줄로 같이 적어서 보내요.
+  const parts = [];
+  if(child) parts.push(`아이: ${child}${grade ? ' (' + grade + ')' : ''}`);
+  if(schedule) parts.push(`희망: ${schedule}`);
+  parts.push(`인원: ${people}명`);
+  if(callTime) parts.push(`상담시간: ${callTime}`);
+  if(msg) parts.push(`문의: ${msg}`);
+  const message = parts.join(' / ');
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = '전송 중…';
+
+  const body = new URLSearchParams({
+    action:'register', name, phone, program: programLabel, message,
+    child, grade, schedule, people, callTime, programId: current.id, note: msg
+  });
+  fetch(GAS_URL, { method:'POST', body })
+    .then(r => r.text())
+    .then(t => { let j; try{ j = JSON.parse(t); }catch(e){ throw new Error('bad response'); }
+      if(!j || j.result !== 'success') throw new Error('save failed'); })
+    .then(() => {
+      const lines = [`<b>프로그램</b> ${escHtml(programLabel)}`, `<b>신청자</b> ${escHtml(name)}${child ? ' · 아이 ' + escHtml(child) + (grade ? '(' + escHtml(grade) + ')' : '') : ''}`];
+      if(schedule) lines.push(`<b>희망</b> ${escHtml(schedule)}`);
+      lines.push(`<b>연락처</b> ${escHtml(phone)}`);
+      const done = document.getElementById('done');
+      done.innerHTML = `<div class="check">✓</div><h4>${waitlist ? '대기 신청이 접수되었어요' : '신청이 접수되었어요'}</h4>
+        <p>확인 후 남겨주신 연락처로 원장님이 안내드릴게요.</p>
+        <div class="sum">${lines.join('<br>')}</div>
+        <a href="classes.html">다른 수업 둘러보기</a>`;
+      document.getElementById('applyForm').style.display = 'none';
+      done.style.display = 'block';
+      document.getElementById('apply').scrollIntoView({ behavior:'smooth', block:'start' });
+    })
+    .catch(() => {
+      btn.disabled = false; btn.textContent = waitlist ? '대기 신청 보내기' : '신청 보내기';
+      showErr('전송에 실패했어요. 잠시 후 다시 시도하시거나 전화로 문의해주세요.');
+    });
+}
+</script>
+</body>
+</html>

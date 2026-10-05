@@ -6,6 +6,7 @@
 <title>크레용숲 | Forêt des Crayons</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500;1,600&family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/programs.css">
 <style>
   :root{
     --ivory:#FBF6EE;
@@ -342,6 +343,8 @@
   .p-fit ul{list-style:none; display:flex; flex-direction:column; gap:8px;}
   .p-fit li{font-size:13.5px; color:#4b463f; padding-left:16px; position:relative;}
   .p-fit li::before{content:"·"; position:absolute; left:0; color:var(--gold); font-weight:900;}
+
+
   .p-cta{margin-top:18px;}
 
   /* ---------- Moments ---------- */
@@ -505,26 +508,26 @@
   <div class="nav-inner">
     <a href="#top" class="brand logotype">Forêt des Crayons<span>크레용숲 · 정서예술교육</span></a>
     <nav class="menu">
-      <a href="#program">교육과정</a>
+      <a href="#program">크레용숲 여정</a>
       <a href="#events">수업 일정</a>
       <a href="#moments">우리의 순간</a>
       <a href="#story">숲 이야기</a>
       <a href="#about">소개</a>
       <a href="journal.html">성장일지</a>
       <a href="#contact">문의하기</a>
-      <a href="https://map.naver.com/p/entry/place/2069167893?placePath=%2Fticket" target="_blank" rel="noopener" class="cta-btn">수강신청</a>
+      <a href="classes.html" class="cta-btn">수강신청</a>
     </nav>
     <button class="menu-toggle" id="menuToggle" aria-label="메뉴 열기">☰</button>
   </div>
   <div class="mobile-menu" id="mobileMenu">
-    <a href="#program">교육과정</a>
+    <a href="#program">크레용숲 여정</a>
     <a href="#events">수업 일정</a>
     <a href="#moments">우리의 순간</a>
     <a href="#story">숲 이야기</a>
     <a href="#about">소개</a>
     <a href="journal.html">성장일지</a>
     <a href="#contact">문의하기</a>
-    <a href="https://map.naver.com/p/entry/place/2069167893?placePath=%2Fticket" target="_blank" rel="noopener" class="cta-btn" style="text-align:center;">수강신청</a>
+    <a href="classes.html" class="cta-btn" style="text-align:center;">수강신청</a>
   </div>
 </header>
 
@@ -667,7 +670,7 @@
       <h1 class="hp-title" style="font-size:clamp(22px,3.6vw,36px);">예술로 자기결을 세워가도록,<br>그 시작을 함께 합니다</h1>
       <div class="hero-btns">
         <a href="#program" class="btn-outline">프로그램 보기</a>
-        <a href="https://map.naver.com/p/entry/place/2069167893?placePath=%2Fticket" target="_blank" rel="noopener" class="cta-btn">수강신청 하기</a>
+        <a href="classes.html" class="cta-btn">수강신청 하기</a>
       </div>
     </div>
 
@@ -682,17 +685,13 @@
 <section id="program" class="wrap">
   <div class="program-section wrap" style="padding:56px 32px;">
     <div class="section-head">
-      <div class="eyebrow">Program</div>
-      <h2>연령과 마음의 속도에 맞춘 4가지 프로그램</h2>
-      <p>클릭 한 번으로 대상별 프로그램을 바로 확인하세요</p>
+      <div class="eyebrow">Journey</div>
+      <h2>크레용숲 여정</h2>
+      <p>마음에 드는 수업을 눌러 자세히 보고, 바로 신청해보세요</p>
     </div>
-    <div class="tabs" id="tabs">
-      <button class="tab-btn active" data-c="gold" data-p="child">CHILD ART</button>
-      <button class="tab-btn" data-c="berry" data-p="youth">YOUTH ART</button>
-      <button class="tab-btn" data-c="clay" data-p="adult">ADULT ART</button>
-      <button class="tab-btn" data-c="sage" data-p="mom">FOR MOM</button>
-    </div>
-    <div class="program-panel" id="programPanel"></div>
+    <div id="progGrid"><div class="prog-empty">수업을 불러오는 중이에요…</div></div>
+    <div class="prog-more"><a href="classes.html" class="btn-outline" style="border-color:var(--forest); color:var(--forest);">크레용숲 여정 전체 보기 →</a></div>
+    <p style="text-align:center; margin-top:26px; font-size:13px; color:#8a8378;">결제는 따로 진행되지 않아요. 신청서를 남겨주시면 원장님이 확인 후 개별 연락드려요.</p>
   </div>
 </section>
 
@@ -773,9 +772,9 @@
     <div class="reg-inner">
       <div class="reg-side">
         <div class="eyebrow">상담하기</div>
-        <h2>네이버 예약으로<br>신청해주세요</h2>
-        <p>수강신청·예약 확정은 네이버 예약에서 진행돼요. 아직 궁금한 점이 있거나 먼저 상담받고 싶으시면 아래 폼으로 편하게 남겨주세요 — 원장님께 바로 전달되며, 순차적으로 연락드립니다.</p>
-        <a href="https://map.naver.com/p/entry/place/2069167893?placePath=%2Fticket" target="_blank" rel="noopener" class="cta-btn" style="display:inline-block; margin:14px 0 6px;">네이버로 바로 예약하기</a>
+        <h2>궁금한 점은<br>편하게 상담해주세요</h2>
+        <p>수강 신청은 위 <a href="#program" style="text-decoration:underline;">프로그램 카드</a>에서 원하는 프로그램을 눌러 진행해주세요. 어떤 프로그램이 맞을지 먼저 상담받고 싶으시면 아래 폼으로 남겨주세요 — 원장님께 바로 전달되며, 순차적으로 연락드립니다.</p>
+        <a href="https://map.naver.com/p/entry/place/2069167893?placePath=%2Fticket" target="_blank" rel="noopener" class="cta-btn" style="display:inline-block; margin:14px 0 6px;">네이버 예약으로도 신청 가능해요</a>
         <div class="reg-info">
           <div><b>위치</b> <span id="infoAddress">경기도 성남시 수정구 창곡동 563번지 위례역 푸르지오 6단지 107호</span></div>
           <div><b>전화</b> <span id="infoPhone">010-0000-0000</span></div>
@@ -877,12 +876,13 @@
       </div>
     </div>
     <div class="foot-bottom">
-      <span>© 2026 Forêt des Crayons. All rights reserved. · 사업자 등록번호 604-09-79660 &nbsp;·&nbsp; <a href="/admin/" style="color:#8a8378; text-decoration:underline;">관리자</a> &nbsp;·&nbsp; <a href="teacher-entry.html" style="color:#8a8378; text-decoration:underline;">성장일지 입력</a></span>
+      <span>© 2026 Forêt des Crayons. All rights reserved. · 사업자 등록번호 604-09-79660 &nbsp;·&nbsp; <a href="/admin/" style="color:#8a8378; text-decoration:underline;">관리자</a> &nbsp;·&nbsp; <a href="teacher-entry.html" style="color:#8a8378; text-decoration:underline;">성장일지 입력</a> &nbsp;·&nbsp; <a href="class-admin.html" style="color:#8a8378; text-decoration:underline;">수업 관리</a></span>
       <div class="visitor-badge">오늘 방문 <b id="todayCount">-</b> · 누적 방문 <b id="totalCount">-</b></div>
     </div>
   </div>
 </footer>
 
+<script src="js/programs.js"></script>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <script>
   if (window.netlifyIdentity) {
@@ -1058,65 +1058,9 @@ window.addEventListener('scroll', ()=>{
   }
 });
 
-/* ---------- Program tabs ---------- */
-const programData = {
-  child:{
-    page:'program-child.html',
-    color:'gold', eyebrow:'크레용숲 어린이색채학교', title:'CHILD ART', en:'감각의 숲(5~7세) · 상징의 숲(초등)',
-    meta:[['대상','5~12세'],['운영','소수정예 연령별 그룹수업'],['방식','월별 감정예술 테마 수업']],
-    desc:'이상해도 괜찮은 미술 안에서 아이는 스스로 고르고, 실험하고, 다시 만들어보며 진짜 예술가처럼 창조하는 경험을 합니다.<br>색과 감각, 이야기와 조형이 만나 아이의 자기결이 자라는 색채예술 수업입니다.',
-    fit:['선·색·형태에 호기심이 많고 손으로 탐색하는 걸 좋아하는 아이','감정표현이 서툴지만 그림에서 마음이 잘 드러나는 아이','정답보다 자기 속도로 탐색하는 경험이 필요한 아이']
-  },
-  youth:{
-    page:'program-youth.html',
-    color:'berry', eyebrow:'크레용숲 사유의 숲', title:'YOUTH ART', en:'사유의 숲',
-    meta:[['대상','중·고등학생'],['운영','주 1회 100분 · 그룹수업(최대 6명)'],['구조','4ROOM 사유구조']],
-    desc:'감각→감정→상징→해석의 4개 방을 각 3개월씩 거치며 색·기억·상징·언어로 나만의 철학과 세계관을 완성해가는 청소년 사유의 숲입니다.',
-    fit:['감정의 결이 깊고 마음을 오래 바라보는 성향의 아이','정답보다 자기 생각을 갖고 싶은 아이','입시보다 서사·정체성·내적 성장을 중요하게 여기는 부모님']
-  },
-  adult:{
-    page:'program-adult.html',
-    color:'clay', eyebrow:'크레용숲 예술리추얼', title:'ADULT ART', en:'창조의 숲',
-    meta:[['대상','성인 전체'],['운영','일정 공지 후 상시 진행'],['활동','감정 리추얼 · 컬러링테라피 · 패턴드로잉']],
-    desc:'일상에서 잃어버린 감각과 감정의 언어를 회복하고, 나만의 색·패턴·서사를 발견하는 창의성 회복 프로그램입니다.',
-    fit:['오랜만에 나를 위한 시간을 갖고 싶은 분','색과 드로잉을 통해 감정 언어를 배우고 싶은 분','"예술은 어려울까?" 걱정되지만 마음으로 그리는 경험을 원하는 분']
-  },
-  mom:{
-    page:'program-mom.html',
-    color:'sage', eyebrow:'크레용숲 정원사', title:'FOR MOM', en:'창조의 숲',
-    meta:[['대상','자녀를 둔 어머니'],['운영','일정 공지 후 상시 진행'],['성격','웰니스 커뮤니티']],
-    desc:'엄마 자신의 마음에 물을 주고 다시 감각을 되찾는 시간. 완벽한 엄마가 되기보다, 나 자신과 다시 연결되는 길을 함께 걷습니다.',
-    fit:['무언가를 더 배우기보다 잠시 내려놓고 싶은 엄마','엄마라는 역할 뒤에 가려진 나를 다시 느끼고 싶은 분','작지만 확실한 나만의 시간이 필요한 분']
-  }
-};
-function renderProgram(key){
-  const d = programData[key];
-  document.getElementById('programPanel').style.borderTopColor = `var(--${d.color})`;
-  document.getElementById('programPanel').innerHTML = `
-    <div class="p-title">
-      <div class="eyebrow">${d.eyebrow}</div>
-      <h3>${d.title}</h3>
-      <div class="p-en">${d.en}</div>
-      <div class="p-meta">
-        ${d.meta.map(m=>`<div>${m[0]}<b>${m[1]}</b></div>`).join('')}
-      </div>
-      <p class="p-desc">${d.desc}</p>
-      <div class="p-cta" style="display:flex; gap:10px; flex-wrap:wrap;">
-        <a href="${d.page}" class="btn-outline">커리큘럼 자세히 보기</a>
-        <a href="#register" class="cta-btn">이 프로그램으로 상담 신청</a>
-      </div>
-    </div>
-    <div class="p-fit">
-      <b>이런 친구 · 이런 분에게 맞아요</b>
-      <ul>${d.fit.map(f=>`<li>${f}</li>`).join('')}</ul>
-    </div>`;
-}
-renderProgram('child');
-document.getElementById('tabs').addEventListener('click', e=>{
-  const btn = e.target.closest('.tab-btn'); if(!btn) return;
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderProgram(btn.dataset.p);
+/* ---------- 크레용숲 여정 (수업 카드: 구글 시트 → js/programs.js) ---------- */
+loadClassData(data => {
+  document.getElementById('progGrid').innerHTML = renderClassSections(data, 4);
 });
 
 /* ---------- About tabs ---------- */

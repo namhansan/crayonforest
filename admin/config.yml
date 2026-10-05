@@ -55,6 +55,37 @@ collections:
               - { label: "날짜", name: "date", widget: "date", format: "YYYY-MM-DD" }
               - { label: "설명", name: "desc", widget: "text" }
 
+      - file: "content/programs.json"
+        label: "PROGRAM · 예비용 목록 (평소엔 class-admin.html 사용)"
+        name: "programs"
+        fields:
+          - label: "프로그램 목록 (메인 카드 순서대로)"
+            name: "items"
+            widget: "list"
+            summary: "{{fields.title}} · {{fields.status}}"
+            fields:
+              - { label: "고유 ID (영문 소문자, 주소에 쓰여요. 만든 뒤엔 바꾸지 마세요)", name: "id", widget: "string" }
+              - { label: "노출 (끄면 메인에서 숨김)", name: "enabled", widget: "boolean", default: true }
+              - { label: "분류", name: "category", widget: "select", options: ["child", "youth", "adult", "mom", "special"] }
+              - { label: "대표 색", name: "color", widget: "select", options: ["gold", "berry", "clay", "sage", "forest"] }
+              - { label: "모집 상태", name: "status", widget: "select", options: ["모집중", "상시", "마감"] }
+              - { label: "프로그램 이름", name: "title", widget: "string" }
+              - { label: "부제", name: "subtitle", widget: "string", required: false }
+              - { label: "대상", name: "target", widget: "string", required: false }
+              - { label: "기간 (예: 8주 · 11/3~12/22)", name: "period", widget: "string", required: false }
+              - { label: "요일 · 시간 (예: 월요일 14:00~15:30)", name: "day_time", widget: "string", required: false }
+              - { label: "정원 (숫자만. 적으면 '남은 자리'가 자동 표시되고 다 차면 자동 마감)", name: "capacity", widget: "number", value_type: "int", min: 1, required: false }
+              - { label: "일정 · 운영 (기간/요일시간을 안 쓸 때만)", name: "schedule", widget: "string", required: false }
+              - { label: "수강료 (예: 월 25만원. 비우면 '문의'로 표시)", name: "price", widget: "string", required: false }
+              - { label: "장소", name: "place", widget: "string", required: false }
+              - { label: "대표 이미지 (선택)", name: "image", widget: "image", required: false }
+              - { label: "카드에 보이는 한 줄 소개", name: "summary", widget: "text" }
+              - { label: "상세 소개글", name: "description", widget: "text" }
+              - { label: "이렇게 진행돼요", name: "curriculum", widget: "list", required: false }
+              - { label: "이런 분께 잘 맞아요", name: "fit", widget: "list", required: false }
+              - { label: "신청 시 고르는 희망 반·일정 (한 줄에 하나)", name: "options", widget: "list", required: false }
+              - { label: "커리큘럼 전체 보기 페이지 (예: program-child.html)", name: "detail_page", widget: "string", required: false }
+
       - file: "content/intensive.json"
         label: "SCHEDULE · 방학특강 시간표"
         name: "intensive"

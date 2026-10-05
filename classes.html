@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>크레용숲 여정 | 크레용숲</title>
+<meta name="description" content="크레용숲에서 함께 걷는 모든 수업을 한 곳에서 확인하고 신청하세요">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500;1,600&family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/programs.css">
+<style>
+  :root{
+    --ivory:#FBF6EE; --ivory-deep:#F3EBDC; --forest:#2C4A3B; --clay:#BE6A42;
+    --gold:#D3A24C; --berry:#8B4B5C; --sage:#93AC8C; --ink:#2A2622; --paper:#FFFFFF; --line:#E4DBC9;
+    --shadow:0 20px 50px -25px rgba(44,74,59,0.35); --radius-lg:32px; --radius-md:20px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Noto Sans KR',sans-serif; background:var(--ivory); color:var(--ink); line-height:1.7; -webkit-font-smoothing:antialiased;}
+  .logotype{font-family:'Playfair Display',serif; font-style:italic; font-weight:500;}
+  a{color:inherit; text-decoration:none;} img{display:block; max-width:100%;}
+  .wrap{max-width:1020px; margin:0 auto; padding:0 28px;}
+  @media(max-width:720px){.wrap{padding:0 20px;}}
+  header{position:sticky; top:0; z-index:200; background:rgba(251,246,238,.92); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
+  .nav-inner{max-width:1020px; margin:0 auto; padding:16px 28px; display:flex; align-items:center; justify-content:space-between;}
+  .brand{font-size:20px; color:var(--forest);}
+  nav.menu{display:flex; gap:26px; align-items:center;}
+  nav.menu a{font-size:14px; font-weight:500; color:var(--forest); opacity:.75;}
+  .cta-btn{background:var(--clay); color:#fff !important; opacity:1 !important; padding:10px 20px; border-radius:999px; font-size:13.5px; font-weight:600;}
+  @media(max-width:700px){nav.menu a:not(.cta-btn){display:none;} .nav-inner{padding:14px 20px;}}
+  .page-head{padding-top:54px; padding-bottom:30px; text-align:center;}
+  .eyebrow{font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:600; color:var(--clay);}
+  .page-head h1{font-family:'Noto Serif KR',serif; font-size:clamp(26px,4vw,34px); color:var(--forest); margin-top:10px;}
+  .page-head p{color:#6b6459; margin-top:10px; font-size:15px;}
+  .count{margin:0 0 16px; font-size:13px; color:#8a8378; text-align:right;}
+  main.wrap{padding-bottom:90px;}
+  footer{background:var(--ivory-deep); border-top:1px solid var(--line); padding:30px 0; text-align:center; font-size:12.5px; color:#8a8378;}
+</style>
+</head>
+<body>
+<header>
+  <div class="nav-inner">
+    <a href="index.html" class="brand logotype">Forêt des Crayons</a>
+    <nav class="menu">
+      <a href="index.html#program">프로그램 소개</a>
+      <a href="index.html#events">수업 일정</a>
+      <a href="index.html#contact">문의하기</a>
+      <a href="classes.html" class="cta-btn">크레용숲 여정</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap page-head">
+  <div class="eyebrow">Journey</div>
+  <h1>크레용숲 여정</h1>
+  <p>마음이 색이 되고, 색이 나만의 세계가 되기까지<br>크레용숲에서 함께 걷는 모든 수업을 만나보세요</p>
+</div>
+
+<main class="wrap">
+  <div id="progGrid"><div class="prog-empty">수업을 불러오는 중이에요…</div></div>
+  <p style="text-align:center; margin-top:30px; font-size:13px; color:#8a8378;">결제는 따로 진행되지 않아요. 신청서를 남겨주시면 원장님이 확인 후 개별 연락드려요.</p>
+</main>
+
+<footer>© 크레용숲 · Forêt des Crayons</footer>
+
+<script src="js/programs.js"></script>
+<script>
+loadClassData(data => {
+  document.getElementById('progGrid').innerHTML = renderClassSections(data, 0);
+});
+</script>
+</body>
+</html>
