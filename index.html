@@ -43,7 +43,7 @@
     color:var(--clay);
   }
   .wrap{max-width:1140px; margin:0 auto; padding:0 28px;}
-  section{padding:48px 0;}
+  section{padding:48px 0; scroll-margin-top:96px;}
   @media(max-width:720px){ section{padding:32px 0;} .wrap{padding:0 20px;} }
 
   /* ---------- Header ---------- */
@@ -130,6 +130,10 @@
   .ev-day.today{outline:2px solid var(--gold);}
   .ev-day.has-ev{background:var(--forest); color:#fff; font-weight:700; cursor:pointer;}
   .ev-day.empty{background:transparent; border:none;}
+  .ev-poster{display:block; max-width:430px; border:2px solid #2A2622; border-radius:22px; overflow:hidden; box-shadow:4px 5px 0 #2A2622; margin:0 0 18px; background:#fff; transition:transform .2s;}
+  .ev-poster:hover{transform:translateY(-3px) rotate(-.6deg);}
+  .ev-poster img{display:block; width:100%; height:auto;}
+  .ev-poster span{display:block; padding:9px 14px; font-size:13px; font-weight:600; color:var(--forest); border-top:2px solid #2A2622; background:#FFF3C4;}
   .ev-list{display:flex; flex-direction:column; gap:12px;}
   .ev-item{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start;}
   .ev-date-badge{background:var(--ivory-deep); border-radius:10px; padding:8px 12px; text-align:center; min-width:52px;}
@@ -725,7 +729,7 @@
       </div>
       <div class="ev-grid" id="evGrid"></div>
     </div>
-    <div class="ev-list" id="evList"></div>
+    <div class="ev-side"><div id="evPosters"></div><div class="ev-list" id="evList"></div></div>
   </div>
   <div style="text-align:center; margin:22px 0 60px;">
     <a href="schedule.html" class="btn-outline">전체 수업 시간표 보기 →</a>
@@ -1006,6 +1010,8 @@ function loadSiteContent(){
       });
       renderEvCalendar();
     }
+    window.EV_POSTERS = Array.isArray(ev.posters) ? ev.posters : [];
+    renderEvCalendar();
   }).catch(()=>{});
 }
 
@@ -1031,7 +1037,22 @@ function playIntro(){
     setTimeout(()=>{ loader.style.display = 'none'; }, 950);
   }, 5300);
 }
-playIntro();
+if(location.hash && location.hash.length > 1 && location.hash !== '#top'){
+  // 메뉴로 특정 위치(#events 등)를 찾아온 경우엔 인트로를 건너뛰고 바로 그 자리로 가요
+  const _l = document.getElementById('introLoader'); if(_l) _l.style.display = 'none';
+  const _h = document.getElementById('hpanel1'); if(_h) _h.classList.add('on');
+} else { playIntro(); }
+
+/* 페이지 높이가 늘어나도(카드·사진이 늦게 불러와져도) 목표 위치를 다시 맞춰줘요 */
+let _userMoved = false;
+['wheel','touchstart','keydown','mousedown'].forEach(ev => window.addEventListener(ev, () => { _userMoved = true; }, { passive:true }));
+function jumpToHash(){
+  if(_userMoved || !location.hash || location.hash.length < 2 || location.hash === '#top') return;
+  let t = null; try { t = document.querySelector(location.hash); } catch(e){}
+  if(t) t.scrollIntoView({ behavior:'instant', block:'start' });
+}
+window.addEventListener('load', jumpToHash);
+[200, 700, 1500, 3000].forEach(ms => setTimeout(jumpToHash, ms));
 
 document.querySelectorAll('a[href="#top"]').forEach(link=>{
   link.addEventListener('click', (e)=>{
@@ -1074,6 +1095,7 @@ window.addEventListener('scroll', ()=>{
 /* ---------- 크레용숲 여정 (수업 카드: 구글 시트 → js/programs.js) ---------- */
 loadClassData(data => {
   document.getElementById('progGrid').innerHTML = renderClassSections(data, 0);
+  if(typeof jumpToHash === 'function') setTimeout(jumpToHash, 50);
 });
 
 /* ---------- About tabs ---------- */
@@ -1314,6 +1336,13 @@ function renderEvCalendar(){
     }
     grid.appendChild(el);
   }
+  // 이번 달 포스터 (content/events.json 의 posters — month 가 "2026-10" 처럼 맞는 것만, month 가 없으면 항상)
+  const ym = evYear + '-' + String(evMonth+1).padStart(2,'0');
+  const pbox = document.getElementById('evPosters');
+  if(pbox) pbox.innerHTML = (window.EV_POSTERS || []).filter(p => p.image && (!p.month || p.month === ym)).map(p => {
+    const inner = '<img src="' + p.image + '" alt="' + (p.caption || '이달의 포스터') + '" loading="lazy">' + (p.caption ? '<span>' + p.caption + '</span>' : '');
+    return p.link ? '<a class="ev-poster" href="' + p.link + '">' + inner + '</a>' : '<div class="ev-poster">' + inner + '</div>';
+  }).join('');
   const listEl = document.getElementById('evList');
   if(monthEvents.length === 0){
     listEl.innerHTML = '<div class="reg-empty">이번 달 등록된 일정이 없어요.</div>';

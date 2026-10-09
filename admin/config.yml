@@ -54,6 +54,16 @@ collections:
               - { label: "제목", name: "title", widget: "string" }
               - { label: "날짜", name: "date", widget: "date", format: "YYYY-MM-DD" }
               - { label: "설명", name: "desc", widget: "text" }
+          - label: "이달의 포스터 (일정 오른쪽에 보여요)"
+            name: "posters"
+            widget: "list"
+            required: false
+            summary: "{{fields.month}} · {{fields.caption}}"
+            fields:
+              - { label: "어느 달 포스터인가요? (예: 2026-11)", name: "month", widget: "string" }
+              - { label: "포스터 이미지", name: "image", widget: "image" }
+              - { label: "포스터 아래 문구 (선택)", name: "caption", widget: "string", required: false }
+              - { label: "눌렀을 때 이동할 주소 (선택, 예: program.html?id=수업ID)", name: "link", widget: "string", required: false }
 
       - file: "content/programs.json"
         label: "PROGRAM · 예비용 목록 (평소엔 class-admin.html 사용)"
