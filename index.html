@@ -917,10 +917,11 @@ menuToggle.addEventListener('click', ()=>{
   mobileMenu.classList.toggle('open');
   menuToggle.textContent = mobileMenu.classList.contains('open') ? '✕' : '☰';
 });
-mobileMenu.querySelectorAll('a').forEach(a=> a.addEventListener('click', ()=>{
+mobileMenu.addEventListener('click', e=>{
+  if(!e.target.closest('a')) return;
   mobileMenu.classList.remove('open');
   menuToggle.textContent = '☰';
-}));
+});
 
 /* ---------- Back to top ---------- */
 const backToTop = document.getElementById('backToTop');
@@ -1361,5 +1362,6 @@ window.addEventListener('load', ()=>{
     });
 });
 </script>
+<script src="js/nav.js"></script>
 </body>
 </html>

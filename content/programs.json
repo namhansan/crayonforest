@@ -1,27 +1,28 @@
 {
   "items": [
     {
-      "id": "child-mon-1",
+      "id": "child-sense",
       "enabled": true,
       "category": "child",
       "color": "gold",
       "status": "모집중",
-      "title": "마음여행가 · 초등 고학년 월요반",
+      "title": "감각의 숲 · 5~6세 월요반",
       "subtitle": "크레용숲 어린이색채학교",
-      "target": "초등 고학년",
-      "period": "정규반 (월 단위 · 기간을 적어주세요)",
-      "day_time": "월 14:00~15:30",
+      "target": "5~6세",
+      "period": "8주 (2026.10.1~2026.11.30)",
+      "day_time": "월요일/2시",
       "capacity": 4,
       "schedule": "",
       "price": "",
       "place": "크레용숲 (위례)",
       "image": "",
-      "summary": "마음여행가 정규반",
-      "description": "마음여행가 정규반\n(상세 소개글을 class-admin.html에서 수정해주세요)",
+      "summary": "색과 재료를 몸으로 만나며 감각을 깨우는 수업",
+      "description": "색과 재료를 몸으로 만나며 감각을 깨우는 수업\n(상세 소개글을 class-admin.html에서 수정해주세요)",
       "curriculum": [],
       "fit": [],
       "options": [],
-      "detail_page": "program-child.html"
+      "detail_page": "program-child.html",
+      "order": 10
     },
     {
       "id": "child-mon-2",
@@ -31,8 +32,8 @@
       "status": "모집중",
       "title": "마음의 실험실 · 6~7세 월요반",
       "subtitle": "크레용숲 어린이색채학교",
-      "target": "6~7세 (유치부)",
-      "period": "정규반 (월 단위 · 기간을 적어주세요)",
+      "target": "6~7세",
+      "period": "정규반 (기간 입력)",
       "day_time": "월 16:00~17:30",
       "capacity": 4,
       "schedule": "",
@@ -44,53 +45,8 @@
       "curriculum": [],
       "fit": [],
       "options": [],
-      "detail_page": "program-child.html"
-    },
-    {
-      "id": "child-tue-1",
-      "enabled": true,
-      "category": "child",
-      "color": "gold",
-      "status": "모집중",
-      "title": "마음여행가 · 초등 저학년 화요반",
-      "subtitle": "크레용숲 어린이색채학교",
-      "target": "초등 저학년",
-      "period": "정규반 (월 단위 · 기간을 적어주세요)",
-      "day_time": "화 16:00~17:30",
-      "capacity": 4,
-      "schedule": "",
-      "price": "",
-      "place": "크레용숲 (위례)",
-      "image": "",
-      "summary": "마음여행가 정규반",
-      "description": "마음여행가 정규반\n(상세 소개글을 class-admin.html에서 수정해주세요)",
-      "curriculum": [],
-      "fit": [],
-      "options": [],
-      "detail_page": "program-child.html"
-    },
-    {
-      "id": "child-wed-1",
-      "enabled": true,
-      "category": "child",
-      "color": "gold",
-      "status": "모집중",
-      "title": "마음여행가 · 초등 저학년 수요반",
-      "subtitle": "크레용숲 어린이색채학교",
-      "target": "초등 저학년",
-      "period": "정규반 (월 단위 · 기간을 적어주세요)",
-      "day_time": "수 14:00~15:30",
-      "capacity": 4,
-      "schedule": "",
-      "price": "",
-      "place": "크레용숲 (위례)",
-      "image": "",
-      "summary": "마음여행가 정규반",
-      "description": "마음여행가 정규반\n(상세 소개글을 class-admin.html에서 수정해주세요)",
-      "curriculum": [],
-      "fit": [],
-      "options": [],
-      "detail_page": "program-child.html"
+      "detail_page": "program-child.html",
+      "order": 20
     },
     {
       "id": "child-wed-2",
@@ -100,8 +56,8 @@
       "status": "모집중",
       "title": "마음의 실험실 · 6~7세 수요반",
       "subtitle": "크레용숲 어린이색채학교",
-      "target": "6~7세 (유치부)",
-      "period": "정규반 (월 단위 · 기간을 적어주세요)",
+      "target": "6~7세",
+      "period": "정규반 (기간 입력)",
       "day_time": "수 16:00~17:30",
       "capacity": 4,
       "schedule": "",
@@ -113,7 +69,8 @@
       "curriculum": [],
       "fit": [],
       "options": [],
-      "detail_page": "program-child.html"
+      "detail_page": "program-child.html",
+      "order": 21
     },
     {
       "id": "child-thu-1",
@@ -123,8 +80,8 @@
       "status": "모집중",
       "title": "마음의 실험실 · 6~7세 목요반",
       "subtitle": "크레용숲 어린이색채학교",
-      "target": "6~7세 (유치부)",
-      "period": "정규반 (월 단위 · 기간을 적어주세요)",
+      "target": "6~7세",
+      "period": "정규반 (기간 입력)",
       "day_time": "목 16:00~17:30",
       "capacity": 4,
       "schedule": "",
@@ -136,7 +93,8 @@
       "curriculum": [],
       "fit": [],
       "options": [],
-      "detail_page": "program-child.html"
+      "detail_page": "program-child.html",
+      "order": 22
     },
     {
       "id": "child-fri-1",
@@ -146,8 +104,8 @@
       "status": "모집중",
       "title": "마음의 실험실 · 6~7세 금요반",
       "subtitle": "크레용숲 어린이색채학교",
-      "target": "6~7세 (유치부)",
-      "period": "정규반 (월 단위 · 기간을 적어주세요)",
+      "target": "6~7세",
+      "period": "정규반 (기간 입력)",
       "day_time": "금 16:00~17:30",
       "capacity": 4,
       "schedule": "",
@@ -159,7 +117,8 @@
       "curriculum": [],
       "fit": [],
       "options": [],
-      "detail_page": "program-child.html"
+      "detail_page": "program-child.html",
+      "order": 23
     },
     {
       "id": "child-fri-2",
@@ -169,8 +128,8 @@
       "status": "모집중",
       "title": "마음의 실험실 · 6~7세 금요 저녁반",
       "subtitle": "크레용숲 어린이색채학교",
-      "target": "6~7세 (유치부)",
-      "period": "정규반 (월 단위 · 기간을 적어주세요)",
+      "target": "6~7세",
+      "period": "정규반 (기간 입력)",
       "day_time": "금 18:00~19:00",
       "capacity": 4,
       "schedule": "",
@@ -182,7 +141,80 @@
       "curriculum": [],
       "fit": [],
       "options": [],
-      "detail_page": "program-child.html"
+      "detail_page": "program-child.html",
+      "order": 24
+    },
+    {
+      "id": "child-tue-1",
+      "enabled": true,
+      "category": "child",
+      "color": "gold",
+      "status": "모집중",
+      "title": "마음여행가 · 초등 저학년 화요반",
+      "subtitle": "크레용숲 어린이색채학교",
+      "target": "초등 저학년",
+      "period": "정규반 (기간 입력)",
+      "day_time": "화 16:00~17:30",
+      "capacity": 4,
+      "schedule": "",
+      "price": "",
+      "place": "크레용숲 (위례)",
+      "image": "",
+      "summary": "마음여행가 정규반",
+      "description": "마음여행가 정규반\n(상세 소개글을 class-admin.html에서 수정해주세요)",
+      "curriculum": [],
+      "fit": [],
+      "options": [],
+      "detail_page": "program-child.html",
+      "order": 30
+    },
+    {
+      "id": "child-wed-1",
+      "enabled": true,
+      "category": "child",
+      "color": "gold",
+      "status": "모집중",
+      "title": "마음여행가 · 초등 저학년 수요반",
+      "subtitle": "크레용숲 어린이색채학교",
+      "target": "초등 저학년",
+      "period": "정규반 (기간 입력)",
+      "day_time": "수 14:00~15:30",
+      "capacity": 4,
+      "schedule": "",
+      "price": "",
+      "place": "크레용숲 (위례)",
+      "image": "",
+      "summary": "마음여행가 정규반",
+      "description": "마음여행가 정규반\n(상세 소개글을 class-admin.html에서 수정해주세요)",
+      "curriculum": [],
+      "fit": [],
+      "options": [],
+      "detail_page": "program-child.html",
+      "order": 31
+    },
+    {
+      "id": "child-mon-1",
+      "enabled": true,
+      "category": "child",
+      "color": "gold",
+      "status": "모집중",
+      "title": "마음여행가 · 초등 고학년 월요반",
+      "subtitle": "크레용숲 어린이색채학교",
+      "target": "초등 고학년",
+      "period": "정규반 (기간 입력)",
+      "day_time": "월 14:00~15:30",
+      "capacity": 4,
+      "schedule": "",
+      "price": "",
+      "place": "크레용숲 (위례)",
+      "image": "",
+      "summary": "마음여행가 정규반",
+      "description": "마음여행가 정규반\n(상세 소개글을 class-admin.html에서 수정해주세요)",
+      "curriculum": [],
+      "fit": [],
+      "options": [],
+      "detail_page": "program-child.html",
+      "order": 40
     },
     {
       "id": "youth-1",
@@ -205,7 +237,8 @@
       "curriculum": [],
       "fit": [],
       "options": [],
-      "detail_page": "program-youth.html"
+      "detail_page": "program-youth.html",
+      "order": 100
     },
     {
       "id": "youth-2",
@@ -228,7 +261,8 @@
       "curriculum": [],
       "fit": [],
       "options": [],
-      "detail_page": "program-youth.html"
+      "detail_page": "program-youth.html",
+      "order": 110
     },
     {
       "id": "youth-3",
@@ -251,7 +285,8 @@
       "curriculum": [],
       "fit": [],
       "options": [],
-      "detail_page": "program-youth.html"
+      "detail_page": "program-youth.html",
+      "order": 120
     },
     {
       "id": "youth-4",
@@ -274,7 +309,8 @@
       "curriculum": [],
       "fit": [],
       "options": [],
-      "detail_page": "program-youth.html"
+      "detail_page": "program-youth.html",
+      "order": 130
     },
     {
       "id": "adult-ritual",
@@ -297,7 +333,8 @@
       "curriculum": [],
       "fit": [],
       "options": [],
-      "detail_page": "program-adult.html"
+      "detail_page": "program-adult.html",
+      "order": 200
     },
     {
       "id": "mom-warmup",
@@ -331,7 +368,8 @@
         "부담 없이 하루 한 번 마음을 돌보고 싶은 엄마"
       ],
       "options": [],
-      "detail_page": ""
+      "detail_page": "",
+      "order": 300
     },
     {
       "id": "mom",
@@ -360,7 +398,8 @@
       "options": [
         "일정 안내 후 선택"
       ],
-      "detail_page": "program-mom.html"
+      "detail_page": "program-mom.html",
+      "order": 310
     }
   ]
 }

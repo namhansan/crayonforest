@@ -21,12 +21,20 @@ const PROGRAM_CATEGORIES = [
 ];
 // 여정 페이지의 구분 제목 기본값. 실제로는 구글 시트 "수업구분" 탭의 문구가 우선이에요.
 const DEFAULT_SECTIONS = [
-  { key:'child',   title:'CHILD ART',              sub:'크레용숲 어린이색채학교', order:1 },
-  { key:'youth',   title:'YOUTH ART',        sub:'사유의 숲',               order:2 },
-  { key:'adult',   title:'ADULT ART',        sub:'예술리추얼',              order:3 },
-  { key:'mom',     title:'FOR MOM', sub:'정원사',                    order:4 },
-  { key:'special', title:'SPECIAL',         sub:'특강 · 체험',                         order:5 }
+  { key:'child',   title:'CHILD ART', sub:'크레용숲 어린이색채학교', order:1 },
+  { key:'youth',   title:'YOUTH ART', sub:'사유의 숲',               order:2 },
+  { key:'adult',   title:'ADULT ART', sub:'예술리추얼',              order:3 },
+  { key:'mom',     title:'FOR MOM',   sub:'정원사',                  order:4 },
+  { key:'special', title:'SPECIAL',   sub:'특강 · 체험',             order:5 }
 ];
+// 구분별 설명 (시트의 "수업구분" 탭과 상관없이 key로 붙어요)
+const SECTION_INFO = {
+  child:   { desc:'아이의 감각·상징·세계가 자기 속도로 싹트는 색채예술 수업이에요. 나이에 따라 감각의 숲(5~6세) → 마음의 실험실(6~7세) → 마음여행가(초등 저학년·고학년)로 이어져요.', page:'curriculum.html#child' },
+  youth:   { desc:'감각 → 감정 → 상징 → 해석, 4개의 방을 3개월씩 지나며 나만의 세계관을 완성해가는 중·고등학생 수업이에요.', page:'curriculum.html#youth' },
+  adult:   { desc:'감정 리추얼·컬러링 테라피·패턴 드로잉으로 내 마음의 결을 스케치해보는 어른을 위한 예술 시간이에요.', page:'curriculum.html#adult' },
+  mom:     { desc:'아이 마음을 돌보기 전에, 엄마 자신의 마음에 먼저 물을 주는 웰니스 커뮤니티예요.', page:'curriculum.html#mom' },
+  special: { desc:'하루나 짧은 기간만 다녀가는 특강·체험 수업이에요.', page:'' }
+};
 const DEFAULT_PROGRAMS = [
   {
     id:'child', enabled:true, category:'child', color:'gold', status:'모집중',
@@ -103,8 +111,13 @@ function loadFallbackPrograms(){
     .then(items => ({ items: items.filter(p => p && p.enabled !== false && p.id), sections: DEFAULT_SECTIONS, counts: null }));
 }
 function normalizeClassData(d){
-  const items = (d.items || []).filter(p => p && p.enabled !== false && p.id);
-  return { items, sections: (d.sections && d.sections.length) ? d.sections : DEFAULT_SECTIONS, counts: d.counts || null };
+  const sections = ((d.sections && d.sections.length) ? d.sections : DEFAULT_SECTIONS).map(s => Object.assign({}, SECTION_INFO[s.key] || {}, s));
+  const secOrder = {}; sections.forEach(s => { secOrder[s.key] = Number(s.order) || 99; });
+  const items = (d.items || []).filter(p => p && p.enabled !== false && p.id)
+    .map((p, i) => ({ p, i }))
+    .sort((a, b) => ((secOrder[a.p.category] || 99) - (secOrder[b.p.category] || 99)) || ((Number(a.p.order) || 9999) - (Number(b.p.order) || 9999)) || (a.i - b.i))
+    .map(x => x.p);
+  return { items, sections, counts: d.counts || null };
 }
 // onData(data, source) 는 처음 한 번, 그리고 최신 목록이 도착하면 한 번 더 불려요.
 function loadClassData(onData){
@@ -186,6 +199,7 @@ function renderClassSections(data, perSection){
     return `
     <section class="cls-section" id="sec-${escHtml(sec.key)}">
       <div class="cls-sec-head"><h2>${escHtml(sec.title)}</h2>${sec.sub ? `<span>${escHtml(sec.sub)}</span>` : ''}</div>
+      ${sec.desc ? `<p class="cls-sec-desc">${escHtml(sec.desc)}${sec.page ? ` <a href="${escHtml(sec.page)}">커리큘럼 보기 →</a>` : ''}</p>` : ''}
       <div class="cls-grid">${shown.map(p => renderProgramCard(p, counts)).join('')}</div>
     </section>`;
   }).join('');

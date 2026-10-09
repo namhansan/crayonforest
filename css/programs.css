@@ -62,3 +62,7 @@
 .cls-compact .cls-photo.noimg{aspect-ratio:auto; height:40px; justify-content:flex-start; padding-left:12px;}
 .cls-compact .cls-photo.noimg .cls-ph{font-size:12px; letter-spacing:.1em; text-shadow:none;}
 .cls-compact .cls-photo.noimg .cls-status{top:7px;}
+
+.cls-sec-desc{margin:-4px 0 16px; font-size:13.5px; line-height:1.7; color:#6b6459; max-width:760px; word-break:keep-all;}
+.cls-sec-desc a{color:var(--clay); font-weight:700; white-space:nowrap; border-bottom:2px solid #F7C873;}
+.cls-compact .cls-sec-desc{margin-bottom:12px; font-size:13px;}
